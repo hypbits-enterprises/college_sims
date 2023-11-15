@@ -1,0 +1,8 @@
+#files and folders to ignore in sims project
+FinanceSupportingDocuments/
+images/profile_pics/
+images/sch_profiles/
+invoices/
+report_cards/
+timetabled/
+timetabled/*
