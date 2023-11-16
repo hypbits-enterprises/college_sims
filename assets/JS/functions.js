@@ -167,6 +167,7 @@ cObj("back_btns").onmouseleave = function () {
 }
  */
 function sendData1(method, file, datapassing, object) {
+    // console.log("ajax/" + file + datapassing);
     // datapassing = escape(datapassing);
     //make the loading window show
     cObj("loadings").classList.remove("hide");
@@ -180,7 +181,7 @@ function sendData1(method, file, datapassing, object) {
             object.innerHTML = "<p class='red_notice'>Cannot establish connection to server.<br>Try reloading your page</p>";
         }
     };
-    xml.open(method, "/sims/ajax/" + file + datapassing, true);
+    xml.open(method, "ajax/" + file + datapassing, true);
     xml.send();
 }
 

@@ -2841,8 +2841,8 @@ date_default_timezone_set('Africa/Nairobi');
     <div class="copyright">
         <p> Last System Update: 1st August 2023 @ 12:01PM || Ladybird SMIS Copyright © 2020 - <?php echo date("Y", strtotime("3 hour")); ?> | All rights reserved</p>
     </div>
-    <script src="/sims/assets/JS/functions.js"></script>
-    <script src="/sims/assets/JS/print.min.js"></script>
+    <script src="assets/JS/functions.js"></script>
+    <script src="assets/JS/print.min.js"></script>
     <script>
         cObj("logout").onclick = function() {
             redirect("login.php");
@@ -2851,18 +2851,18 @@ date_default_timezone_set('Africa/Nairobi');
             sendData("GET", "login/changevalues.php", datapass, cObj("logout"));
         }
     </script>
-    <script src="/sims/assets/JS/admissions.js"></script>
-    <script src="/sims/assets/JS/dashboardajax.js"></script>
-    <script src="/sims/assets/JS/finance.js"></script>
-    <script src="/sims/assets/JS/feesTable.js"></script>
-    <script src="/sims/assets/JS/expense.js"></script>
-    <script src="/sims/assets/JS/transport.js"></script>
-    <script src="/sims/assets/JS/academics.js"></script>
-    <script src="/sims/assets/JS/boarding.js"></script>
-    <script src="/sims/assets/JS/sms.js"></script>
-    <script src="/sims/assets/JS/my_reports.js"></script>
-    <script src="/sims/assets/JS/chart.min.js"></script>
-    <script src="/sims/assets/JS/chartconfig.js"></script>
+    <script src="assets/JS/admissions.js"></script>
+    <script src="assets/JS/dashboardajax.js"></script>
+    <script src="assets/JS/finance.js"></script>
+    <script src="assets/JS/feesTable.js"></script>
+    <script src="assets/JS/expense.js"></script>
+    <script src="assets/JS/transport.js"></script>
+    <script src="assets/JS/academics.js"></script>
+    <script src="assets/JS/boarding.js"></script>
+    <script src="assets/JS/sms.js"></script>
+    <script src="assets/JS/my_reports.js"></script>
+    <script src="assets/JS/chart.min.js"></script>
+    <script src="assets/JS/chartconfig.js"></script>
 
     <script>
         tinymce.init({

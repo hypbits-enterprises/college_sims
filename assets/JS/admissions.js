@@ -1948,6 +1948,7 @@ cObj("findingstudents").onclick = function () {
         }
         if (erroro == 0) {
             //showPleasewait();
+            // console.log("No error!");
             sendData1("GET", "administration/admissions.php", datapassing, cObj("resultsbody"));
             setTimeout(() => {
                 var timeout = 0;
@@ -2403,7 +2404,8 @@ function tablebtnlistener() {
                     } else {
                         cObj("reason_for_leaving_window").classList.add("hide");
                     }
-                    cObj("cl" + splitdata[6]).selected = true
+                    // console.log(splitdata[6]);
+                    cObj("cl" + splitdata[6]) != undefined ? cObj("cl" + splitdata[6]).selected = true : "";
                     cObj("adminnos").value = splitdata[7]
                     if (splitdata[3] == 0) {
                         cObj("indexnos").value = "N/A";

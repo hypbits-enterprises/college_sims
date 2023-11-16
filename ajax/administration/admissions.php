@@ -379,16 +379,17 @@
                 }
                 createStudentn4($conn2,$result,$searh);//creates table
             }elseif (isset($_GET['comname'])) {
-                $select = "SELECT `surname` , `first_name` ,`second_name` ,`adm_no`,`gender`,`stud_class`,`BCNo` FROM `student_data` where concat(`surname`,' ',`first_name`,' ',`second_name`) = ? or concat(`surname`,' ',`second_name`,' ',`first_name`) =?  OR concat(`surname`,' ',`first_name`) = ?  OR concat(`surname`,' ',second_name) = ?  OR surname = ?  OR concat(`first_name`,' ',`surname`,' ',`second_name`) = ? or concat(`first_name`,' ',`second_name`,' ',`surname`) =?  OR concat(`first_name`,' ',`surname`) = ?  OR concat(`first_name`,' ',second_name) = ?  OR first_name = ?  OR concat(`second_name`,' ',`surname`,' ',`first_name`) = ? or concat(`second_name`,' ',`first_name`,' ',`surname`) =?  OR concat(`second_name`,' ',`surname`) = ?  OR concat(`second_name`,' ', first_name) = ?  OR second_name = ? or (`first_name` like ? or `surname` LIKE ? or second_name like ?)  ";
-                $name = $_GET['comname'];
-               $stmt = $conn2->prepare($select);
-               $stmt->bind_param("ssssssssssssssssss",$name,$name,$name,$name,$name,$name,$name,$name,$name,$name,$name,$name,$name,$name,$name,$name,$name,$name);
-               if($stmt->execute()){
+                $name = "%".$_GET['comname']."%";
+                $select = "SELECT  * FROM `student_data` WHERE ( CONCAT(`first_name`,' ',`second_name`,' ',`surname`) LIKE ? OR (`first_name` like ? or `surname` LIKE ? or `second_name` like ?) )";
+                // $select = "SELECT * from `student_data` WHERE (`first_name` like ? or `surname` LIKE ? or `second_name` like ?) ";
+                $stmt = $conn2->prepare($select);
+                $stmt->bind_param("ssss",$name,$name,$name,$name);
+                if($stmt->execute()){
                     $result = $stmt->get_result();
                     $searh = "Student name = <span style='color:brown;'>\"".$_GET['comname']."\"</span>";
                     createStudentn4($conn2,$result,$searh);
                 }else {
-                   echo "<p>Not Executed!</p>";
+                    echo "<p>Not Executed!</p>";
                 }
             }
             elseif (isset($_GET['comadm'])) {
@@ -5595,6 +5596,7 @@ function isJson_report($string) {
             $data.="<th>Option</th></tr>";
             include("../finance/financial.php");
             while($row=$result->fetch_assoc()){
+                // echo json_encode($row);
                 $xs++;
                 $data.="<tr class='search_this_main' id='search_this_main".($xs)."'><td>".($xs)."</td>";
                 $data.="<td class='search_this' id='one".($xs)."'>".ucwords(strtolower($row['first_name']." ".$row['second_name']))."</td>";
