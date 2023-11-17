@@ -142,7 +142,47 @@ date_default_timezone_set('Africa/Nairobi');
     </style>
 
 </head>
+<?php
+    // include the connection
+    include("connections/conn2.php");
+    // connect to the database and change the classes make them json
+    $select = "SELECT * FROM `settings` WHERE `sett` = 'class'";
+    $stmt = $conn2->prepare($select);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($result) {
+        if ($row = $result->fetch_assoc()) {
+            $valued = $row['valued'];
+            if (!isJson_report($valued)) {
+                // if its not json turn it to json
+                $valued = explode(",",$valued);
 
+                // create the json
+                $classes = [];
+                for ($index=0; $index < count($valued); $index++) { 
+                    $class_json = new stdClass();
+                    $class_json->id = $index+1;
+                    $class_json->classes = $valued[$index];
+
+                    // add the class json
+                    array_push($classes,$class_json);
+                }
+
+                // update the database
+                $class_string = json_encode($classes);
+                $update = "UPDATE `settings` SET `valued` = ? WHERE `sett` = 'class'";
+                $stmt = $conn2->prepare($update);
+                $stmt->bind_param("s",$class_string);
+                $stmt->execute();
+            }
+        }
+    }
+    function isJson_report($string) {
+        return ((is_string($string) &&
+                (is_object(json_decode($string)) ||
+                is_array(json_decode($string))))) ? true : false;
+    }
+?>
 <body>
     <div class="mainpages" id="images_bgs">
         <div class="load_clear hide" id="log_notification">
@@ -2506,6 +2546,70 @@ date_default_timezone_set('Africa/Nairobi');
                 </div>
             </div>
         </div>
+        <div class="confirmpaymentwindow hide" id="add_course_window">
+            <div class="changesubwindow addsubject animate">
+                <div class="conts">
+                    <p class="funga" id="close_add_course_win">&times</p>
+                    <h6 class="text-center">Add Course</h6>
+                </div>
+                <div class="conts" id="">
+                    <div class="add_expenses">
+                        <label class="form-control-label" for="course_input_text">Enter Course Name: <br></label>
+                        <input class="form-control w-100 mx-0" type="text" name="course_input_text" id="course_input_text" placeholder="eg: Information Technology">
+                        <hr >
+                        <label for="level_lists" class="form-control-label">Level Available</label> (<small class="text-secondary">Select the level the course is to be offered!</small>)
+                        <img src="images/ajax_clock_small.gif" class="" id="add_course_clock">
+                        <div id="level_available_course_name">
+                            <p class="text-danger">Set the course levels first before setting up courses!</p>
+                        </div><br>
+                        <label for="department_list" class="form-control-label">Course Department</label>
+                        <img src="images/ajax_clock_small.gif" class="" id="display_my_departments">
+                        <div id="department_list_window">
+                            <p class="text-danger">Set the course levels first before setting up courses!</p>
+                        </div>
+                        <p id="add_course_outputtxt"></p>
+                    </div>
+                    <div class="btns">
+                        <button type="button" id="add_course_btn">Add Course</button>
+                        <button type="button" id="close_add_course_window">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="confirmpaymentwindow hide" id="edit_course_window">
+            <div class="changesubwindow addsubject animate p-2">
+                <div class="conts">
+                    <p class="funga" id="close_edit_course_win">&times</p>
+                    <h6 class="text-center">Edit Course</h6>
+                </div>
+                <div class="conts" id="">
+                    <div class="edit_expenses">
+                        <label class="form-control-label" for="course_edit_input_text">Enter Course Name: <br></label>
+                        <input type="hidden" id="course_id_holder">
+                        <input class="form-control w-100 mx-0" type="text" name="course_edit_input_text" id="course_edit_input_text" placeholder="eg: Information Technology">
+                        <hr>
+
+                        <label for="level_lists" class="form-control-label">Level Available</label> (<small class="text-secondary">Select the level the course is to be offered!</small>)
+                        <img src="images/ajax_clock_small.gif" class="" id="edit_course_clock">
+                        <div id="level_available_course_name_edit">
+                            <p class="text-danger">Set the course levels first before setting up courses!</p>
+                        </div>
+                        <br>
+
+                        <label for="department_list" class="form-control-label">Course Department</label>
+                        <img src="images/ajax_clock_small.gif" class="" id="display_my_departments_edit">
+                        <div id="department_list_window_edit">
+                            <p class="text-danger">Set the course levels first before setting up courses!</p>
+                        </div>
+                        <p id="edit_course_outputtxt"></p>
+                    </div>
+                    <div class="btns">
+                        <button type="button" id="Edit_course_btn">Edit Course</button>
+                        <button type="button" id="close_Edit_course_window">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="confirmpaymentwindow hide" id="active_hours_window">
             <div class="changesubwindow addsubject animate">
                 <div class="conts">
@@ -2677,6 +2781,21 @@ date_default_timezone_set('Africa/Nairobi');
             <div class="buttons">
                 <button type='button' id='yes_delete_permanently'>Yes</button>
                 <button type='button' id='no_delete_permanently'>No</button>
+            </div>
+        </div>
+    </div>
+    <div class="dialogholder hide" id="delete_course_parmenently">
+        <div class="dialogwindow animate2">
+            <h6>Confirm Action <img class="hide" src="images/ajax_clock_small.gif" id="delete_course_pamernently"></h6>
+            <div class="message" id="">
+                <p>Are you sure you want to delete <b><span id="course_name_placeholder">unknown</span></b> course permanently ?</p>
+                <input type="hidden" id="course_id_holder_delete">
+                <small class="text-secondary text-left"><b>Note:</b> <br> (This action is not reversible)</small>
+            </div>
+            <p id="error_handler_course_del"></p>
+            <div class="buttons">
+                <button type='button' id='yes_delete_permanently_course'>Yes</button>
+                <button type='button' id='no_delete_permanently_course'>No</button>
             </div>
         </div>
     </div>

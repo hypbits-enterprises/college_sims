@@ -19,7 +19,7 @@
             </div>
             <div class="setting_s">
                 <div class="conts " id = "send_sms_window">
-                    <h6 style='text-align:center;color:cadetblue;'><u>Send a message to a recipient</u> </h6>
+                    <h6 class="text-primary text-center"><u>Send a message to a recipient</u> </h6>
 
                     <p style="width:fit-content;" class="p-1 border border-primary rounded" >Would you rather <span id="rather_send_email_btn" class="btn btn-primary btn-sm my-2">Send E-Mail</span> ?</p>
                     <hr>
@@ -56,7 +56,7 @@
 
                 </div>
                 <div class="conts hide" id = "send_email_window">
-                    <h6 style='text-align:center;color:cadetblue;'><u>Send an Email to a recipient</u> </h6>
+                    <h6 class="text-primary text-center"><u>Send an Email to a recipient</u> </h6>
                     <p style="width:fit-content;"  class="text-left p-1 border border-primary rounded">Would you rather <span id="rather_send_sms_btn" class="btn btn-primary btn-sm my-2">Send SMS</span> ?</p>
                     <hr>
 
@@ -98,7 +98,7 @@
             </div>
             <div class="setting_s">
                 <div class="conts" id = "print_reminded">
-                    <h6 style='text-align:center;color:cadetblue;'><u>Send broadcast message.</u> </h6>
+                    <h6 class="text-primary text-center"><u>Send broadcast message.</u> </h6>
                     <div class="p-1 my-2 text-primary border border-primary w-100"><b>Note:</b> <br> - Broadcast messages will only allow you to send messages to either your <b>staff</b> or <b>Parent</b> </div> <br>
                     <label for="select_recipients2">Select recipients: <br></label><br>
                     <select class="form-control" name="select_recipients2" id="select_recipients2">
@@ -107,7 +107,7 @@
                         <option value="parents">Parents</option>
                     </select>
                     <div class="conts hide" id="staffs_list_ms">
-                        <div class="p-1 my-2 text-danger border border-danger w-50"><b>Note:</b> <br>- Select staff you don`t want to send message to:</div>
+                        <div class="p-1 my-2 text-success border border-success w-50"><b>Note:</b> <br>- Select staff you  want to send message to:</div>
                         <label for="">To My staff Except: <br></label>
                         <p id="staff_my_lists"></p>
                         <!--<div class="staff_list">
@@ -139,10 +139,10 @@
                         </div>-->
                     </div>
                     <div class="conts hide" id="students_parents">
-                        <div class="p-1 border border-danger text-danger fx-10 my-2 w-50 text-left align-left"><b>Note:</b> <br> - Select the student to whom you dont want to send sms to their parent.</div>
-                        <label>To Student`s parent except: <br></label>
+                        <div class="p-1 border border-success text-success fx-10 my-2 w-50 text-left align-left"><b>Note:</b> <br> - Select the student to whom you want to send message to their parent.</div>
+                        <label>To Student`s parent selected: <br></label>
                         <p class="text-secondary">(Total Number of Students: <span id="all_parents" >0</span>) <br></p>
-                        <p class="text-secondary">(Exempted Students: <span class="red_notice" id="excempt_list">0</span>) <br></p>
+                        <p class="text-secondary">(Selected Students: <span class="red_notice" id="excempt_list">0</span>) <br></p>
                         <label for="my-class">Select class: <br></label>
                         <p id="seleceted_class" class = "hide"></p>
                         <p id="cl_list_msg"></p><!--Select class-->

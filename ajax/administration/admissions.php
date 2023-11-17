@@ -1475,7 +1475,7 @@
                     $datatoshow.="</div>";
                     echo $datatoshow;
                 }else {
-                    echo "<p class='green_notice' >No teacher records found! </p>";
+                    echo "<p class='text-danger' >No other staff assigned a class teacher role found! </p>";
                 }
                 
             }
@@ -1497,18 +1497,20 @@
                 //found array of classes with teachers
 
                 //find array of all classes that are not present
-                $select = "SELECT `valued` FROM `settings` WHERE `id` = 2";
+                $select = "SELECT * FROM `settings` WHERE `sett` = 'class'";
                 $stmt = $conn2->prepare($select);
                 $stmt->execute();
                 $result = $stmt->get_result();
-                $class_list = "";
                 $class_lists = [];
                 if ($result) {
                     if ($row = $result->fetch_assoc()) {
-                        $class_list = $row['valued'];
-                    }
-                    if (strlen($class_list) > 0) {
-                        $class_lists = explode(",",$class_list);
+                        // convert to json
+                        $all_classes = isJson_report($row['valued']) ? json_decode($row['valued']) : [];
+
+                        // loop to push class name to the classlist array
+                        for ($index=0; $index < count($all_classes); $index++) {
+                            array_push($class_lists,$all_classes[$index]->classes);
+                        }
                     }
                 }
                 $new_list = "";
@@ -1665,8 +1667,15 @@
             $result = $stmt->get_result();
             if ($result) {
                 if ($row = $result->fetch_assoc()) {
-                    $class = trim($row['valued']);
-                    $class_explode = explode(",",$class);
+                    // retrieve class lists from the database
+                    $class = isJson_report($row['valued']) ? json_decode($row['valued']) : [];
+                    $all_classes = [];
+                    for ($index=0; $index < count($class); $index++) { 
+                        array_push($all_classes,$class[$index]->classes);
+                    }
+                    $class_explode = $all_classes;
+
+
                     $counter = 0;
                     $string_to_display = "<select class='form-control' name='".$select_class_id."' id='".$select_class_id."'> <option value='' hidden>Select..</option>";
                     
@@ -1701,45 +1710,37 @@
             if ($result) {
                 $data_to_display = "";
                 if ($row = $result->fetch_assoc()) {
-                    $class_list = trim($row['valued']);
-                    if (strlen($class_list) > 0) {
-                        //split the classes with a comma
-                        $class_listed = explode(",",$class_list);
-
-                        if (count($class_listed) > 0) {
-                            $data_to_display.="<div class='w-100 tableme'><div class='table_holder'><table class='table' style='margin:10;margin-left:30px;'><tr>
-                                                            <th>No.</th>
-                                                            <th>Class</th>
-                                                            <th>Arrange</th>
-                                                            <th>Options</th>
-                                                        </tr>";
-                            $xs = 0;
-                            for ($xc=0; $xc < count($class_listed); $xc++) { 
-                                $xs++;
-                                $select_options = "";
-                                for ($ind=0; $ind < count($class_listed); $ind++) { 
-                                    if ($class_listed[$ind] != $class_listed[$xc]) {
-                                        $select_options .= "<option value ='[\"".$ind."\",\"".$class_listed[$xc]."\"]'>After ".myClassName($class_listed[$ind])."</option>";
-                                    }
+                    // check if the class is json
+                    $class_list = isJson_report($row['valued']) ? json_decode($row['valued']) : [];
+                    if (count($class_list) > 0) {
+                        // create the data to display
+                        $data_to_display.="<div class='w-100 tableme'><div class='table_holder'><table class='table'><tr>
+                                <th>No.</th>
+                                <th>Class</th>
+                                <th>Arrange</th>
+                                <th>Options</th>
+                            </tr>";
+                        for ($index=0; $index < count($class_list); $index++) { 
+                            $select_options = "";
+                            for ($ind=0; $ind < count($class_list); $ind++) {
+                                if ($class_list[$ind]->id != $class_list[$index]->id) {
+                                    $select_options .= "<option value ='[".$ind.",".$class_list[$index]->id."]'>After ".myClassName($class_list[$ind]->classes)."</option>";
                                 }
-                                $at_beginning = "<option value='[-1,".$class_listed[$xc]."]'>At the beginning</option>";
-                                $data_to_display.="<tr>
-                                                    <td>".$xs.". </td>
-                                                    <td id='cll".$class_listed[$xc]."'>".myClassName($class_listed[$xc])."</td>
-                                                    <td>
-                                                        <select class='form-control arrange_class'>
-                                                            <option hidden value=''>Select an option</option>
-                                                            
-                                                            ".$select_options."
-                                                        </select>
-                                                    </td>
-                                                    <td><span class='link remove_class mx-2' = id='clm".$class_listed[$xc]."' style='font-size:12px; color:brown;'><i class='fa fa-trash'></i></span><span class='link change_classes' = id='change_classes".$class_listed[$xc]."' style='font-size:12px; color:brown;'><i class='fa fa-pen-fancy'></i></span></td>
-                                                    </tr>";
                             }
-                            $data_to_display.="</table></div></div>";
-                        }else {
-                            $data_to_display.="<p class='red_notice'>No classes to display!</p>";
+                            $at_beginning = "<option value='[-1,".$class_list[$index]->id."]'>At the beginning</option>";
+                            $data_to_display.="<tr>
+                                                <td>".($index+1).". </td>
+                                                <td id='cll".$class_list[$index]->id."'>".myClassName($class_list[$index]->classes)."</td>
+                                                <td>
+                                                    <select class='form-control arrange_class'>
+                                                        <option hidden value=''>Select an option</option>
+                                                        ".$select_options."
+                                                    </select>
+                                                </td>
+                                                <td><span class='link remove_class mx-2' = id='clm".$class_list[$index]->id."' style='font-size:12px; color:brown;'><i class='fa fa-trash'></i></span><span class='link change_classes' = id='change_classes".$class_list[$index]->id."' style='font-size:12px; color:brown;'><i class='fa fa-pen-fancy'></i></span></td>
+                                                </tr>";
                         }
+                        $data_to_display.="</table></div></div>";
                     }else {
                         $data_to_display.="<p class='red_notice'>No classes to display!</p>";
                     }
@@ -2104,8 +2105,337 @@
             }else {
                 echo "0 Alumni(s)";
             }
-        }
-        elseif (isset($_GET['get_loggers'])) {
+        }elseif(isset($_GET['get_courses'])){
+            // get the levels present
+            $select = "SELECT * FROM `settings` WHERE `sett` = 'class'";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $levels = [];
+            if ($result) {
+                if($row = $result->fetch_assoc()){
+                    $data = $row['valued'];
+                    $levels = isJson_report($data) ? json_decode($data) : [];
+                }
+            }
+
+            $data_to_display = "<p class='text-danger'>No levels present!</p>";
+
+            // loop
+            if(count($levels) > 0){
+                $data_to_display = "";
+                for ($index=0; $index < count($levels); $index++) { 
+                    $data_to_display.=
+                    "<p>
+                        <input type='checkbox' class='course_level' name='level_".$index."' value='".$levels[$index]->id."' id='level_".$levels[$index]->id."'>
+                        <label for='level_".$levels[$index]->id."' class='form-control-label'>".$levels[$index]->classes."</label>
+                    </p>";
+                }
+            }
+
+            // echo
+            echo $data_to_display;
+        }elseif(isset($_GET['get_courses_edit'])){
+            // get the levels present
+            $select = "SELECT * FROM `settings` WHERE `sett` = 'class'";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $levels = [];
+            if ($result) {
+                if($row = $result->fetch_assoc()){
+                    $data = $row['valued'];
+                    $levels = isJson_report($data) ? json_decode($data) : [];
+                }
+            }
+
+            $data_to_display = "<p class='text-danger'>No levels present!</p>";
+
+            // loop
+            if(count($levels) > 0){
+                $data_to_display = "";
+                for ($index=0; $index < count($levels); $index++) { 
+                    $data_to_display.=
+                    "<p>
+                        <input type='checkbox' class='course_level_edit' name='level_edit_".$index."' value='".$levels[$index]->id."' id='level_edit_".$levels[$index]->id."'>
+                        <label for='level_edit_".$levels[$index]->id."' class='form-control-label'>".$levels[$index]->classes."</label>
+                    </p>";
+                }
+            }
+
+            // echo
+            echo $data_to_display;
+        }elseif(isset($_GET['edit_course'])){
+            $select = "SELECT * FROM `settings` WHERE `sett` = 'courses'";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            $course_name = $_GET['course_name'];
+            $course_levels = $_GET['course_levels'];
+            $department_name = $_GET['department_name'];
+            $course_id = $_GET['course_id'];
+
+
+            if ($result) {
+                if($row = $result->fetch_assoc()){
+                    // arrays
+                    $courses = isJson_report($row['valued']) ? json_decode($row['valued']) : [];
+
+                    // update where neccessary
+                    $new_courses = new stdClass();
+                    $new_courses->id = $course_id;
+                    $new_courses->course_name = $course_name;
+                    $new_courses->course_levels = $course_levels;
+                    $new_courses->department = $department_name;
+
+                    // add the courses
+                    $new_course_data = [];
+                    for($ind = 0; $ind < count($courses); $ind++){
+                        if($courses[$ind]->id == $_GET['course_id']){
+                            array_push($new_course_data,$new_courses);
+                            continue;
+                        }
+                        array_push($new_course_data,$courses[$ind]);
+                    }
+
+                    // update the data in the database
+                    $update = "UPDATE `settings` SET `valued` = ? WHERE `sett` = ?";
+                    $stmt = $conn2->prepare($update);
+                    $sett = "courses";
+                    $valued = json_encode($new_course_data);
+                    $stmt->bind_param("ss",$valued,$sett);
+                    $stmt->execute();
+                    
+                    echo "<p class='text-success'>Update has been done successfully!</p>";
+                }else{
+                    echo "<p class='text-danger'>An error has occured!</p>";
+                }
+            }else{
+                echo "<p class='text-danger'>An error has occured!</p>";
+            }
+        }elseif(isset($_GET['get_departments_course_reg'])){
+            $department_id = $_GET['dept_id'];
+            $select = "SELECT * FROM `settings` WHERE `sett` = 'departments';";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $data_to_display = "<p class='text-danger'>No departments have been set yet!</p>";
+            if ($result) {
+                if($row = $result->fetch_assoc()){
+                    $valued = isJson_report($row['valued']) ? json_decode($row['valued']) : [];
+
+                    // is it valued
+                    $data_to_display = "<select id='".$department_id."' class='form-control w-100' required><option hidden value=''>Select department</option>";
+                    for ($index=0; $index < count($valued); $index++) { 
+                        $data_to_display.="<option value='".$valued[$index]->code."' >".$valued[$index]->name."</option>";
+                    }
+                    $data_to_display .="</select>";
+                }
+            }
+            echo $data_to_display;
+        }elseif(isset($_GET['add_course'])){
+            // add the new course to the list of courses there
+            $select = "SELECT * FROM `settings` WHERE `sett` = 'courses'";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $courses = [];
+            if ($result) {
+                if ($row = $result->fetch_assoc()) {
+                    $courses = isJson_report($row['valued']) ? json_decode($row['valued']) : [];
+                    // loop to get the last course index
+                    $last_id = 0;
+                    for ($index=0; $index < count($courses); $index++) { 
+                        if($courses[$index]->id > $last_id){
+                           $last_id = $courses[$index] ->id;
+                        }
+                    }
+                    // update the system
+                    $new_course = new stdClass();
+                    $new_course->id = ($last_id+1);
+                    $new_course->course_name = $_GET['course_name'];
+                    $new_course->course_levels = $_GET['course_levels'];
+                    $new_course->department = $_GET['department_name'];
+
+                    // add  that to the list of courses present
+                    array_push($courses,$new_course);
+
+                    // update the table
+                    $update = "UPDATE `settings` SET `valued` = ? WHERE `sett` = 'courses'";
+                    $stmt = $conn2->prepare($update);
+                    $courses = json_encode($courses);
+                    $stmt->bind_param("s",$courses);
+                    $stmt->execute();
+                }else{
+                    // add the new record
+                    $new_course = new stdClass();
+                    $new_course->id = 1;
+                    $new_course->course_name = $_GET['course_name'];
+                    $new_course->course_levels = $_GET['course_levels'];
+                    $new_course->department = $_GET['department_name'];
+
+                    // save to the database
+                    $insert = "INSERT INTO `settings` (`sett`,`valued`) VALUES (?,?)";
+                    $stmt = $conn2->prepare($insert);
+                    $new_course = json_encode([$new_course]);
+                    $sett_value = 'courses';
+                    $stmt->bind_param("ss",$sett_value,$new_course);
+                    $stmt->execute();
+                }
+
+                // success message
+                echo "<p class='text-success'>Course has been added successfully!</p>";
+            }else{
+                // error message
+                echo "<p class='text-danger'>Course has not been added, an error occured!</p>";
+            }
+        }elseif(isset($_GET['get_courses_list'])){
+            // get the departments
+            $select = "SELECT * FROM `settings` WHERE `sett` = 'departments'";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            // departments
+            $department = [];
+            if ($result) {
+                if ($row = $result->fetch_assoc()) {
+                    // departments
+                    $department = isJson_report($row['valued']) ? json_decode($row['valued']) : [];
+                }
+            }
+
+            // get levels
+            $select = "SELECT * FROM `settings` WHERE `sett` = 'class'";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            // departments
+            $course_levels = [];
+            if ($result) {
+                if ($row = $result->fetch_assoc()) {
+                    // departments
+                    $course_levels = isJson_report($row['valued']) ? json_decode($row['valued']) : [];
+                }
+            }
+
+            // select the courses
+            $select = "SELECT * FROM `settings` WHERE `sett` = 'courses'";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $data_to_display = "";
+            if($result){
+                if($row = $result->fetch_assoc()){
+                    $course_list = isJson_report($row['valued']) ? json_decode($row['valued']) : [];
+                    $data_to_display = "<div class='w-100 table_holder p-0'>
+                                            <table class='table'>
+                                                <thead>
+                                                    <tr>
+                                                        <th>No.</th>
+                                                        <th>Course</th>
+                                                        <th>Levels Offered</th>
+                                                        <th>Department</th>
+                                                        <th>Options</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>";
+                    for ($index=0; $index < count($course_list); $index++) {
+                        // get the department
+                        $department_name = "Null";
+                        for ($ind=0; $ind < count($department); $ind++) { 
+                            if($course_list[$index]->department == $department[$ind]->code){
+                                $department_name = $department[$ind]->name;
+                                break;
+                            }
+                        }
+                        
+                        // get the levels
+                        $levels = "No classes selected";
+                        $level_ids = isJson_report($course_list[$index]->course_levels) ? json_decode($course_list[$index]->course_levels) : [];
+                        // echo $course_list[$index]->course_levels."<br>";
+                        if(count($level_ids) > 0){
+                            $levels = "<ul>";
+                            for($ind = 0; $ind < count($level_ids); $ind++){
+                                $level_name = $level_ids[$ind];
+                                for($in = 0; $in < count($course_levels); $in++){
+                                    // echo $course_levels[$in]->id." ".$level_name." ".$course_levels[$in]->classes."<br>";
+                                    if($level_name == $course_levels[$in]->id){
+                                        $level_name = $course_levels[$in]->classes;
+                                        break;
+                                    }
+                                }
+                                $levels .= "<li>".$level_name."</li>";
+                            }
+                        }
+                        $levels.="</ul>";
+
+                        // data to display
+                        $data_to_display .= "<tr>
+                                                <td>".($index+1).". </td>
+                                                <td>".$course_list[$index]->course_name."</td>
+                                                <td>".$levels."</td>
+                                                <td>".$department_name."</td>
+                                                <td>
+                                                    <input hidden value='".json_encode($course_list[$index])."' id='hidden_value_courses_".$course_list[$index]->id."'>
+                                                    <span class='link remove_course mx-2' id='remove_course_".$course_list[$index]->id."' style='font-size:12px; color:brown;'><i class='fa fa-trash'></i></span>
+                                                    <span class='link edit_courses' id='edit_course_".$course_list[$index]->id."' style='font-size:12px; color:brown;'><i class='fa fa-pen-fancy'></i></span>
+                                                </td>
+                                            </tr>";
+                    }
+                }
+            }
+
+            // display the data
+            echo $data_to_display;
+        }elseif(isset($_GET['delete_course'])){
+            // delete course
+            $delete_course = $_GET['delete_course'];
+            $course_id = $_GET['course_id'];
+
+            // get all the course
+            $select = "SELECT * FROM `settings` WHERE `sett` = 'courses'";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            
+            // get result
+            if($result){
+                if($row = $result->fetch_assoc()){
+                    // valued
+                    $course_list = isJson_report($row['valued']) ? json_decode($row['valued']) : [];
+                    
+                    // new_arrays to hold the new arrays
+                    $new_array = [];
+                    for($index = 0; $index < count($course_list); $index++){
+                        if($course_list[$index]->id == $course_id){
+                            continue;
+                        }
+
+                        // push the other courses
+                        array_push($new_array,$course_list[$index]);
+                    }
+
+                    // echo
+                    // echo json_encode($new_array);
+
+                    // update the database
+                    $update = "UPDATE `settings` SET `valued` = ? WHERE `sett` = ?";
+                    $stmt = $conn2->prepare($update);
+                    $valued = json_encode($new_array);
+                    $sett = "courses";
+                    $stmt->bind_param("ss",$valued,$sett);
+                    $stmt->execute();
+
+                    // echo
+                    echo "<p class='text-success'>Update has been done successfully!</p>";
+                }else{
+                    echo "<p class='text-danger'>An error has occured, Try again later!</p>";
+                }
+            }else{
+                echo "<p class='text-danger'>An error has occured, Try again later!</p>";
+            }
+        }elseif (isset($_GET['get_loggers'])) {
             include("../../connections/conn1.php");
             $get_loggers = $_GET['get_loggers'];
             $select = "SELECT `id` , `login_time`,`active_time`,`date`,`user_id` FROM `logs` WHERE `date` = ?";
@@ -3439,8 +3769,11 @@
             $arr_class = [];
             if ($result) {
                 if ($row = $result->fetch_assoc()) {
-                    $class_list = $row['valued'];
-                    $arr_class = explode(",",$class_list);
+                    $class_list = isJson_report($row['valued']) ? json_decode($row['valued']) : [];
+                    for ($index=0; $index < count($class_list); $index++) { 
+                        array_push($arr_class,$class_list[$index]->classes);
+                    }
+                    // $arr_class = explode(",",$class_list);
                 }
             }
             // display the classes
@@ -3680,55 +4013,60 @@
             // loop to display all dates till the end of the month
         }elseif (isset($_GET['arrange_class'])) {
             $class_index = htmlspecialchars_decode($_GET['class_index']);
-            $classes = isJson_report($class_index) ? json_decode($class_index):[];
-            // echo $class_index." ".htmlspecialchars_decode($class_index);
+            $classes = isJson_report($class_index) ? json_decode($class_index):[0,0];
+            // echo json_encode($classes);
             $select = "SELECT * FROM `settings` WHERE `sett` = 'class'";
             $stmt = $conn2->prepare($select);
             $stmt->execute();
             $result = $stmt->get_result();
-            if (count($classes) > 0) {
-                if ($result) {
-                    if($row = $result->fetch_assoc()){
-                        $valued = $row['valued'];
-                        $my_classes = explode(",",$valued);
-
-                        // index and class
-                        $index_x = $classes[0];
-                        $class_x = $classes[1];
-    
-                        // have a new array excluding the classes selected
-                        $new_arrays = [];
-                        for ($index=0; $index < count($my_classes); $index++) {
-                            if ($index_x == "-1" && $index == 0) {
-                                array_push($new_arrays,$class_x);
-                            }
-                            if ($my_classes[$index] != $class_x) {
-                                array_push($new_arrays,$my_classes[$index]);
-                                if ($index_x == $index) {
-                                    array_push($new_arrays,$class_x);
-                                }
-                            }else{
-                                if ($index_x == $index) {
-                                    array_push($new_arrays,$class_x);
-                                }
-                            }
-                        }
-                        // loop through the array and add the student class after the index selected
-                        $new_class_list = "";
-                        for ($index2=0; $index2 < count($new_arrays); $index2++) {
-                            $new_class_list.=$new_arrays[$index2].",";
-                        }
-                        $new_class_list = strlen($new_class_list) > 0 ? substr($new_class_list,0,(strlen($new_class_list) - 1)) : "";
-                        // update the new changes
-                        $update = "UPDATE `settings` SET `valued` = '".$new_class_list."' WHERE `sett` = 'class'";
-                        $stmt = $conn2->prepare($update);
-                        if($stmt->execute()){
-                            echo "<p class='border border-success text-success p-1 my-2'>Arranged successfully!</p>";
-                        }else{
-                            echo "<p class='border border-danger text-danger p-1 my-2'>An error has occured!</p>";
+            if ($result) {
+                if($row = $result->fetch_assoc()){
+                    $class_list = isJson_report($row['valued']) ? json_decode($row['valued']) : [];
+                    
+                    // first get the value of the class and the position its in
+                    $class_dets = null;
+                    $position_we_want_it_to_be = $classes[0];
+                    $position_it_is_in = 0;
+                    for ($index=0; $index < count($class_list); $index++) { 
+                        if($class_list[$index]->id == $classes[1]){
+                            $class_dets = $class_list[$index];
+                            $position_it_is_in = $index;
+                            break;
                         }
                     }
+
+                    // after getting the position its in move it to the position it should be
+                    $new_array = [];
+                    for($index = 0; $index<count($class_list); $index++){
+                        // first skip the position its is in to replace it
+                        if ($position_it_is_in == $index) {
+                            continue;
+                        }
+                        
+                        // add the other class details
+                        array_push($new_array,$class_list[$index]);
+
+                        // then add the selected class in the wanted position
+                        if ($position_we_want_it_to_be == $index && $class_dets != null) {
+                            array_push($new_array,$class_dets);
+                        }
+                    }
+
+                    // update the database
+                    $new_array_to_string = json_encode($new_array);
+                    $update = "UPDATE `settings` SET `valued` = ? WHERE `sett` = 'class'";
+                    $stmt = $conn2->prepare($update);
+                    $stmt->bind_param("s",$new_array_to_string);
+                    if($stmt->execute()){
+                        echo "<p class='text-success'>Changes have been done successfully!</p>";
+                    }else{
+                        echo "<p class='text-danger'>Changes not done, an error occured!</p>";
+                    }
+                }else{
+                    echo "<p class='text-danger'>Changes not done, an error occured!</p>";
                 }
+            }else{
+                echo "<p class='text-danger'>Changes not done, an error occured!</p>";
             }
         }elseif (isset($_GET['change_class_name'])) {
             $new_class_name = trim($_GET['new_class_name']);
@@ -5527,11 +5865,13 @@ function isJson_report($string) {
         $stmt = $conn2->prepare($select);
         $stmt->execute();
         $res = $stmt->get_result();
-        $classes = array();
+        $classes = [];
         if ($res) {
             if($row = $res->fetch_assoc()) {
-                $cows = $row['valued'];
-                $classes = explode(",",$cows);
+                $all_classes = isJson_report($row['valued']) ? json_decode($row['valued']) : [];
+                for($index = 0; $index < count($all_classes); $index++){
+                    array_push($classes,$all_classes[$index]->classes);
+                }
             }
         }
         if (count($classes)>0) {

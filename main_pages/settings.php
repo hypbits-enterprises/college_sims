@@ -7,20 +7,20 @@
             <p>Settings</p>
         </div>
         <div class="middle1">
-            <div class="conts" >
+            <div class="conts">
                 <div class="school_logo">
                     <img src="images/settings.png" id="" alt="">
                 </div>
                 <div class="conts" style="text-align:center;border-bottom:1px dashed black;">
-                    <h3><?php echo $_SESSION['fullnames'];?></h3>
+                    <h3><?php echo $_SESSION['fullnames']; ?></h3>
                     <p> <b><u>My Settings</u></b></p>
                 </div>
             </div>
             <div class="setting_s">
-                <p>Add or remove classes that the system recognizes!</p>
-                <label for="class_list">Class list: <br></label>
+                <p>Add or remove course levels that the system recognizes!</p>
+                <label for="class_list">Course Levels: <br></label>
                 <img src="images/ajax_clock_small.gif" id="class_list_clock">
-                <p id="class_holder" >
+                <p id="class_holder">
                     <!--<table style='margin:0;'>
                         <tr>
                             <th>No.</th>
@@ -36,6 +36,38 @@
                 </p>
                 <p id="add_class_err_handler"></p>
                 <button type="button" id="add_class"><i class="fas fa-plus"></i> Add Classes</button>
+            </div>
+            <div class="setting_s">
+                <p>Add or remove courses that the system recognizes!</p>
+                <label for="class_list">Course List: <br></label>
+                <img src="images/ajax_clock_small.gif" class="hide" id="course_list_clock">
+                <div id="courses_holder">
+                    <p class="text-center text-secondary">All your courses will appear here!</p>
+                    <!-- <div class="w-100 table_holder p-0">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>No.</th>
+                                    <th>Course</th>
+                                    <th>Levels Offered</th>
+                                    <th>Department</th>
+                                    <th>Options</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>1. </td>
+                                    <td>Information Technology</td>
+                                    <td>Diploma,Artisan Certificate,Entry</td>
+                                    <td>Department 1</td>
+                                    <td><span class="link remove_class mx-2" id="clmDiploma" style="font-size:12px; color:brown;"><i class="fa fa-trash"></i></span><span class="link change_classes"=="" id="change_classesDiploma" style="font-size:12px; color:brown;"><i class="fa fa-pen-fancy"></i></span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div> -->
+                </div>
+                <p id="add_course_err_handler"></p>
+                <button type="button" id="add_course"><i class="fas fa-plus"></i> Add Course</button>
             </div>
             <div class="setting_s">
                 <p>Change the time your users are allowed to use the system,<br> Its only the headteacher and the administrator allowed to use the system beyond the time set</p>

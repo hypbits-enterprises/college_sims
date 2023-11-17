@@ -134,11 +134,16 @@
                     $valued = $row['valued'];
                     $data_to_display = "<select id='my-class'><option value='' hidden>Select class..</option>";
                     if (strlen($valued)>0) {
-                        $class_list = explode(",",$valued);
+                        $valued = isJson_report($valued) ? json_decode($valued) : [];
+                        $class_list = [];
+                        for ($index=0; $index < count($valued); $index++) { 
+                            array_push($class_list,$valued[$index]->classes);
+                        }
                         if (count($class_list) > 0) {
                             for ($indez=0; $indez < count($class_list); $indez++) { 
                                 $data_to_display.="<option value='".$class_list[$indez]."'>".majinaDarasa($class_list[$indez])."</option>";
                             }
+                            $data_to_display.="<option value='others'>Others</option>";
                             $data_to_display.="</select>";
                             echo $data_to_display;
                         }else {
@@ -151,9 +156,29 @@
             }
         }elseif (isset($_GET['get_parents_list'])) {
             $get_parents_list = $_GET['get_parents_list'];
-            $select = "SELECT `first_name`,`second_name`,`adm_no` FROM `student_data` WHERE `stud_class` = ?";
+            $select = "SELECT `first_name` , `second_name`, `adm_no` FROM `student_data` WHERE `stud_class` = '$get_parents_list'";
+            if ($get_parents_list == "others") {
+                // get the whole class list
+                $select = "SELECT * FROM `settings` WHERE `sett` = 'class';";
+                $stmt = $conn2->prepare($select);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                $where_clause = "`stud_class` != '-1' AND `stud_class` != '-2'";
+                $select = "SELECT `first_name` , `second_name`, `adm_no` FROM `student_data` WHERE ";
+                if ($result) {
+                    if ($row = $result->fetch_assoc()) {
+                        $valued = $row['valued'];
+                        $valued = isJson_report($valued) ? json_decode($valued) : [];
+                        for ($index=0; $index < count($valued); $index++) { 
+                            $where_clause.=" AND `stud_class` != '".$valued[$index]->classes."'";
+                        }
+                    }
+                }
+                $select.=$where_clause;
+            }
+
+            // prepared statement
             $stmt = $conn2->prepare($select);
-            $stmt->bind_param("s",$get_parents_list);
             $stmt->execute();
             $result = $stmt->get_result();
             if ($result) {
@@ -729,7 +754,7 @@
                     $message_count = 0;
                     if ($which_parent == "both") {
                         $phone_number = $primary_parent.",".$secondary_parent;
-                        $message_count = 1;
+                        $message_count = 2;
                     }elseif ($which_parent == "primary") {
                         $phone_number = $primary_parent;
                         $message_count = 1;
@@ -740,7 +765,7 @@
                         $phone_number = $primary_parent;
                         $message_count = 1;
                     }
-                    if (checkPresnt($xeploded_data,$student_data[$index]['adm_no']) == 0) {
+                    if (checkPresnt($xeploded_data,$student_data[$index]['adm_no']) == 1) {
                         // process message
                         $message = $_GET['messages'];
                         if ($which_parent == "both") {
@@ -830,7 +855,7 @@
                             $stmt->bind_param("ssssssss",$message_count,$date,$message_count,$message_undelivered,$message_type,$message_desc,$message_count,$message2);
                             if($stmt->execute()){
                                 // echo "<p class='green_notice'>Messages sent successfully!</p>";
-                                $count +=$message_count;
+                                // $count +=$message_count;
                             }else {
                                 // echo "<p class='red_notice'>Error!</p>";
                             }
@@ -876,7 +901,7 @@
                             $stmt->bind_param("ssssssss",$message_count,$date,$message_count,$message_undelivered,$message_type,$message_desc,$message_count,$message);
                             if($stmt->execute()){
                                 // echo "<p class='green_notice'>Messages sent successfully!</p>";
-                                $count +=$message_count;
+                                // $count +=$message_count;
                             }else {
                                 // echo "<p class='red_notice'>Error!</p>";
                             }
@@ -1287,8 +1312,8 @@
                     $date_diff = date_diff($dob,$today);
                     $date_diff = $date_diff->format("%y Yr(s)");
                     $balance = number_format(getBalance($student_data[$index]['adm_no'],$term,$conn2));
-                    $fees_paid = getFeespaidByStudent($student_data[$index]['adm_no'],$conn2);
-                    $fees_to_pay = getFeesAsPerTermBoarders($term,$conn2,$student_data[$index]['stud_class'],$student_data[$index]['adm_no']);
+                    $fees_paid = number_format(getFeespaidByStudent($student_data[$index]['adm_no'],$conn2));
+                    $fees_to_pay = number_format(getFeesAsPerTermBoarders($term,$conn2,$student_data[$index]['stud_class'],$student_data[$index]['adm_no']));
                     $final_message = str_replace("{stud_age}",$date_diff,$final_message);
                     $final_message = str_replace("{stud_fees_balance}",$balance,$final_message);
                     $final_message = str_replace("{stud_fees_to_pay}",$fees_to_pay,$final_message);
@@ -1314,8 +1339,8 @@
                     $date_diff = date_diff($dob,$today);
                     $date_diff = $date_diff->format("%y Yr(s)");
                     $balance = number_format(getBalance($student_data[$index]['adm_no'],$term,$conn2));
-                    $fees_paid = getFeespaidByStudent($student_data[$index]['adm_no'],$conn2);
-                    $fees_to_pay = getFeesAsPerTermBoarders($term,$conn2,$student_data[$index]['stud_class'],$student_data[$index]['adm_no']);
+                    $fees_paid = number_format(getFeespaidByStudent($student_data[$index]['adm_no'],$conn2));
+                    $fees_to_pay = number_format(getFeesAsPerTermBoarders($term,$conn2,$student_data[$index]['stud_class'],$student_data[$index]['adm_no']));
                     $final_message = str_replace("{stud_age}",$date_diff,$final_message);
                     $final_message = str_replace("{stud_fees_balance}",$balance,$final_message);
                     $final_message = str_replace("{stud_fees_to_pay}",$fees_to_pay,$final_message);
@@ -1331,5 +1356,11 @@
             }
         }
         return $final_message;
+    }
+    function isJson_report($string)
+    {
+        return ((is_string($string) &&
+            (is_object(json_decode($string)) ||
+                is_array(json_decode($string))))) ? true : false;
     }
 ?>

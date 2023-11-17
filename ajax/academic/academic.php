@@ -10,17 +10,23 @@
             $stmt = $conn2->prepare($select);
             $stmt->execute();
             $result = $stmt->get_result();
-            $class = '';
+            $class_explode = [];
             if ($result) {
                 if ($row = $result->fetch_assoc()) {
-                      $class = $row['valued'];
+                    // retrieve class lists from the database
+                    $class = isJson_report($row['valued']) ? json_decode($row['valued']) : [];
+                    $all_classes = [];
+                    for ($index=0; $index < count($class); $index++) { 
+                        array_push($all_classes,$class[$index]->classes);
+                    }
+                    $class_explode = $all_classes;
                 }
             }
             
             $data = "<div class ='classlist form-control' style='height:100px;overflow:auto;' name='selectsubs' id='selectsubs'>";
             $xs = 0;
-            if (strlen($class)>0){
-                $arr = explode(",",$class);
+            if (count($class_explode) > 0){
+                $arr = $class_explode;
                 for ($i=0; $i < count($arr); $i++) {
                     $xs++;
                     $datas = "Class ".$arr[$i];
@@ -46,16 +52,22 @@
             $stmt = $conn2->prepare($select);
             $stmt->execute();
             $result = $stmt->get_result();
-            $class = '';
+            $class_explode = [];
             if ($result) {
                 if ($row = $result->fetch_assoc()) {
-                      $class = $row['valued'];
+                    // retrieve class lists from the database
+                    $class = isJson_report($row['valued']) ? json_decode($row['valued']) : [];
+                    $all_classes = [];
+                    for ($index=0; $index < count($class); $index++) { 
+                        array_push($all_classes,$class[$index]->classes);
+                    }
+                    $class_explode = $all_classes;
                 }
             }
             
             $data = "<div class ='classlist' style='height:200px;overflow:auto;' name='selectsubs' id='selectsubs'>";
-            if (strlen($class)>0){
-                $arr = explode(",",$class);
+            if (count($class_explode)>0){
+                $arr = $class_explode;
                 for ($i=0; $i < count($arr); $i++) {
                     $datas = "Class ".$arr[$i];
                     if (strlen($arr[$i])>1) {
@@ -170,17 +182,23 @@
             $stmt = $conn2->prepare($select);
             $stmt->execute();
             $result = $stmt->get_result();
-            $class = '';
+            $class_explode = [];
             if ($result) {
                 if ($row = $result->fetch_assoc()) {
-                      $class = $row['valued'];
+                    // retrieve class lists from the database
+                    $class = isJson_report($row['valued']) ? json_decode($row['valued']) : [];
+                    $all_classes = [];
+                    for ($index=0; $index < count($class); $index++) { 
+                        array_push($all_classes,$class[$index]->classes);
+                    }
+                    $class_explode = $all_classes;
                 }
             }
             
             
             $data = "<select id='classtaughts'> <option value='' hidden>Select..</option>";
-            if (strlen($class)>0){
-                $arr = explode(",",$class);
+            if (count($class_explode) > 0){
+                $arr = $class_explode;
                 for ($i=count($arr)-1; $i >= 0; $i--) {
                     $datas = "Class ".$arr[$i];
                     if (strlen($arr[$i])>1) {
@@ -1956,15 +1974,18 @@
                         }
                     }
                     $class_done_by_sub = "";
-                    if (count($split_sub_class) > 0 && count($split_sub_exams) > 0) {
-                        for ($index=0; $index < count($split_sub_class); $index++) { 
-                            $present = checkPresnt($split_sub_exams,trim($split_sub_class[$index]));
+                    if (count($split_sub_exams) > 0) {
+                        for ($index=0; $index < count($split_sub_exams); $index++) { 
+                            // $present = checkPresnt($split_sub_exams,trim($split_sub_class[$index]));
+                            $present = 1;
                             if ($present == 1) {
-                                $class_done_by_sub.=$split_sub_class[$index].",";
+                                $class_done_by_sub.=$split_sub_exams[$index].",";
                             }
                         }
                     }
+                    // echo json_encode($split_sub_exams);
                     $class_done_by_sub = substr($class_done_by_sub,0,strlen($class_done_by_sub)-1);
+                    // $class_done_by_sub = substr($split_sub_exams,0,strlen($split_sub_exams)-1);
                     if (strlen($class_done_by_sub) > 0) {
                         $splitclasses = explode(",",$class_done_by_sub);
                         $string_to_show = "<label class='form-control-label' for='classes_sitting'>Select class..<br></label>
@@ -1980,11 +2001,14 @@
                             $string_to_show.="<option value='".$splitclasses[$ind]."'>".$datas."</option>";
                         }
                         $string_to_show.="</select>";
+                        // echo $string_to_show;
                         if ($xs > 0) {
                             echo $string_to_show;
                         }else {
                             echo "<p style='margin-top:10px;font-size:12px;font-weight:600;color:red;'>No subject has been done!</p>";
                         }
+                    }else{
+
                     }
                 }
             }
@@ -2631,9 +2655,15 @@
             if ($result) {
                 $classinfor = "";
                 if ($row = $result->fetch_assoc()) {
-                    $classinfor = $row['valued'];
+                    // retrieve class lists from the database
+                    $class = isJson_report($row['valued']) ? json_decode($row['valued']) : [];
+                    $all_classes = [];
+                    for ($index=0; $index < count($class); $index++) { 
+                        array_push($all_classes,$class[$index]->classes);
+                    }
+                    
                     $data_to_display = "<div class='classlist'>";
-                    $classlisted = explode(",",$classinfor);
+                    $classlisted = $all_classes;
                     for($index = 0;$index<count($classlisted);$index++){
                         // $data_to_display.="";
                         $data_to_display.="<div class='checkboxholder' style='margin:10px 0;padding:0px 0px;'><label style='margin-right:5px;cursor:pointer;font-size:12px;' for='".$class_code."'>".className($classlisted[$index])."</label><input class='ttt_class' type='checkbox' name = '".$classlisted[$index]."' value = '".$class_code.",".$classlisted[$index]."' id='".$class_code."'></div>";

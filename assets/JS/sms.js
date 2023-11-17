@@ -383,9 +383,16 @@ function getStudentId() {
         }
     }
     if (units == selects.length) {
+        cObj("staff123s").indeterminate = false;
         cObj("staff123s").checked = true;
     } else {
-        cObj("staff123s").checked = false;
+        if (units > 0) {
+            cObj("staff123s").checked = false;
+            cObj("staff123s").indeterminate = true;
+        }else{
+            cObj("staff123s").checked = false;
+            cObj("staff123s").indeterminate = false;
+        }
     }
 }
 function addAdmNo(adm_no) {

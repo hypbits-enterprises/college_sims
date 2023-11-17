@@ -1182,8 +1182,11 @@
             $result = $stmt->get_result();
             if ($result) {
                 if ($row = $result->fetch_assoc()) {
-                    $classlist = $row['valued'];
-                    $exp_class = explode(",",$classlist);
+                    $classlist = isJson($row['valued']) ? json_decode($row['valued']) : [];
+                    $exp_class = [];
+                    for ($index=0; $index < count($classlist); $index++) { 
+                        array_push($exp_class,$classlist[$index]->classes);
+                    }
                     if (count($exp_class) > 0) {
                         $data_to_display = "<div class='classlist'>";
                         $xs = 0;
@@ -1232,8 +1235,11 @@
             $result = $stmt->get_result();
             if ($result) {
                 if ($row = $result->fetch_assoc()) {
-                    $classlist = $row['valued'];
-                    $exp_class = explode(",",$classlist);
+                    $classlist = isJson($row['valued']) ? json_decode($row['valued']) : [];
+                    $exp_class = [];
+                    for ($index=0; $index < count($classlist); $index++) { 
+                        array_push($exp_class,$classlist[$index]->classes);
+                    }
                     if (count($exp_class) > 0) {
                         $data_to_display = "<div class='classlist'>";
                         $xs = 0;
@@ -1241,7 +1247,7 @@
                             $xs++;
                             $data_to_display.="<div class = 'checkboxholder' style='margin:10px 0;padding:0px 0px;'>
                                                     <label style='margin-right:5px;cursor:pointer;font-size:12px;' for='cla_sse_d".$exp_class[$ind]."'>".className($exp_class[$ind])."</label>
-                                                    <input class='update_expense_check' type='checkbox' name='cla_sse_d".$xs."' id='cla_sse_d".$exp_class[$ind]."'>
+                                                    <input class='update_expense_check_rebound' type='checkbox' name='cla_sse_d".$xs."' id='cla_sse_d".$exp_class[$ind]."'>
                                                 </div>";
                         }
                         $data_to_display.="</div><p id='class_fees_ass' class='hide'>".getClassAssignFee($fees_id,$conn2)."</p>";

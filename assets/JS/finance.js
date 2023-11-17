@@ -920,12 +920,12 @@ cObj("save_add_expense1").onclick = function () {
     if (err == 0) {
         cObj("err_handler_101").innerHTML = "<p class='red_notice'></p>";
         //check if classes are selected
-        var classes = document.getElementsByClassName("update_expense_check");
+        var classes = document.getElementsByClassName("update_expense_check_rebound");
         var checker = 0;
         var class_list = "";
         for (let index = 0; index < classes.length; index++) {
             const element = classes[index];
-            if (element.checked == true) {
+            if (element.checked) {
                 checker++;
                 class_list += "|" + element.id.substr(9) + "|,";
             }

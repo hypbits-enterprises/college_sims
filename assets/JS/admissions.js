@@ -545,6 +545,7 @@ cObj("set_btns").onclick = function () {
     working_days();
     getPaymentOptions();
     displayExpCategories();
+    get_courses();
 }
 
 if (typeof (cObj("callrollcall")) != 'undefined' && cObj("callrollcall") != null) {
@@ -985,8 +986,8 @@ window.onload = function () {
 
 
     //get essentials
-    var datapas = "?getessentials=true";
-    sendData("GET", "administration/admissions.php", datapas, cObj("admissionessentials"));
+    var datapass = "?getessentials=true";
+    sendData("GET", "administration/admissions.php", datapass, cObj("admissionessentials"));
     var userid = cObj("authoriti").value;
     createTimetabe(userid);
     if (userid == 5) {
@@ -3912,6 +3913,7 @@ cObj("accept_class_change").onclick = function () {
 
 function arrangeClasses() {
     var datapass = "?arrange_class=true&class_index=" + this.value;
+    // console.log(datapass);
     sendData2("GET", "administration/admissions.php", datapass, cObj("add_class_err_handler"), cObj("class_list_clock"));
     setTimeout(() => {
         var timeout = 0;
@@ -8555,4 +8557,307 @@ function selectStudentSubjects() {
 
 cObj("back_to_teacher_data").onclick = function () {
     cObj("managetrnsub").click();
+}
+
+// add the courses
+cObj("add_course").onclick = function () {
+    cObj("add_course_window").classList.remove("hide");
+    // get the courses levels
+    var datapass = "?get_courses=true";
+    cObj("level_available_course_name").innerHTML = "";
+    cObj("level_available_course_name").innerText = "";
+    sendData2("GET","administration/admissions.php",datapass,cObj("level_available_course_name"),cObj("add_course_clock"));
+    
+    // department id
+    var datapass = "?get_departments_course_reg=true&dept_id=department_id";
+    sendData2("GET","administration/admissions.php",datapass,cObj("department_list_window"),cObj("display_my_departments"));
+}
+cObj("close_add_course_window").onclick = function () {
+    cObj("add_course_window").classList.add("hide");
+}
+cObj("close_add_course_win").onclick = function () {
+    cObj("add_course_window").classList.add("hide");
+}
+
+
+// add the course material
+cObj("add_course_btn").onclick = function () {
+    var err = checkBlank("course_input_text");
+    cObj("add_course_outputtxt").innerHTML = "";
+    if (err == 0) {
+        // check if there is any checkbox checked
+        var course_level = document.getElementsByClassName("course_level");
+        let counter = 0;
+        var course_levels = [];
+        for (let index = 0; index < course_level.length; index++) {
+            const element = course_level[index];
+            if (element.checked == true) {
+                counter++;
+                course_levels.push(element.value);
+            }
+        }
+
+        if (counter > 0) {
+            // proceed and save the course levels
+            var dept_name = valObj("department_id");
+            var datapass = "?add_course=true&course_name="+valObj("course_input_text")+"&course_levels="+JSON.stringify(course_levels)+"&department_name="+dept_name;
+            sendData2("GET","administration/admissions.php",datapass, cObj("add_course_outputtxt"), cObj("add_course_clock"));
+            setTimeout(() => {
+                var timeout = 0;
+                var ids = setInterval(() => {
+                    timeout++;
+                    //after two minutes of slow connection the next process wont be executed
+                    if (timeout == 1200) {
+                        stopInterval(ids);
+                    }
+                    if (cObj("add_course_clock").classList.contains("hide")) {
+                        setTimeout(() => {
+                            cObj("close_add_course_window").click();
+                            cObj('course_input_text').value = "";
+                            var course_level = document.getElementsByClassName("course_level");
+                            for (let index = 0; index < course_level.length; index++) {
+                                const element = course_level[index];
+                                element.checked = false;
+                            }
+                            cObj("add_course_outputtxt").innerHTML = "";
+
+                            // show the courses
+                            get_courses();
+                        }, 1000);
+                        // stop
+                        stopInterval(ids);
+                    }
+                }, 100);
+            }, 100);
+        }else{
+            cObj("add_course_outputtxt").innerHTML = "<p class='text-danger'>Select atleast one course level to proceed!</p>";
+        }
+    }else{
+        cObj("add_course_outputtxt").innerHTML = "<p class='text-danger'>Provide the course name to proceed!</p>";
+    }
+}
+
+cObj("Edit_course_btn").onclick = function () {
+    var err = checkBlank("course_edit_input_text");
+    cObj("edit_course_outputtxt").innerHTML = "";
+    if (err == 0) {
+        // check if there is any checkbox checked
+        var course_level = document.getElementsByClassName("course_level_edit");
+        let counter = 0;
+        var course_levels = [];
+        for (let index = 0; index < course_level.length; index++) {
+            const element = course_level[index];
+            if (element.checked == true) {
+                counter++;
+                course_levels.push(element.value);
+            }
+        }
+
+        if (counter > 0) {
+            // proceed and save the course levels
+            var dept_name = valObj("department_id_edit");
+            var datapass = "?edit_course=true&course_name="+valObj("course_edit_input_text")+"&course_levels="+JSON.stringify(course_levels)+"&department_name="+dept_name+"&course_id="+valObj("course_id_holder");
+            sendData2("GET","administration/admissions.php",datapass, cObj("edit_course_outputtxt"), cObj("edit_course_clock"));
+            setTimeout(() => {
+                var timeout = 0;
+                var ids = setInterval(() => {
+                    timeout++;
+                    //after two minutes of slow connection the next process wont be executed
+                    if (timeout == 1200) {
+                        stopInterval(ids);
+                    }
+                    if (cObj("edit_course_clock").classList.contains("hide")) {
+                        setTimeout(() => {
+                            cObj("close_Edit_course_window").click();
+                            cObj('course_edit_input_text').value = "";
+                            var course_level = document.getElementsByClassName("course_level_edit");
+                            for (let index = 0; index < course_level.length; index++) {
+                                const element = course_level[index];
+                                element.checked = false;
+                            }
+                            cObj("edit_course_outputtxt").innerHTML = "";
+
+                            // show the courses
+                            get_courses();
+                        }, 1000);
+                        // stop
+                        stopInterval(ids);
+                    }
+                }, 100);
+            }, 100);
+        }else{
+            cObj("edit_course_outputtxt").innerHTML = "<p class='text-danger'>Select atleast one course level to proceed!</p>";
+        }
+    }else{
+        cObj("edit_course_outputtxt").innerHTML = "<p class='text-danger'>Provide the course name to proceed!</p>";
+    }
+}
+
+function get_courses() {
+    var datapass = "?get_courses_list=true";
+    sendData2("GET","administration/admissions.php",datapass,cObj("courses_holder"),cObj("course_list_clock"));
+    setTimeout(() => {
+        var timeout = 0;
+        var ids = setInterval(() => {
+            timeout++;
+            //after two minutes of slow connection the next process wont be executed
+            if (timeout == 1200) {
+                stopInterval(ids);
+            }
+            if (cObj("course_list_clock").classList.contains("hide")) {
+                var edit_courses = document.getElementsByClassName("edit_courses");
+                for (let index = 0; index < edit_courses.length; index++) {
+                    const element = edit_courses[index];
+                    element.addEventListener("click",editCourses);
+                }
+
+                // delete the course
+                var remove_course = document.getElementsByClassName("remove_course");
+                for (let index = 0; index < remove_course.length; index++) {
+                    const element = remove_course[index];
+                    element.addEventListener("click",deleteCourse);
+                }
+                // stop
+                stopInterval(ids);
+            }
+        }, 100);
+    }, 100);
+}
+
+function deleteCourse() {
+    var this_id = this.id.substr(14);
+    var course_data = valObj("hidden_value_courses_"+this_id);
+
+    // change the course data
+    if (hasJsonStructure(course_data)){
+        course_data = JSON.parse(course_data);
+
+        // display the confirmation window.
+        cObj("delete_course_parmenently").classList.remove("hide");
+        cObj("course_name_placeholder").innerText = course_data.course_name;
+
+        // store the course id
+        cObj("course_id_holder_delete").value = course_data.id;
+    }
+}
+
+cObj("no_delete_permanently_course").onclick = function () {
+    cObj("delete_course_parmenently").classList.add("hide");
+}
+
+// 
+cObj("yes_delete_permanently_course").onclick = function () {
+    var datapass = "?delete_course=true&course_id="+valObj("course_id_holder_delete");
+    sendData2("GET","administration/admissions.php",datapass,cObj("error_handler_course_del"), cObj("delete_course_pamernently"));
+    setTimeout(() => {
+        var timeout = 0;
+        var ids = setInterval(() => {
+            timeout++;
+            //after two minutes of slow connection the next process wont be executed
+            if (timeout == 1200) {
+                stopInterval(ids);
+            }
+            if (cObj("delete_course_pamernently").classList.contains("hide")) {
+                setTimeout(() => {
+                    cObj("no_delete_permanently_course").click();
+                    cObj("error_handler_course_del").innerHTML = "";
+
+                    // show the courses
+                    get_courses();
+                }, 1000);
+                // stop
+                stopInterval(ids);
+            }
+        }, 100);
+    }, 100);
+}
+
+
+function editCourses() {
+    var this_id = this.id.substr(12);
+    var course_data = valObj("hidden_value_courses_"+this_id);
+
+    // change the course data
+    if (hasJsonStructure(course_data)) {
+        course_data = JSON.parse(course_data);
+        cObj("edit_course_window").classList.remove("hide");
+
+        // set course name
+        cObj("course_edit_input_text").value = course_data.course_name;
+        cObj("course_id_holder").value = course_data.id;
+
+
+        // get the levels
+        // get the courses levels
+        var datapass = "?get_courses_edit=true";
+        cObj("level_available_course_name_edit").innerHTML = "";
+        sendData2("GET","administration/admissions.php",datapass,cObj("level_available_course_name_edit"),cObj("edit_course_clock"));
+        setTimeout(() => {
+            var timeout = 0;
+            var ids = setInterval(() => {
+                timeout++;
+                //after two minutes of slow connection the next process wont be executed
+                if (timeout == 1200) {
+                    stopInterval(ids);
+                }
+                if (cObj("edit_course_clock").classList.contains("hide")) {
+                    // loop through the checkboxes
+                    var leave_data = document.getElementsByClassName("course_level_edit");
+                    for (let index = 0; index < leave_data.length; index++) {
+                        const element = leave_data[index];
+                        var course_levels = hasJsonStructure(course_data.course_levels) ? JSON.parse(course_data.course_levels) : [];
+                        
+                        // loop through to get the data
+                        for (let ind = 0; ind < course_levels.length; ind++) {
+                            const elem = course_levels[ind];
+                            if (element.value == elem) {
+                                element.checked = true;
+                                break;
+                            }
+                        }
+                    }
+                    // stop
+                    stopInterval(ids);
+                }
+            }, 100);
+        }, 100);
+
+        // get the department details
+        // department id
+        var datapass = "?get_departments_course_reg=true&dept_id=department_id_edit";
+        sendData2("GET","administration/admissions.php",datapass,cObj("department_list_window_edit"),cObj("display_my_departments_edit"));
+        setTimeout(() => {
+            var timeout = 0;
+            var ids = setInterval(() => {
+                timeout++;
+                //after two minutes of slow connection the next process wont be executed
+                if (timeout == 1200) {
+                    stopInterval(ids);
+                }
+                if (cObj("display_my_departments_edit").classList.contains("hide")) {
+                    // stop
+                    var children = cObj("department_id_edit").children;
+                    for (let index = 0; index < children.length; index++) {
+                        const element = children[index];
+                        if (element.value == course_data.department) {
+                            element.selected = true;
+                            break;
+                        }
+                    }
+                    stopInterval(ids);
+                }
+            }, 100);
+        }, 100);
+
+    }else{
+
+    }
+}
+
+
+cObj("close_Edit_course_window").onclick = function () {
+    cObj("edit_course_window").classList.add("hide");
+}
+cObj("close_edit_course_win").onclick = function () {
+    cObj("edit_course_window").classList.add("hide");
 }
