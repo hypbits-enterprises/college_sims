@@ -12,6 +12,22 @@ cObj("admitbtn").onclick = function () {
     //get the classes from the database for the admissions window
     getClasses("class_admission", "errolment", "");
     getLastAdm();
+
+    // get the departments
+    getDepartmentsList();
+}
+
+function getDepartmentsList() {
+    // get the departments
+    var datapass = "?get_departments=true";
+    sendData2("GET","administration/admissions.php",datapass,cObj("admit_department"),cObj("department_all_loader"));
+}
+
+function getCourseList(course_level) {
+    // get the course lists
+    var datapass = "?get_course_list=true&course_level="+course_level;
+    sendData2("GET","administration/admissions.php",datapass,cObj("course_list_holder"),cObj("course_list_loader"));
+    
 }
 cObj("pleasewaiting").onclick = function () {
     //removePleasewait();
@@ -19,7 +35,35 @@ cObj("pleasewaiting").onclick = function () {
 function getClasses(object_id, select_class_id, value_prefix, obj = null) {
     var datapass = "?getclass=true&select_class_id=" + select_class_id + "&value_prefix=" + value_prefix;
     obj == null ? sendData1("GET", "administration/admissions.php", datapass, cObj(object_id)) : sendData2("GET", "administration/admissions.php", datapass, cObj(object_id), cObj(obj));
+    if (select_class_id == "errolment") {
+        setTimeout(() => {
+            var timeout = 0;
+            var ids = setInterval(() => {
+                timeout++;
+                //after two minutes of slow connection the next process wont be executed
+                if (timeout == 1200) {
+                    stopInterval(ids);
+                }
+                var loader = obj == null ? cObj("loadings") : obj;
+                if (loader.classList.contains("hide")) {
+                    if (cObj("errolment")!=undefined) {
+                        cObj("errolment").addEventListener("change", select_courses);
+                    }
+                    // stop
+                    stopInterval(ids);
+                }
+            }, 100);
+        }, 100);
+    }
 }
+
+// select courses
+function select_courses() {
+    // get the course list
+    // console.log(this.value);
+    getCourseList(this.value);
+}
+
 function getLastAdm() {
     var datapass = "?last_admno_used=true";
     sendData2("GET", "administration/admissions.php", datapass, cObj("last_admno_holder"), cObj("load_admno"));
@@ -3176,70 +3220,79 @@ cObj("paymode").onchange = function () {
 cObj("resetadmitform").onclick = function () {
     cObj("admitform").reset();
 }
+
+// submit the button
 cObj("submitbtn").onclick = function () {
     //check for any blank field
     let errors = checkAdmission();
     if (errors == 0 && presentBCNO == false) {
-        if (typeof (cObj("errolment")) != 'undefined' && cObj("errolment") != null) {
-            //proceed and upload the data
-            cObj("erroradm").innerHTML = "<p style='color:green;font-size:14px;'>Good to go!</p>";
-            //GET VALUES
-            var surname = valObj('surname');
-            var fname = valObj('fname');
-            var sname = valObj('sname');
-            var dob = valObj('dob');
-            var gender = valObj('gender');
-            var errolment = valObj('errolment');
-            var parname = valObj('parname');
-            var parconts = valObj('parconts');
-            var parrelation = valObj('parrelation');
-            var pemail = valObj('pemail');
-
-            var parname2 = valObj('parname2');
-            var parconts2 = valObj('parconts2');
-            var parrelation2 = valObj('parrelation2');
-            var pemail2 = valObj('pemail2');
-
-            var bcno = valObj('bcno');
-            var address = valObj('address');
-            var upis = valObj("upis");
-            var last_year_academic_balance = valObj("last_year_academic_balance");
-            var admno = "";
-            if (valObj("automated_amd") == "insertmanually") {
-                admno = cObj("mangen").value;
-            }
-            if (valObj("automated_amd") == "automate_adm") {
-                admno = cObj("autogen").value;
-            }
-
-            var parent_accupation1 = valObj("parent_accupation1").trim().length > 0 ? valObj("parent_accupation1").trim() : "none";
-            var parent_accupation2 = valObj("parent_accupation2").trim().length > 0 ? valObj("parent_accupation2").trim() : "none";
-
-            var datapass = "?admit=true&surname=" + surname + "&fname=" + fname + "&sname=" + sname + "&dob=" + dob + "&gender=" + gender + "&enrolment=" + errolment + "&parentname=" + parname + "&parentconts=" + parconts + "&upis=" + upis;
-            datapass += "&parentrela=" + parrelation + "&pemail=" + pemail + "&bcno=" + bcno + "&address=" + address + "&admnos=" + admno;
-            datapass += "&parentrela2=" + parrelation2 + "&pemail2=" + pemail2 + "&parentname2=" + parname2 + "&parentconts2=" + parconts2;
-            datapass += "&parent_accupation1=" + parent_accupation1 + "&parent_accupation2=" + parent_accupation2 + "&last_year_academic_balance=" + last_year_academic_balance;
-            sendData1("GET", "administration/admissions.php", datapass, cObj("erroradm"));
-            setTimeout(() => {
-                var ids = setInterval(() => {
-                    if (cObj("loadings").classList.contains("hide")) {
-                        if (cObj("admnohold") != null) {
-                            var admnos = valObj("admnohold");
-                            var names = valObj("namehold");
-                            cObj("admissionno").innerText = admno;
-                            cObj("studname").innerText = names;
-                            cObj("admitform").reset();
-                            //bring the complete admission window
-                            hideWindow();
-                            cObj("completeadmission").classList.remove("hide");
-                            getClubsNSports();
+        if (cObj("course_chosen") != undefined && cObj("department_options") != undefined) {
+            if (typeof (cObj("errolment")) != 'undefined' && cObj("errolment") != null) {
+                //proceed and upload the data
+                cObj("erroradm").innerHTML = "<p style='color:green;font-size:14px;'>Good to go!</p>";
+                //GET VALUES
+                var surname = valObj('surname');
+                var fname = valObj('fname');
+                var sname = valObj('sname');
+                var dob = valObj('dob');
+                var gender = valObj('gender');
+                var errolment = valObj('errolment');
+                var parname = valObj('parname');
+                var parconts = valObj('parconts');
+                var parrelation = valObj('parrelation');
+                var pemail = valObj('pemail');
+                var course_chosen = valObj("course_chosen");
+                var department_options = valObj("department_options");
+    
+                var parname2 = valObj('parname2');
+                var parconts2 = valObj('parconts2');
+                var parrelation2 = valObj('parrelation2');
+                var pemail2 = valObj('pemail2');
+    
+                var bcno = valObj('bcno');
+                var address = valObj('address');
+                var upis = valObj("upis");
+                var last_year_academic_balance = valObj("last_year_academic_balance");
+                var admno = "";
+                if (valObj("automated_amd") == "insertmanually") {
+                    admno = cObj("mangen").value;
+                }
+                if (valObj("automated_amd") == "automate_adm") {
+                    admno = cObj("autogen").value;
+                }
+    
+                var parent_accupation1 = valObj("parent_accupation1").trim().length > 0 ? valObj("parent_accupation1").trim() : "none";
+                var parent_accupation2 = valObj("parent_accupation2").trim().length > 0 ? valObj("parent_accupation2").trim() : "none";
+    
+                var datapass = "admit=true&surname=" + surname + "&fname=" + fname + "&sname=" + sname + "&dob=" + dob + "&gender=" + gender + "&enrolment=" + errolment + "&parentname=" + parname + "&parentconts=" + parconts + "&upis=" + upis;
+                datapass += "&parentrela=" + parrelation + "&pemail=" + pemail + "&bcno=" + bcno + "&address=" + address + "&admnos=" + admno;
+                datapass += "&parentrela2=" + parrelation2 + "&pemail2=" + pemail2 + "&parentname2=" + parname2 + "&parentconts2=" + parconts2;
+                datapass += "&parent_accupation1=" + parent_accupation1 + "&parent_accupation2=" + parent_accupation2 + "&last_year_academic_balance=" + last_year_academic_balance;
+                datapass += "&course_chosen="+course_chosen+"&department_options="+department_options;
+                sendDataPost("POST", "ajax/administration/admissions.php", datapass, cObj("erroradm"),cObj("loadings"));
+                setTimeout(() => {
+                    var ids = setInterval(() => {
+                        if (cObj("loadings").classList.contains("hide")) {
+                            if (cObj("admnohold") != null) {
+                                var admnos = valObj("admnohold");
+                                var names = valObj("namehold");
+                                cObj("admissionno").innerText = admno;
+                                cObj("studname").innerText = names;
+                                cObj("admitform").reset();
+                                //bring the complete admission window
+                                hideWindow();
+                                cObj("completeadmission").classList.remove("hide");
+                                getClubsNSports();
+                            }
+                            stopInterval(ids);
                         }
-                        stopInterval(ids);
-                    }
-                }, 100);
-            }, 200);
-        } else {
-            cObj("erroradm").innerHTML = "<p style='color:red;font-size:14px;'><strong>Errors</strong><br>No class selected!</p>";
+                    }, 100);
+                }, 200);
+            } else {
+                cObj("erroradm").innerHTML = "<p style='color:red;font-size:14px;'><strong>Errors</strong><br>No class selected!</p>";
+            }
+        }else{
+            cObj("erroradm").innerHTML = "<p style='color:red;font-size:14px;'><strong>Errors</strong><br>Courses offered or Department list are not configured, Kindly set them up to proceed!</p>";
         }
     } else {
         cObj("erroradm").innerHTML = "<p style='color:red;font-size:14px;'><strong>Errors</strong><br>Please fill all the fields with the red border and read their instructions correctly</p>";
@@ -3290,6 +3343,8 @@ function checkAdmission() {
     if (cObj("admgenman").innerText.length > 0) {
         err++;
     }
+
+    // continue with the course enrollment
     return err;
 }
 function assignsubjectsbtn() {

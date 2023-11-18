@@ -280,6 +280,24 @@
             }else {
                 
             }
+        }elseif (isset($_GET['get_departments'])) {
+            $select = "SELECT * FROM `settings` WHERE `sett` = 'departments'";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $data_to_display = "<select class='form-control' id='department_options'><option hidden>Select the department!</option>";
+            if($result){
+                if($row = $result->fetch_assoc()){
+                    $valued = isJson_report($row['valued']) ? json_decode($row['valued']) : [];
+
+                    // loop
+                    for ($index=0; $index < count($valued); $index++) { 
+                        $data_to_display.="<option value='".$valued[$index]->code."'>".$valued[$index]->name."</option>";
+                    }
+                }
+            }
+            $data_to_display.="</select>";
+            echo $data_to_display;
         }elseif (isset($_GET['find'])) {
             if(isset($_GET['bynametype'])){
                 $name = "%".$_GET['bynametype']."%";
@@ -3787,6 +3805,67 @@
             }else {
                 echo "<p class='text-danger border border-danger p-2'>No classes to display at the moment, Contact your administrator to set them up!</p>";
             }
+        }elseif(isset($_GET['get_course_list'])){
+            $course_level = $_GET['course_level'];
+            
+            // get the course levels
+            $select = "SELECT * FROM `settings` WHERE `sett` = 'class'";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+
+            // course levels
+            $course_levels = [];
+            $result = $stmt->get_result();
+            if($result){
+                if($row = $result->fetch_assoc()){
+                    $course_levels = isJson_report($row['valued']) ? json_decode($row['valued']) : [];
+                }
+            }
+
+            // get the selected course id
+            $course_id = null;
+            for($index = 0; $index < count($course_levels); $index++){
+                if($course_levels[$index]->classes == $course_level){
+                    $course_id = $course_levels[$index]->id;
+                    break;
+                }
+            }
+            
+            // get the courses
+            $select = "SELECT * FROM `settings` WHERE `sett` = 'courses'";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $select = "<select class='form-control' id='course_chosen'><option hidden value=''>Select Courses!</option>";
+            if ($result) {
+                if($row = $result->fetch_assoc()){
+                    $valued = isJson_report($row['valued']) ? json_decode($row['valued']) : [];
+                    
+                    // check if the course is present in the level selected
+                    for($index = 0; $index < count($valued); $index++){
+                        // loop through course levels
+                        $course_levels = isJson_report($valued[$index]->course_levels) ? json_decode($valued[$index]->course_levels) : [];
+                        
+                        // add course flag after looping through the course levele the course is offered
+                        $proceed = false;
+                        for ($ind=0; $ind < count($course_levels); $ind++) { 
+                            if($course_levels[$ind] == $course_id){
+                                $proceed = true;
+                                break;
+                            }
+                        }
+
+                        // proceed!
+                        if($proceed){
+                            $select .= "<option value='".$valued[$index]->id."'>".$valued[$index]->course_name."</option>";
+                        }
+                    }
+                }
+            }
+            $select .= "</select>";
+
+            // select statement
+            echo $select;
         }elseif (isset($_GET['get_terms_date'])) {
             $select = "SELECT * FROM `academic_calendar`";
             $stmt = $conn2->prepare($select);
@@ -4304,7 +4383,102 @@
         include("../../connections/conn1.php");
         include("../../connections/conn2.php");
         // DELETE THE STUDENT
-        if (isset($_POST['delete_student'])) {
+        if(isset($_POST['admit'])){
+            // echo $_POST['surname'];
+            $suname = $_POST['surname'];
+            $fname = $_POST['fname'];
+            $sname = $_POST['sname'];
+            $dob = $_POST['dob'];
+            $gender = $_POST['gender'];
+            $classenrol = $_POST['enrolment'];
+            $parentname = $_POST['parentname'];
+            $parentcontact = $_POST['parentconts'];
+            $parentrelation = $_POST['parentrela'];
+            $course_chosen = $_POST["course_chosen"];
+            $department_options = $_POST['department_options'];
+ 
+            $parentname2 = $_POST['parentname2'];
+            $parentcontact2 = $_POST['parentconts2'];
+            $parentrelation2 = $_POST['parentrela2'];
+            $pmail2 = $_POST['pemail2'];
+ 
+            if (strlen($parentname2) < 1) {
+                $parentname2 = "none";
+            }
+            if (strlen($parentcontact2) < 1) {
+                $parentcontact2 = "none";
+            }
+            if (strlen($parentrelation2) < 1) {
+                $parentrelation2 = "none";
+            }
+            if (strlen($pmail2) < 1) {
+                $pmail2 = "none";
+            }
+ 
+            $admno = $_POST['admnos'];
+            $upis = $_POST['upis'];
+            $bcno = 0;
+            if(isset($_POST['bcno'])){
+                $bcno = $_POST['bcno'];
+            }
+                $parentemail = 'none';
+            if(isset($_POST['pemail'])){
+                $parentemail = $_POST['pemail'];
+            }
+            
+                $address = 0;
+            if(isset($_POST['address'])){
+                $address = $_POST['address'];
+            }
+            $parent_accupation1 = $_POST['parent_accupation1'];
+            $parent_accupation2 = $_POST['parent_accupation2'];
+
+            $doa = date("Y-m-d");
+            $insert = "INSERT INTO `student_data` (`surname`,`adm_no`,`first_name`,`second_name`,`student_upi`,`D_O_B`,`gender`,`stud_class`,`D_O_A`,`parentName`,`parentContacts`,`parent_relation`,`parent_email`,`parent_name2`,`parent_contact2`,`parent_relation2`,`parent_email2`,`address`,`BCNo`,`primary_parent_occupation`,`secondary_parent_occupation`,`course_done`,`department`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+            $stmt = $conn2->prepare($insert);
+            $stmt->bind_param("sssssssssssssssssssssss",$suname,$admno,$fname,$sname,$upis,$dob,$gender,$classenrol,$doa,$parentname,$parentcontact,$parentrelation,$parentemail,$parentname2,$parentcontact2,$parentrelation2,$pmail2,$address,$bcno,$parent_accupation1,$parent_accupation2,$course_chosen,$department_options);
+            if($stmt->execute()){
+                $data = "<p style ='color:green;font-size:12px;'>".$fname." ".$sname." has been admitted successfully<br>Use their admission number to search their information</p>";
+                $stmt->close();
+                $select = "SELECT `surname`,`first_name`,`second_name`,`adm_no` FROM `student_data` order by `ids` DESC LIMIT 1";
+                $stmt = $conn2->prepare($select);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                $admissionNumber = 0;
+                if($result){
+                    if($row=$result->fetch_assoc()){
+                        $admissionNumber = $row['adm_no'];
+                        $name = $row['first_name']." ".$row['second_name'];
+                    }
+                    //insert the notification to the database 
+                    $notice_stat = 0;
+                    $reciever_id = "all";
+                    $reciever_auth = 1;
+                    $messageName = "Admission of <b>".$fname." ".$sname."</b> in class: <b>".$classenrol."</b> was successfull";
+                    $messagecontent = "<b>".$fname." ".$sname."</b> has been successfully admitted to class: ".$classenrol."";
+                    $sender_ids = "Administration System";
+                    insertNotice($conn2,$messageName,$messagecontent,$notice_stat,$reciever_id,$reciever_auth,$sender_ids);
+                    $classtrid = getClassTeacher($conn2,$classenrol);
+                    if ($classtrid != "Null") {
+                        //insert the notification to the database 
+                        $notice_stat = 0;
+                        $reciever_id = $classtrid;
+                        $reciever_auth = 5;
+                        $messageName = "Admission of <b>".$fname." ".$sname."</b> in your class was successfull";
+                        $messagecontent = "<b>".$fname." ".$sname."</b> has been successfully admitted to class: <b>".$classenrol."</b>";
+                        insertNotice($conn2,$messageName,$messagecontent,$notice_stat,$reciever_id,$reciever_auth,$sender_ids);
+                    }
+                    $data.= "<input type='text' id='admnohold' value=".$admissionNumber." hidden> <input type='text' id='namehold' value='".$name."' hidden>";
+                    echo $data;
+                }else {
+                    echo "Search for the latest students to see their admission number";
+                }
+            }else{
+                echo "<p style ='color:red;font-size:12px;'>Student data not submitted<br>There seem to be an error please try again later</p>";
+            }
+            $stmt->close();
+            $conn2->close();
+        }elseif (isset($_POST['delete_student'])) {
             $std_id = $_POST['delete_student'];
             $delete = "DELETE FROM `student_data` WHERE `adm_no` = ?";
             $stmt = $conn2->prepare($delete);
@@ -5929,13 +6103,37 @@ function isJson_report($string) {
             $data.="<th>Adm no.</th>";
             //$data.="<th>BC no.</th>";
             $data.="<th>Gender</th>";
-            $data.="<th>Amount Paid</th>";
-            $data.="<th>Balance</th>";
-            $data.="<th>Class</th>";
-            $data.="<th>Sporthouses/Clubs</th>";
+            $data.="<th>Fees Balance</th>";
+            $data.="<th>Department</th>";
+            $data.="<th>Level</th>";
+            $data.="<th>Courses</th>";
             $data.="<th>Option</th></tr>";
             include("../finance/financial.php");
-            while($row=$result->fetch_assoc()){
+
+            // courses
+            $select = "SELECT * FROM `settings` WHERE `sett` = 'courses'";
+            $statement = $conn2->prepare($select);
+            $statement->execute();
+            $res = $statement->get_result();
+            $valued = [];
+            if($res){
+                if($row = $res->fetch_assoc()){
+                    $valued = isJson_report($row['valued']) ? json_decode($row['valued']) : [];
+                }
+            }
+            
+            // clients
+
+            while($row = $result->fetch_assoc()){
+                // setting
+                $course_name = "N/A";
+                for ($index=0; $index < count($valued); $index++) { 
+                    if($valued[$index]->id == $row['course_done']){
+                        $course_name = $valued[$index]->course_name;
+                        break;
+                    }
+                }
+
                 // echo json_encode($row);
                 $xs++;
                 $data.="<tr class='search_this_main' id='search_this_main".($xs)."'><td>".($xs)."</td>";
@@ -5947,10 +6145,11 @@ function isJson_report($string) {
                 $classes = classNameAdms($row['stud_class']);
                 $fees_paid = getFeespaidByStudentAdm($row['adm_no']);
                 $balance = getBalanceAdm($row['adm_no'],getTerm(),$conn2);
-                $data.="<td>Kes ".number_format($fees_paid)."</td>";
+                // $data.="<td>Kes ".number_format($fees_paid)."</td>";
                 $data.="<td>Kes ".number_format($balance)."</td>";
-                $data.="<td>".$classes."</td>";
                 $data.="<td class='search_this' id='thr".($xs)."'>".ucwords(strtolower(getSportHouses($conn2,$row['clubs_id'])))."</td>";
+                $data.="<td class='search_this'>".$classes."</td>";
+                $data.="<td class='search_this' id='cse_name".($xs)."' >".$course_name."</td>";
                 $data.="<td>"."<p style='display:flex;'><span style='font-size:12px;' class='link view_students' id='view".$row['adm_no']."'><i class='fa fa-eye'></i> View </span>"."</td></tr>";
             }
             $data.="</table></div>";

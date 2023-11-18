@@ -1749,7 +1749,7 @@ function examSelection() {
             }
         }, 100);
     }, 200);
-}get_subject_class
+}
 function classSelection() {
     cObj("class_sitters").classList.add("hide");
     cObj("display_results").classList.add("hide");
