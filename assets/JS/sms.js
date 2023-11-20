@@ -475,7 +475,7 @@ cObj("send_msg_btns").onclick = function () {
                         checker++;
                     }
                 }
-                if (checker != selected_staff.length) {
+                if (checker > 0) {
                     cObj("err_hands_error").innerHTML = "<p class= 'red_notice'></p>";
                     data = data.substr(0, data.length - 1);
                     var datapass = "?tr_ids_excempt=" + data + "&messages=" + valObj("text_message2");
@@ -493,6 +493,7 @@ cObj("send_msg_btns").onclick = function () {
                                     cObj("err_hands_error").innerText = "";
                                     //cObj("parents_lists_nm").classList.add("hide");
                                     //cObj("cl_list_msg").classList.add("hide");
+                                    cObj("message_samples").innerHTML = "";
                                     cObj("text_message2").value = "";
                                 }, 10000);
                                 stopInterval(id23w);
@@ -500,7 +501,7 @@ cObj("send_msg_btns").onclick = function () {
                         }, 100);
                     }, 200);
                 } else {
-                    cObj("err_hands_error").innerHTML = "<p class= 'red_notice'>Not all your staff should be excepmted</p>";
+                    cObj("err_hands_error").innerHTML = "<p class= 'red_notice'>Select atleast one staff to send a message!</p>";
                 }
             } else if (selection == "parents") {
                 var err = checkBlank("send_to_whom");
@@ -539,10 +540,10 @@ cObj("send_msg_btns").onclick = function () {
                         checker++;
                     }
                 }
-                if (checker != selected_staff.length) {
+                if (checker > 0) {
                     cObj("err_hands_error").innerHTML = "<p class= 'red_notice'></p>";
                     data = data.substr(0, data.length - 1);
-                    var datapass = "?tr_ids_excempt_emails=" + data + "&messages=" + escape(tinymce.get("email_editored").getContent()) + "&email_subject=" + valObj("email_bulk_subject") + "&email_cc=" + valObj("cc_email_bulk") + "&email_bcc=" + valObj("bcc_email_bulk");
+                    var datapass = "?teacher_sms_id_group=" + data + "&messages=" + escape(tinymce.get("email_editored").getContent()) + "&email_subject=" + valObj("email_bulk_subject") + "&email_cc=" + valObj("cc_email_bulk") + "&email_bcc=" + valObj("bcc_email_bulk");
                     // console.log(datapass);
                     sendData1("GET", "sms/sms.php", datapass, cObj("err_hands_error"));
                     setTimeout(() => {
@@ -559,14 +560,14 @@ cObj("send_msg_btns").onclick = function () {
                                     cObj("err_hands_error").innerText = "";
                                     //cObj("parents_lists_nm").classList.add("hide");
                                     //cObj("cl_list_msg").classList.add("hide");
-                                    cObj("message_samples").innerHTML = my_message;
+                                    cObj("message_samples").innerHTML = "";
                                 }, 10000);
                                 stopInterval(id23w);
                             }
                         }, 100);
                     }, 200);
                 } else {
-                    cObj("err_hands_error").innerHTML = "<p class= 'red_notice'>Not all your staff should be excepmted</p>";
+                    cObj("err_hands_error").innerHTML = "<p class= 'red_notice'>Select atleast one staff so that you can send the email!</p>";
                 }
             } else if (selection == "parents") {
                 var err = checkBlank("send_to_whom");

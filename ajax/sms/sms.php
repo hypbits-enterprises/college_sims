@@ -113,8 +113,8 @@
                     $xs++;
                     $data_to_display.="<div class='staff_dets'>
                                         <label style='font-size:12px;'>".$xs.".</label>
-                                        <label for='p".$row['phone_number']."' style='font-size:12px;'>".ucwords($row['fullname'])."</label>
-                                        <input type='checkbox' class='snamesd112e' name='p".$row['phone_number']."' id='p".$row['phone_number']."'>
+                                        <label for='p".$row['user_id']."' style='font-size:12px;'>".ucwords($row['fullname'])."</label>
+                                        <input type='checkbox' class='snamesd112e' name='p".$row['user_id']."' id='p".$row['user_id']."'>
                                     </div>";
                 }
                 $data_to_display.="</div>";
@@ -228,23 +228,29 @@
             }else {
                 echo 0;
             }
-        }elseif (isset($_GET['tr_ids_excempt_emails'])) {
-            // get the staff whose mail is not allowes
-            $select = "SELECT * FROM `user_tbl` WHERE `school_code` = '".$_SESSION['schcode']."'";
-            $stmt = $conn->prepare($select);
-            $stmt->execute();
-            $result = $stmt->get_result();
+        }elseif (isset($_GET['teacher_sms_id_group'])) {
+            // USER_IDS
+            $user_ids = strlen($_GET['teacher_sms_id_group']) > 0 ? explode(",",$_GET['teacher_sms_id_group']) : [];
+
+            // get the staff data
             $staff_data = [];
-            $phone_numbers = strlen($_GET['tr_ids_excempt_emails']) > 0 ? explode(",",$_GET['tr_ids_excempt_emails']) : [];
-            if ($result) {
-                while ($row = $result->fetch_assoc()) {
-                    // excempt those that were selected
-                    $thier_phone = $row['phone_number'];
-                    if(!checkPresnt($phone_numbers,$thier_phone)){
+
+            // select statement
+            $select = "SELECT * FROM `user_tbl` WHERE `user_id` = ? AND `school_code` = '".$_SESSION['schcode']."'";
+            
+            // loop through the user id
+            for($index = 0; $index < count($user_ids); $index++){
+                $stmt = $conn->prepare($select);
+                $stmt->bind_param("s",$user_ids[$index]);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                if($result){
+                    if($row = $result->fetch_assoc()){
                         array_push($staff_data,$row);
                     }
                 }
             }
+            // echo json_encode($staff_data);
 
             // already excempted those that are not to get the message
             // send the message to those who are to be sent the message
@@ -346,52 +352,56 @@
             }
             echo "<p class='text-success'>Emails sent successfully <br>".$email_counts." Success! <br><span class='text-danger'>".$email_errors." Not Sent!</span></p>";
         }elseif (isset($_GET['tr_ids_excempt'])) {
+            // include SMS
             include("../../sms_apis/sms.php");
+
+            // explode the teacher`s id
             $tr_ids_excempt = $_GET['tr_ids_excempt'];
             $teacher_no = explode(",",$tr_ids_excempt);
-            $db_tr_no = getTrNo($conn);
-            $expl_db_trno = explode(",",$db_tr_no);
-            //set the timeout to 300 seconds so that it can accomodate more requests
-            set_time_limit(300);
-            
-            //get the tr that are not present
 
-            $new_list = array();
-            $string = "";
-            for ($index=0; $index < count($expl_db_trno); $index++) { 
-                $presnt = checkPresnt($teacher_no,$expl_db_trno[$index]);
-                if ($presnt == 0) {
-                    array_push($new_list,$expl_db_trno[$index]);
-                    $string.=$expl_db_trno[$index].",";
+            // get the teachers id
+            $select = "SELECT * FROM `user_tbl` WHERE `user_id` = ? AND `school_code` = '".$_SESSION['schcode']."'";
+            $teachers_no = [];
+            for($index = 0; $index < count($teacher_no); $index++){
+                $stmt = $conn->prepare($select);
+                $stmt->bind_param("s",$teacher_no[$index]);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                if($result){
+                    if($row = $result->fetch_assoc()){
+                        array_push($teachers_no,$row['phone_number']);
+                    }
                 }
             }
-            if (strlen($string) > 0 ) {
-                $string = substr($string,0,(strlen($string)-1));
-            }
-            $echo_name = explode(",",$string);
+            
+            //set the timeout to 300 seconds so that it can accomodate more requests
+            set_time_limit(300);
             $message = $_GET['messages'];
+
             //the value below is used to determine of we can use the school api or the company`s api
             $school = 1;
             $api_key = getApiKeySms($conn2);
+
             //check if the school has its own api keys
             if ($api_key == 0) {
                 $school = 0;
                 $api_key = getApiKeySms($conn);
             }
             if ($api_key !== 0) {
-                    if ($school == 0) {
-                        $partnerID = getPatnerIdSms($conn);
-                        $shortcodes = getShortCodeSms($conn);
-                    }else {
-                        $partnerID = getPatnerIdSms($conn2);
-                        $shortcodes = getShortCodeSms($conn2);
-                    }
-                    
-                    $count = 0;
-                    $balance = 0;
-                for ($index=0; $index < count($echo_name); $index++) { 
+                if ($school == 0) {
+                    $partnerID = getPatnerIdSms($conn);
+                    $shortcodes = getShortCodeSms($conn);
+                }else {
+                    $partnerID = getPatnerIdSms($conn2);
+                    $shortcodes = getShortCodeSms($conn2);
+                }
+                
+                // counter
+                $count = 0;
+                $balance = 0;
+                for ($index=0; $index < count($teachers_no); $index++) { 
                     //send message to the numbers
-                    $output_name = sendSmsToClient($echo_name[$index],$message,$api_key,$partnerID,$shortcodes);
+                    $output_name = sendSmsToClient($teachers_no[$index],$message,$api_key,$partnerID,$shortcodes);
                     //echo $output_name."<br>";
                     $json = json_decode($output_name);
                     //echo $json->{'response-description'}."<br>";
@@ -412,13 +422,14 @@
                         break;
                     } */
                 }
-              //echo $count." ".$balance." ".count($echo_name);
+                    
+                //echo $count." ".$balance." ".count($teachers_no);
                 if ($balance == 0) {
-                    echo "<p class='green_notice'>Messages sent successfully is ".$count." out of ".count($echo_name)." "."!</p>";
+                    echo "<p class='green_notice'>Messages sent successfully is ".$count." out of ".count($teachers_no)." "."!</p>";
                     //send the information to the database
                     $insert = "INSERT INTO `sms_table` (`message_count`,`date_sent`,`message_sent_succesfully`,`message_undelivered`,`message_type`,`message_description`,`sender_no`,`message`) VALUES (?,?,?,?,?,?,?,?)";
                     $stmt = $conn2->prepare($insert);
-                    $message_count = count($echo_name);
+                    $message_count = count($teachers_no);
                     $message_undelivered = $message_count - $count;
                     $message_type = "Broadcast";
                     $message_desc = $message."...";
@@ -433,7 +444,7 @@
                         echo "<p class='red_notice'>Error!</p>";
                     }
                 }else {
-                    $out_of = count($echo_name) - $balance;
+                    $out_of = count($teachers_no) - $balance;
                     if ($out_of == 0) {
                         $out_of = $balance;
                     }
@@ -457,25 +468,25 @@
                             echo "<p class='red_notice'>Error!</p>";
                         }
                     }
-
                 }
             }
-            //echo $string;
         }elseif (isset($_GET['parents_ids_excempt_email'])) {
             // echo "We are here";
             include("../finance/financial.php");
             // explode the students admission number to excempt them from being sent a message
-            $exempts = isset($_GET['parents_ids_excempt_email']) ? explode(",",$_GET['parents_ids_excempt_email']) : [];
-            // var_dump($exempts);
-            $select = "SELECT * FROM `student_data` WHERE `stud_class` != '-1' AND `stud_class` != '-2'";
-            $stmt = $conn2->prepare($select);
-            $stmt->execute();
-            $result = $stmt->get_result();
+            $accepted = isset($_GET['parents_ids_excempt_email']) ? explode(",",$_GET['parents_ids_excempt_email']) : [];
+            // var_dump($accepted);
+
+            // get the accepted students data
             $students_data = [];
-            if ($result) {
-                while ($row = $result->fetch_assoc()) {
-                    $admission_no = $row['adm_no'];
-                    if (checkPresnt($exempts,$admission_no) == 0) {
+            $select = "SELECT * FROM `student_data` WHERE `adm_no` = ?";
+            $stmt = $conn2->prepare($select);
+            for($index = 0; $index < count($accepted); $index++){
+                $stmt->bind_param("s",$accepted[$index]);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                if($result){
+                    if($row = $result->fetch_assoc()){
                         array_push($students_data,$row);
                     }
                 }
@@ -506,7 +517,7 @@
 
                             // send email
                             // get the students parent email address data
-                            for ($index=0; $index < count($students_data); $index++) { 
+                            for ($index=0; $index < count($students_data); $index++) {
                                 $email_primary = $students_data[$index]['parent_email'];
                                 $secondary_mail = $students_data[$index]['parent_email2'];
                                 // send the email
@@ -516,10 +527,6 @@
                                 $bcc = $_GET['bcc'];
                                 $subject = $_GET['subject'];
                                 try {
-                                    
-                                    
-                                    
-                                    
                                     if (strlen(trim($email_primary)) > 0 || strlen(trim($secondary_mail)) > 0) {
                                         // set the email sender
                                         // echo $staff_email;

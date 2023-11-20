@@ -14,7 +14,7 @@ cObj("admitbtn").onclick = function () {
     getLastAdm();
 
     // get the departments
-    getDepartmentsList();
+    // getDepartmentsList();
 }
 
 function getDepartmentsList() {
@@ -27,6 +27,12 @@ function getCourseList(course_level) {
     // get the course lists
     var datapass = "?get_course_list=true&course_level="+course_level;
     sendData2("GET","administration/admissions.php",datapass,cObj("course_list_holder"),cObj("course_list_loader"));
+    
+}
+function getCourseListEdit(course_level) {
+    // get the course lists
+    var datapass = "?get_course_list_edit=true&course_level="+course_level;
+    sendData2("GET","administration/admissions.php",datapass,cObj("course_list_edit"),cObj("course_list_edit_loader"));
     
 }
 cObj("pleasewaiting").onclick = function () {
@@ -57,6 +63,10 @@ function getClasses(object_id, select_class_id, value_prefix, obj = null) {
     }
 }
 
+function select_courses_edit() {
+    // get courses list
+    getCourseListEdit(this.value);
+}
 // select courses
 function select_courses() {
     // get the course list
@@ -117,8 +127,24 @@ cObj("findstudsbtn").onclick = function () {
     addselected(this.id);
     cObj("findstudents").classList.remove("hide");
     removesidebar();
+
     //get the classes from the database for the admissions window
-    getClasses("stud_class_find", "selclass", "");
+    getClasses("stud_class_find", "selclass", "","course_list_edit_loader");
+    setTimeout(() => {
+        var timeout = 0;
+        var ids = setInterval(() => {
+            timeout++;
+            //after two minutes of slow connection the next process wont be executed
+            if (timeout == 1200) {
+                stopInterval(ids);
+            }
+            if (cObj("course_list_edit_loader").classList.contains("hide")) {
+                cObj("selclass").addEventListener("change",select_courses_edit);
+                stopInterval(ids);
+            }
+        }, 100);
+    }, 100);
+
     getClasses("class_holders", "classed", "cl", "class_loaders_id_in");
     setTimeout(() => {
         var timeout = 0;
@@ -146,6 +172,10 @@ function showClassChange() {
     } else {
         cObj("reason_for_leaving_window").classList.add("hide");
     }
+
+    // get the course that the student can be enrolled to
+    var course_level = cObj("classed") != undefined ? valObj("classed") : "-1";
+    getCourseListEdit(course_level);
 }
 cObj("update_school_profile").onclick = function () {
     hideWindow();
@@ -2434,11 +2464,12 @@ function tablebtnlistener() {
             }
             if (cObj("loadings").classList.contains("hide")) {
                 var infor = cObj("studentinformation").innerText;
-                var splitdata = infor.split("^");
+                var json_data = hasJsonStructure(infor) ? JSON.parse(infor) : [];
+                var splitdata = json_data;
                 studentinformation = splitdata;
                 //check if he is the administrator
                 var auth = cObj("authoriti").value;
-                //if(auth == 1){
+                // if(auth == 1){
                 if (splitdata.length > 10) {
                     cObj("loadings").classList.remove("hide");
                     cObj("snamed_in").value = splitdata[0]
@@ -2494,8 +2525,12 @@ function tablebtnlistener() {
                         if (name == "s" || name == "S") {
                             showname = splitdata[1] + "'";
                         }
-                        cObj("call_phone").innerHTML = "<a class='link' href='tel:" + splitdata[10] + "'>Click to call " + showname + " parent </a>";
-                        cObj("mail_to").innerHTML = "<a class='link' href='mailto:" + splitdata[12] + "'>Click to send " + showname + " parent an email.</a>";
+
+                        // set the action of calling and sending email
+                        cObj("call_phone").disabled = false;
+                        cObj("mail_to").disabled = false;
+                        cObj("call_phone").innerHTML = splitdata[10].trim().length != 0 ? "<a class='link' href='tel:" + splitdata[10] + "'>Click to call " + showname + " parent </a>" : cObj("call_phone").disabled = true;
+                        cObj("mail_to").innerHTML = splitdata[10].trim().length != 0 ? "<a class='link' href='mailto:" + splitdata[12] + "'>Click to send " + showname + " parent an email.</a>" : cObj("mail_to").disabled = true;
                     }
                     cObj("pnamed2").value = splitdata[16];
                     cObj("pcontacted2").value = splitdata[17];
@@ -2519,7 +2554,7 @@ function tablebtnlistener() {
                     }
 
                     // previous schools attended
-                    var prev_schools = splitdata[24].trim().length > 0 ? JSON.parse(splitdata[24]) : [];
+                    var prev_schools = hasJsonStructure(splitdata[24]) ? JSON.parse(splitdata[24]) : [];
                     // console.log(prev_schools);
                     cObj("previous_school_json").innerText = splitdata[24];
                     var counters = 0;
@@ -2581,6 +2616,14 @@ function tablebtnlistener() {
                     cObj("reason_for_leaving_desc").value = splitdata[39];
                     cObj("fees_discount").innerHTML = splitdata[40];
                     getDP();
+
+                    // get the course being done by the students
+                    // store the course id
+                    let course_id = splitdata[41];
+
+                    // get the courses to be done based on the level of education of the student
+                    var datapass = "?getCoursesEdit=true&course_level="+splitdata[6]+"&course_id="+course_id;
+                    sendData2("GET","administration/admissions.php",datapass,cObj("course_list_edit"),cObj("course_list_edit_loader"));
                 }
                 stopInterval(ids);
             }
@@ -2812,66 +2855,81 @@ cObj("updatestudinfor").onclick = function () {
     changes = 1;
     var err = checkBlank("classed");
     err += checkBlank("doas");
-    if (err == 0) {
-        cObj("updateerrors").innerHTML = "";
-        cObj("coppy_cat_err").innerHTML = "";
-        if (changes != 0) {
-            var classed = valObj("classed");
-            var index = valObj("indexnos");
-            var bcnos = valObj("bcnno");
-            var dobs = valObj("dobs");
-            var gender = valObj("genders");
-            var disabled = valObj("disableds");
-            var describe = valObj("descriptionsd");
-            var addressed = valObj("addressed");
-            var pnamed = valObj("pnamed");
-            var pcontacted = valObj("pcontacted");
-            var paddressed = valObj("paddressed");
-            var pemails = valObj("pemails");
-            var parrelationship = valObj("parrelationship");
-            var admnos = valObj("adminnos");
-            var snamed = valObj("snamed_in");
-            var fnamed = valObj("fnamed_in");
-            var lnamed = valObj("lnamed_in");
-            var occupation1 = valObj("paroccupation1");
-            var occupation2 = valObj("paroccupation2");
-            var medical_history = valObj("medical_histry");
-            var clubs_in_sporters = valObj("clubs_in_sporters");
-            var previous_schools = cObj("previous_school_json").innerText;
-            var doas = valObj("doas");
-            var reason_for_leaving = valObj("reason_for_leaving_desc");
 
-            var parname2 = valObj('pnamed2');
-            var parconts2 = valObj('pcontacted2');
-            var parrelation2 = valObj('parrelationship2');
-            var pemail2 = valObj('pemails2');
-            //collect the data and send to the database
-            var datapass = "?updatestudinfor=true&class=" + classed + "&index=" + index + "&bcnos=" + bcnos + "&dob=" + dobs + "&genders=" + gender + "&disabled=" + disabled + "&describe=" + describe;
-            datapass += "&address=" + addressed + "&pnamed=" + pnamed + "&pcontacts=" + pcontacted + "&paddress=" + paddressed + "&pemail=" + pemails + "&prelation=" + parrelationship + "&adminnumber=" + admnos;
-            datapass += "&parentname2=" + parname2 + "&parentcontact=" + parconts2 + "&parentrelation=" + parrelation2 + "&pemails=" + pemail2 + "&snamed=" + snamed + "&fnamed=" + fnamed + "&lnamed=" + lnamed;
-            datapass += "&occupation1=" + occupation1 + "&occupation2=" + occupation2 + "&medical_history=" + medical_history + "&clubs_in_sporters=" + clubs_in_sporters + "&previous_schools=" + previous_schools + "&doas=" + doas;
-            datapass += "&reason_for_leaving=" + reason_for_leaving;
-            cObj("updateerrors").innerHTML = "";
-            sendData1("GET", "administration/admissions.php", datapass, cObj("updateerrors"));
-            setTimeout(() => {
-                var timeout = 0;
-                var ids = setInterval(() => {
-                    timeout++;
-                    //after two minutes of slow connection the next process wont be executed
-                    if (timeout == 1200) {
-                        stopInterval(ids);
-                    }
-                    if (cObj("loadings").classList.contains("hide")) {
-                        cObj("coppy_cat_err").innerHTML = cObj("updateerrors").innerHTML;
-                        setTimeout(() => {
-                            cObj("updateerrors").innerHTML = "";
+    // clear all errors in the error holder!
+    cObj("updateerrors").innerHTML = "";
+    cObj("coppy_cat_err").innerHTML = "";
+    if (err == 0) {
+        if (cObj("course_chosen_edit") != undefined) {
+            if (checkBlank("course_chosen_edit") == 1) {
+                cObj("updateerrors").innerHTML = "<p class='text-danger'>Select course before proceeding!</p>";
+                cObj("coppy_cat_err").innerHTML = "<p class='text-danger'>Select course before proceeding!</p>";
+                return 0;
+            }
+            if (changes != 0) {
+                var classed = valObj("classed");
+                var index = valObj("indexnos");
+                var bcnos = valObj("bcnno");
+                var dobs = valObj("dobs");
+                var gender = valObj("genders");
+                var disabled = valObj("disableds");
+                var describe = valObj("descriptionsd");
+                var addressed = valObj("addressed");
+                var pnamed = valObj("pnamed");
+                var pcontacted = valObj("pcontacted");
+                var paddressed = valObj("paddressed");
+                var pemails = valObj("pemails");
+                var parrelationship = valObj("parrelationship");
+                var admnos = valObj("adminnos");
+                var snamed = valObj("snamed_in");
+                var fnamed = valObj("fnamed_in");
+                var lnamed = valObj("lnamed_in");
+                var occupation1 = valObj("paroccupation1");
+                var occupation2 = valObj("paroccupation2");
+                var medical_history = valObj("medical_histry");
+                var clubs_in_sporters = valObj("clubs_in_sporters");
+                var previous_schools = cObj("previous_school_json").innerText;
+                var doas = valObj("doas");
+                var reason_for_leaving = valObj("reason_for_leaving_desc");
+                var course_chosen = valObj("course_chosen_edit");
+    
+                var parname2 = valObj('pnamed2');
+                var parconts2 = valObj('pcontacted2');
+                var parrelation2 = valObj('parrelationship2');
+                var pemail2 = valObj('pemails2');
+                //collect the data and send to the database
+                var datapass = "?updatestudinfor=true&class=" + classed + "&index=" + index + "&bcnos=" + bcnos + "&dob=" + dobs + "&genders=" + gender + "&disabled=" + disabled + "&describe=" + describe;
+                datapass += "&address=" + addressed + "&pnamed=" + pnamed + "&pcontacts=" + pcontacted + "&paddress=" + paddressed + "&pemail=" + pemails + "&prelation=" + parrelationship + "&adminnumber=" + admnos;
+                datapass += "&parentname2=" + parname2 + "&parentcontact=" + parconts2 + "&parentrelation=" + parrelation2 + "&pemails=" + pemail2 + "&snamed=" + snamed + "&fnamed=" + fnamed + "&lnamed=" + lnamed;
+                datapass += "&occupation1=" + occupation1 + "&occupation2=" + occupation2 + "&medical_history=" + medical_history + "&clubs_in_sporters=" + clubs_in_sporters + "&previous_schools=" + previous_schools + "&doas=" + doas;
+                datapass += "&reason_for_leaving=" + reason_for_leaving+"&course_chosen="+course_chosen;
+                cObj("updateerrors").innerHTML = "";
+                sendData1("GET", "administration/admissions.php", datapass, cObj("updateerrors"));
+                setTimeout(() => {
+                    var timeout = 0;
+                    var ids = setInterval(() => {
+                        timeout++;
+                        //after two minutes of slow connection the next process wont be executed
+                        if (timeout == 1200) {
+                            stopInterval(ids);
+                        }
+                        if (cObj("loadings").classList.contains("hide")) {
                             cObj("coppy_cat_err").innerHTML = cObj("updateerrors").innerHTML;
-                        }, 4000);
-                        stopInterval(ids);
-                    }
+                            setTimeout(() => {
+                                cObj("updateerrors").innerHTML = "";
+                                cObj("coppy_cat_err").innerHTML = cObj("updateerrors").innerHTML;
+                            }, 4000);
+                            stopInterval(ids);
+                        }
+                    }, 100);
                 }, 100);
-            }, 100);
-        } else {
+            } else {
+                cObj("updateerrors").innerHTML = "<p class='text-danger'>Check all errors before you proceed!</p>";
+                cObj("coppy_cat_err").innerHTML = "<p class='text-danger'>Check all errors before you proceed!</p>";
+            }
+        }else{
+            cObj("updateerrors").innerHTML = "<p class='text-danger'>Courses have not been set up yet!</p>";
+            cObj("coppy_cat_err").innerHTML = "<p class='text-danger'>Courses have not been set up yet!</p>";
         }
     } else {
         console.log(err);
@@ -3226,8 +3284,8 @@ cObj("submitbtn").onclick = function () {
     //check for any blank field
     let errors = checkAdmission();
     if (errors == 0 && presentBCNO == false) {
-        if (cObj("course_chosen") != undefined && cObj("department_options") != undefined) {
-            if (typeof (cObj("errolment")) != 'undefined' && cObj("errolment") != null) {
+        if (cObj("course_chosen") != undefined) {
+            if (typeof (cObj("errolment")) != undefined && cObj("errolment") != null) {
                 //proceed and upload the data
                 cObj("erroradm").innerHTML = "<p style='color:green;font-size:14px;'>Good to go!</p>";
                 //GET VALUES
@@ -3242,7 +3300,6 @@ cObj("submitbtn").onclick = function () {
                 var parrelation = valObj('parrelation');
                 var pemail = valObj('pemail');
                 var course_chosen = valObj("course_chosen");
-                var department_options = valObj("department_options");
     
                 var parname2 = valObj('parname2');
                 var parconts2 = valObj('parconts2');
@@ -3268,7 +3325,7 @@ cObj("submitbtn").onclick = function () {
                 datapass += "&parentrela=" + parrelation + "&pemail=" + pemail + "&bcno=" + bcno + "&address=" + address + "&admnos=" + admno;
                 datapass += "&parentrela2=" + parrelation2 + "&pemail2=" + pemail2 + "&parentname2=" + parname2 + "&parentconts2=" + parconts2;
                 datapass += "&parent_accupation1=" + parent_accupation1 + "&parent_accupation2=" + parent_accupation2 + "&last_year_academic_balance=" + last_year_academic_balance;
-                datapass += "&course_chosen="+course_chosen+"&department_options="+department_options;
+                datapass += "&course_chosen="+course_chosen;
                 sendDataPost("POST", "ajax/administration/admissions.php", datapass, cObj("erroradm"),cObj("loadings"));
                 setTimeout(() => {
                     var ids = setInterval(() => {
@@ -3292,7 +3349,7 @@ cObj("submitbtn").onclick = function () {
                 cObj("erroradm").innerHTML = "<p style='color:red;font-size:14px;'><strong>Errors</strong><br>No class selected!</p>";
             }
         }else{
-            cObj("erroradm").innerHTML = "<p style='color:red;font-size:14px;'><strong>Errors</strong><br>Courses offered or Department list are not configured, Kindly set them up to proceed!</p>";
+            cObj("erroradm").innerHTML = "<p style='color:red;font-size:14px;'><strong>Errors</strong><br>Courses offered is not configured, Kindly set them up to proceed!</p>";
         }
     } else {
         cObj("erroradm").innerHTML = "<p style='color:red;font-size:14px;'><strong>Errors</strong><br>Please fill all the fields with the red border and read their instructions correctly</p>";

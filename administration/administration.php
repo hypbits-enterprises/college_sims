@@ -73,15 +73,11 @@
                         </div>
                     </div>
                     <div class="conts">
-                        <label for="errolment">Department:<span style='color:red;'>*</span><img src="images/ajax_clock_small.gif" class="hide" id="department_all_loader"><br></label>
-                        <p id="admit_department"></p>
-                    </div>
-                    <div class="conts">
                         <label for="errolment">Course Level:<span style='color:red;'>*</span><br></label>
-                        <p id="class_admission"></p>
+                        <div id="class_admission"></div>
                     </div>
                     <div class="conts">
-                        <label for="course_lists">Course Enrolled:<span style='color:red;'>*</span><img src="images/ajax_clock_small.gif" class="hide" id="course_list_loader"><br></label>
+                        <label for="course_chosen">Course Enrolled:<span style='color:red;'>*</span><img src="images/ajax_clock_small.gif" class="hide" id="course_list_loader"><br></label>
                         <div id="course_list_holder"><p class="text-secondary">Select Course Level to display available courses!</p></div>
                     </div>
                     <div class="conts">

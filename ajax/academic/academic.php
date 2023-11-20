@@ -6,7 +6,7 @@
     if ($_SERVER['REQUEST_METHOD'] == "GET") {
         include("../../connections/conn2.php");
         if (isset($_GET['showsubjects'])) {
-            $select = "SELECT `valued` FROM `settings` WHERE `sett` = 'class'";
+            $select = "SELECT * FROM `settings` WHERE `sett` = 'class'";
             $stmt = $conn2->prepare($select);
             $stmt->execute();
             $result = $stmt->get_result();
@@ -2645,7 +2645,7 @@
                 echo "<p class='red_notice'>An error has occured!</p>";
             }
         }elseif (isset($_GET['get_class_informations'])) {
-            $select = "SELECT `valued` FROM `settings` WHERE `sett` = 'class'";
+            $select = "SELECT * FROM `settings` WHERE `sett` = 'class'";
             $stmt = $conn2->prepare($select);
             $stmt->execute();
             $result = $stmt->get_result();

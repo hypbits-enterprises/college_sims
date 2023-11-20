@@ -93,7 +93,8 @@
                                 <div class="row my-1">
                                     <div class="col-md-6">
                                         <p id="boarding_status_changer"></p>
-                                        <p style="width: fit-content;" class="link" id="prompt_delete_student"><i class="fas fa-trash"></i> Permanently Delete Student<img class="hide" src="images/ajax_clock_small.gif" id="delete_student_load"></p>
+                                        <p style="width: fit-content;" class="link my-2" id="prompt_delete_student"><i class="fas fa-trash"></i> Permanently Delete Student<img class="hide" src="images/ajax_clock_small.gif" id="delete_student_load"></p>
+                                        <hr>
                                         <p class="my-2">Boarding status: <span id="boarding_status"> <span style="background-color: green; color:white;" class="rounded p-1 ">Enrolled</span> || <span id="enroll_stud_boarding" class="link">Un - Enroll ?</span></span>
                                         <img class="hide" src="images/ajax_clock_small.gif" id="boarding_status_load"></p>
                                     </div>
@@ -223,8 +224,13 @@
                                 </div>
                                 <div class="col-md-4">
                                     <img src="images/ajax_clock_small.gif" class="hide" id="class_loaders_id_in">
-                                    <label class="form-control-label" for="classed"><b>Class: </b><br></label>
-                                    <p id="class_holders"></p>
+                                    <label class="form-control-label" for="classed"><b>Course Level: </b><br></label>
+                                    <div id="class_holders"></div>
+                                </div>
+                                <div class="col-md-4">
+                                    <img src="images/ajax_clock_small.gif" class="hide" id="course_list_edit_loader">
+                                    <label class="form-control-label" for="course_chosen_edit"><b>Course: </b><br></label>
+                                    <div id="course_list_edit"></div>
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-control-label" for="dobs"><b>Date of birth </b><br></label>
@@ -310,7 +316,7 @@
                         <!--<h3 class='infortitle'><strong>Parents information</strong></h3>-->
                         <div class="form-control d-flex flex-wrap my-2 rounded">
                             <div class="titles">
-                                <p>Parent information</p>
+                                <p>Student information</p>
                             </div>
                             <p style="color:maroon;font-size:12px;"><u>First Parent</u></p>
                             <div class="form-control d-flex flex-wrap my-2 rounded row">
@@ -338,12 +344,12 @@
                                     <label for="paroccupation1"><b>Parents Occupation: </b><br></label>
                                     <input class='form-control w-100' type="text" autocomplete="off" id="paroccupation1" placeholder='Parent`s Occupation'>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-4 hide">
                                     <div class="call_option">
-                                        <p class="link" id="call_phone">Click to call parent</p>
+                                        <p class="btn btn-sm btn-success my-2" id="call_phone">Click to call parent</p>
                                     </div>
                                     <div class="call_option">
-                                        <p class="link" id="mail_to">Click to send the parent an email.</p>
+                                        <p class="btn btn-sm btn-success my-2" id="mail_to">Click to send the parent an email.</p>
                                     </div>
                                 </div>
                             </div>
@@ -369,12 +375,12 @@
                                     <label for="paroccupation2"><b>Parents Occupation: </b><br></label>
                                     <input class='form-control w-100' type="text" autocomplete="off" id="paroccupation2" placeholder='Parent`s Occupation'>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-4 hide">
                                     <div class="call_option">
-                                        <p class="link" id="call_phone2">Click to call parent</p>
+                                        <p class="btn btn-sm btn-success my-2" id="call_phone2">Click to call parent</p>
                                     </div>
                                     <div class="call_option">
-                                        <p class="link" id="mail_to2">Click to send the parent an email.</p>
+                                        <p class="btn btn-sm btn-success my-2" id="mail_to2">Click to send the parent an email.</p>
                                     </div>
                                 </div>
                             </div>
