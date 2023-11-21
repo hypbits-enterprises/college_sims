@@ -16,7 +16,7 @@
             </div>
             <div class="container border border-secondary rounded my-2 p-2">
                 <h5 class="text-center">Administration Section Reports</h5>
-                <form method="POST" action="/sims/reports/reports.php" target="_blank" class="form-group row">
+                <form method="POST" action="reports/reports.php" target="_blank" class="form-group row">
                     <div class="col-md-4">
                         <label for="select_entity" class="form-label">Select Entity</label>
                         <select name="select_entity" id="select_entity" class="form-control" required>
@@ -116,7 +116,7 @@
                         </div>
                     </div>
                 </div>
-                <form method="POST" action="/sims/reports/reports.php" target="_blank"  class="form-group row my-2">
+                <form method="POST" action="reports/reports.php" target="_blank"  class="form-group row my-2">
                     <div class="col-md-4">
                         <label for="finance_entity" class="form-label">Select an option</label>
                         <select name="finance_entity" id="finance_entity" class="form-control">

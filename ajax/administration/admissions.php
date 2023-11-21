@@ -104,6 +104,128 @@
                 }
                 $stmt->close();
                 $conn2->close();
+        }elseif(isset($_GET['get_course_fees_structure'])){
+            $course_level = $_GET['course_level'];
+            
+            // get the course levels
+            $select = "SELECT * FROM `settings` WHERE `sett` = 'class'";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+
+            // course levels
+            $course_levels = [];
+            $result = $stmt->get_result();
+            if($result){
+                if($row = $result->fetch_assoc()){
+                    $course_levels = isJson_report($row['valued']) ? json_decode($row['valued']) : [];
+                }
+            }
+
+            // get the selected course id
+            $course_id = null;
+            for($index = 0; $index < count($course_levels); $index++){
+                if($course_levels[$index]->classes == $course_level){
+                    $course_id = $course_levels[$index]->id;
+                    break;
+                }
+            }
+            
+            // get the courses
+            $select = "SELECT * FROM `settings` WHERE `sett` = 'courses'";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $select = "<select class='form-control' id='course_lists_fees_structure'><option hidden value=''>Select Courses!</option>";
+            if ($result) {
+                if($row = $result->fetch_assoc()){
+                    $valued = isJson_report($row['valued']) ? json_decode($row['valued']) : [];
+                    
+                    // check if the course is present in the level selected
+                    for($index = 0; $index < count($valued); $index++){
+                        // loop through course levels
+                        $course_levels = isJson_report($valued[$index]->course_levels) ? json_decode($valued[$index]->course_levels) : [];
+                        
+                        // add course flag after looping through the course levele the course is offered
+                        $proceed = false;
+                        for ($ind=0; $ind < count($course_levels); $ind++) { 
+                            if($course_levels[$ind] == $course_id){
+                                $proceed = true;
+                                break;
+                            }
+                        }
+
+                        // proceed!
+                        if($proceed){
+                            $select .= "<option value='".$valued[$index]->id."'>".$valued[$index]->course_name."</option>";
+                        }
+                    }
+                }
+            }
+            $select .= "</select>";
+
+            // select statement
+            echo $select;
+        }elseif(isset($_GET['get_course_list_search'])){
+            $course_level = $_GET['course_levels'];
+            
+            // get the course levels
+            $select = "SELECT * FROM `settings` WHERE `sett` = 'class'";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+
+            // course levels
+            $course_levels = [];
+            $result = $stmt->get_result();
+            if($result){
+                if($row = $result->fetch_assoc()){
+                    $course_levels = isJson_report($row['valued']) ? json_decode($row['valued']) : [];
+                }
+            }
+
+            // get the selected course id
+            $course_id = null;
+            for($index = 0; $index < count($course_levels); $index++){
+                if($course_levels[$index]->classes == $course_level){
+                    $course_id = $course_levels[$index]->id;
+                    break;
+                }
+            }
+            
+            // get the courses
+            $select = "SELECT * FROM `settings` WHERE `sett` = 'courses'";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $select = "<select class='form-control w-100' id='course_chosen_search'><option hidden value=''>Select Courses!</option>";
+            if ($result) {
+                if($row = $result->fetch_assoc()){
+                    $valued = isJson_report($row['valued']) ? json_decode($row['valued']) : [];
+                    
+                    // check if the course is present in the level selected
+                    for($index = 0; $index < count($valued); $index++){
+                        // loop through course levels
+                        $course_levels = isJson_report($valued[$index]->course_levels) ? json_decode($valued[$index]->course_levels) : [];
+                        
+                        // add course flag after looping through the course levele the course is offered
+                        $proceed = false;
+                        for ($ind=0; $ind < count($course_levels); $ind++) { 
+                            if($course_levels[$ind] == $course_id){
+                                $proceed = true;
+                                break;
+                            }
+                        }
+
+                        // proceed!
+                        if($proceed){
+                            $select .= "<option value='".$valued[$index]->id."'>".$valued[$index]->course_name."</option>";
+                        }
+                    }
+                }
+            }
+            $select .= "</select>";
+
+            // select statement
+            echo $select;
         }elseif(isset($_GET['getCoursesEdit'])){
             // store course level
             $course_level_name = $_GET['course_level'];
@@ -502,12 +624,32 @@
                 createStudentn4($conn2,$result,$searh);
             }elseif (isset($_GET['classes'])) {
                 $classenroled = $_GET['classes'];
-                $select = "SELECT * from `student_data` WHERE  `stud_class` = ? and `deleted` = 0 and activated =1";
+                $course_chosen = $_GET['course_chosen'];
+                $select = strlen(trim($course_chosen)) == 0 ? "SELECT * from `student_data` WHERE  `stud_class` = ? and `deleted` = 0 and activated =1" : "SELECT * from `student_data` WHERE `course_done` = '".$course_chosen."' AND `stud_class` = ? AND `deleted` = 0 AND activated =1";
                 $stmt=$conn2->prepare($select);
                 $stmt->bind_param("s",$classenroled);
                 $stmt->execute();
                 $result=$stmt->get_result();
-                $searh = "Class = <span style='color:brown;'>\"".classNameAdms($_GET['classes'])."\"</span>";
+
+                // get the course names
+                $course_name = "N/A";
+                $select = "SELECT * FROM `settings` WHERE `sett` = 'courses';";
+                $statement = $conn2->prepare($select);
+                $statement->execute();
+                $res = $statement->get_result();
+                if($res){
+                    if($row = $res->fetch_assoc()){
+                        $course_list = isJson_report($row['valued']) ? json_decode($row['valued']) : [];
+
+                        // loop to get the course name
+                        for($index = 0; $index < count($course_list); $index++){
+                            if($course_chosen == $course_list[$index]->id){
+                                $course_name = $course_list[$index]->course_name;
+                            }
+                        }
+                    }
+                }
+                $searh = strlen(trim($course_chosen)) == 0 ? "<span style='color:brown;'>\"".classNameAdms($_GET['classes'])."\"</span>" : "<span style='color:brown;'>\"".classNameAdms($_GET['classes'])."\" in \"".ucwords(strtolower($course_name))."\"</span>";
                 if($_GET['classes'] == "-1"){
                     $searh = "<span style='color:brown;'>\"Alumni\"</span>";
                 }
@@ -1150,7 +1292,7 @@
                 $data.="<div class='container'><table class='table output1' >";
                 $data.="<tr><th>No.</th>";
                 $data.="<th>Fullname</th>";
-                $data.="<th>Authority</th>";
+                $data.="<th>Role</th>";
                 $data.="<th>Gender</th>";
                 $data.="<th>National id</th>";
                 $data.="<th>Activated</th>";
@@ -1161,22 +1303,26 @@
                     $data.="<tr><td>".$number."</td><td>".ucwords(strtolower($rowed['fullname']))."</td>";
                     if(isset($rowed['auth'])){
                         $auth = $rowed['auth'];
-                        if($auth=='0'){
-                            $data.="<td>"."Administrator"."</td>";
-                        }elseif ($auth=='1') {
-                            $data.="<td>"."Headteacher/Principal"."</td>";
-                        }elseif ($auth=='2') {
-                            $data.="<td>"."Teacher"."</td>";
-                        }elseif ($auth=='3') {
-                            $data.="<td>"."Deputy principal"."</td>";
-                        }elseif ($auth=='4') {
-                            $data.="<td>"."Staff"."</td>";
-                        }elseif ($auth=='5') {
-                            $data.="<td>"."Class teacher"."</td>";
-                        }elseif ($auth=='6') {
-                            $data.="<td>"."School Driver"."</td>";
-                        }else {
-                            $data.="<td style='color:blue;'>".ucwords(strtolower($auth))."</td>";
+                        if ($auth == 0) {
+                            $data .= "<td>". "System Administrator"."</td>";
+                        } else if ($auth == "1") {
+                            $data .= "<td>". "Principal"."</td>";
+                        } else if ($auth == "2") {
+                            $data .= "<td>". "Deputy Principal Academics"."</td>";
+                        } else if ($auth == "3") {
+                            $data .= "<td>". "Deputy Principal Administration"."</td>";
+                        } else if ($auth == "4") {
+                            $data .= "<td>". "Dean of Students"."</td>";
+                        } else if ($auth == "5") {
+                            $data .= "<td>". "Finance Office"."</td>";
+                        } else if ($auth == "6") {
+                            $data .= "<td>". "Human Resource Officer"."</td>";
+                        } else if ($auth == "7") {
+                            $data .= "<td>". "Head of Department"."</td>";
+                        } else if ($auth == "8") {
+                            $data .= "<td>". "Trainer/Lecturer"."</td>";
+                        } else {
+                            $data .= "<td>". ucwords(strtolower($auth))."</td>";
                         }
                     }else {
                         $data.="<td>"."N/A"."</td>";
@@ -1193,6 +1339,7 @@
                         }
                     }
                     
+                    // my user id
                     $my_user_ids = $rowed['user_id'];
                     
                     $number++;
@@ -1210,6 +1357,7 @@
             $stmt->execute();
             $results = $stmt->get_result();
             if($results){
+                // create a string array
                 $data = "[";
                 if ($rows = $results->fetch_assoc()) {
                     $data.="\"".$rows['fullname']."\",";
@@ -1757,7 +1905,7 @@
 
 
                     $counter = 0;
-                    $string_to_display = "<select class='form-control' name='".$select_class_id."' id='".$select_class_id."'> <option value='' hidden>Select..</option>";
+                    $string_to_display = "<select class='form-control ' name='".$select_class_id."' id='".$select_class_id."'> <option value='' hidden>Select..</option>";
                     
                     if($select_class_id != "daros"){
                         $string_to_display.="<option  id='".$value_prefix."-2' value='-2'>Transfered</option>";
@@ -1809,7 +1957,7 @@
                             }
                             $at_beginning = "<option value='[-1,".$class_list[$index]->id."]'>At the beginning</option>";
                             $data_to_display.="<tr>
-                                                <td>".($index+1).". </td>
+                                                <td> <input hidden value='".json_encode($class_list[$index])."' id='class_value_".$class_list[$index]->id."'>".($index+1).". </td>
                                                 <td id='cll".$class_list[$index]->id."'>".myClassName($class_list[$index]->classes)."</td>
                                                 <td>
                                                     <select class='form-control arrange_class'>
@@ -1999,6 +2147,7 @@
             $stmt = $conn2->prepare($select);
             $stmt->execute();
             $result = $stmt->get_result();
+            $class_removed = "N/A";
             if ($result) {
                 if ($row = $result->fetch_assoc()) {
                     $class_list = $row['valued'];
@@ -2009,7 +2158,8 @@
                         // loop and remove the existing class
                         $new_class = [];
                         for($index = 0; $index < count($json_list); $index++){
-                            if($class_remove == $json_list[$index]->classes){
+                            if($class_remove == $json_list[$index]->id){
+                                $class_removed = $json_list[$index]->classes;
                                 continue;
                             }
                             array_push($new_class,$json_list[$index]);
@@ -2023,7 +2173,7 @@
                         $stmt = $conn2->prepare($update);
                         $stmt->bind_param("s",$new_list);
                         if($stmt->execute()){
-                            echo "<p class='green_notice'>".myClassName($class_remove)." removed successfully</p>";
+                            echo "<p class='green_notice'><b>".myClassName($class_removed)."</b> removed successfully</p>";
                         }else {
                             echo "<p class='red_notice'>An error occured during deleting..<br>Please try again later!</p>";
                         }
@@ -3949,6 +4099,74 @@
 
             // select statement
             echo $select;
+        }elseif(isset($_GET['get_course_list_fees_struct'])){
+            // get the fees structure for class
+            $get_course_list = $_GET['get_course_list_fees_struct'];
+            $course_level = $_GET['course_level'];
+
+            // get fees structure
+            // get the course levels
+            $select = "SELECT * FROM `settings` WHERE `sett` = 'class'";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+
+            // course levels
+            $course_levels = [];
+            $result = $stmt->get_result();
+            if($result){
+                if($row = $result->fetch_assoc()){
+                    $course_levels = isJson_report($row['valued']) ? json_decode($row['valued']) : [];
+                }
+            }
+
+
+            // get the selected course id
+            $course_id = null;
+            for($index = 0; $index < count($course_levels); $index++){
+                if($course_levels[$index]->classes == $course_level){
+                    $course_id = $course_levels[$index]->id;
+                    break;
+                }
+            }
+            
+            
+            // get the courses
+            $select = "SELECT * FROM `settings` WHERE `sett` = 'courses'";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $select = "<select class='form-control' id='search_fees_course_list'><option hidden value=''>Select Courses!</option>";
+            if ($result) {
+                if($row = $result->fetch_assoc()){
+                    $valued = isJson_report($row['valued']) ? json_decode($row['valued']) : [];
+                    
+                    // check if the course is present in the level selected
+                    for($index = 0; $index < count($valued); $index++){
+                        // loop through course levels
+                        $course_levels = isJson_report($valued[$index]->course_levels) ? json_decode($valued[$index]->course_levels) : [];
+                        
+                        // add course flag after looping through the course levele the course is offered
+                        $proceed = false;
+                        for ($ind=0; $ind < count($course_levels); $ind++) { 
+                            if($course_levels[$ind] == $course_id){
+                                $proceed = true;
+                                break;
+                            }
+                        }
+
+                        // proceed!
+                        if($proceed){
+                            $select .= "<option value='".$valued[$index]->id."'>".$valued[$index]->course_name."</option>";
+                        }
+                    }
+                }
+            }
+            // if the course level is unassigned you add this option
+            if($course_level == "-3"){
+                $select .= "<option value='-3'>All Un-assigned Voteheads</option>";
+            }
+            $select .= "</select>";
+            echo $select;
         }elseif(isset($_GET['get_course_list'])){
             $course_level = $_GET['course_level'];
             
@@ -4294,6 +4512,7 @@
         }elseif (isset($_GET['change_class_name'])) {
             $new_class_name = trim($_GET['new_class_name']);
             $old_class_name = trim($_GET['old_class_name']);
+            $class_id = trim($_GET['class_id']);
 
             // attendance table 
             $update = "UPDATE `attendancetable` SET `class` = '".$new_class_name."' WHERE `class` = '".$old_class_name."'";
@@ -4390,7 +4609,7 @@
                     $classes = isJson_report($valued) ? json_decode($valued) : [];
                     for($index = 0; $index < count($classes); $index++){
                         // change the classname
-                        if($old_class_name == $classes[$index]->classes){
+                        if($class_id == $classes[$index]->id){
                             $classes[$index]->classes = $new_class_name;
                             break;
                         }
@@ -4457,6 +4676,7 @@
                     $stmt->execute();
                 }
             }
+            echo "<p class='text-success'>Class has been successfully changed!</p>";
         }elseif (isset($_GET['get_student_search'])) {
             $class_selected = $_GET['class_selected'];
 
@@ -5160,6 +5380,7 @@
             }else{
                 echo "<p>No classes to display!</p>";
             }
+            // echo "p";
         }elseif (isset($_POST['get_me_staff'])) {
             $select = "SELECT * FROM `user_tbl` WHERE `school_code` = ?";
             $stmt = $conn->prepare($select);
@@ -6549,22 +6770,26 @@ function isJson_report($string) {
     }
     function getAuthority($auth){
         $data = "";
-        if($auth=='0'){
-            $data = "Administrator";
-        }elseif ($auth=='1') {
-            $data = "Headteacher/Principal";
-        }elseif ($auth=='2') {
-            $data = "Teacher";
-        }elseif ($auth=='3') {
-            $data = "Deputy principal";
-        }elseif ($auth=='4') {
-            $data = "Staff";
-        }elseif ($auth=='5') {
-            $data = "Class teacher";
-        }elseif ($auth=='6') {
-            $data = "School Driver";
-        }else {
-            $data = $auth;
+        if ($auth == 0) {
+            $data .= "System Administrator";
+        } else if ($auth == "1") {
+            $data .= "Principal";
+        } else if ($auth == "2") {
+            $data .= "Deputy Principal Academics";
+        } else if ($auth == "3") {
+            $data .= "Deputy Principal Administration";
+        } else if ($auth == "4") {
+            $data .= "Dean of Students";
+        } else if ($auth == "5") {
+            $data .= "Finance Office";
+        } else if ($auth == "6") {
+            $data .= "Human Resource Officer";
+        } else if ($auth == "7") {
+            $data .= "Head of Department";
+        } else if ($auth == "8") {
+            $data .= "Trainer/Lecturer";
+        } else {
+            $data .= ucwords(strtolower($auth));
         }
         return $data;
     }

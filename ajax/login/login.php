@@ -147,23 +147,27 @@ require("../../assets/encrypt/functions.php");
             $rnums = $stmt->num_rows;
             if($rnums>0){
                 $data = "<p style = 'color:green;'>Correct credentials <br>Access granted as:";
-                $authority = $_SESSION['authority'];
-                if($authority==0){
-                    $data.="<br> admin</p>";
-                }elseif ($authority==1) {
-                    $data.="<br> Headteacher</p>";
-                }elseif ($authority ==2) {
-                    $data.="<br> Teacher</p>";
-                }elseif ($authority == 3) {
-                    $data.="<br> Deputy principal</p>";
-                }elseif ($authority == 4) {
-                    $data.="<br> Staff</p>";
-                }elseif ($authority == 6) {
-                    $data.="<br> Student</p>";
-                }elseif ($authority == 5) {
-                    $data.="<br> Class Teacher</p>";
-                }else {
-                    $data.=$authority;
+                $auth = $_SESSION['authority'];
+                if ($auth == 0) {
+                    $data .= "<br>". "System Administrator </p>";
+                } else if ($auth == "1") {
+                    $data .= "<br>". "Principal </p>";
+                } else if ($auth == "2") {
+                    $data .= "<br>". "Deputy Principal Academics </p>";
+                } else if ($auth == "3") {
+                    $data .= "<br>". "Deputy Principal Administration </p>";
+                } else if ($auth == "4") {
+                    $data .= "<br>". "Dean of Students </p>";
+                } else if ($auth == "5") {
+                    $data .= "<br>". "Finance Office </p>";
+                } else if ($auth == "6") {
+                    $data .= "<br>". "Human Resource Officer </p>";
+                } else if ($auth == "7") {
+                    $data .= "<br>". "Head of Department </p>";
+                } else if ($auth == "8") {
+                    $data .= "<br>". "Trainer/Lecturer </p>";
+                } else {
+                    $data .= "<br>". ucwords(strtolower($auth))."</p>";
                 }
                 echo $data;
             }else {
@@ -214,25 +218,43 @@ require("../../assets/encrypt/functions.php");
                         $data ="<p style = 'margin-top:10px;'>Your Role: ";
                         $class = '0';
                         $classasigned = '0';
-                        if($authority==0){
-                            $data.="<b>admin</b></p>";
-                        }elseif ($authority==1) {
-                            $data.="<b> Headteacher</b>";
-                            $data.="<br>".getSubjectsAndClassTaught($user_id)."</p>";
-                        }elseif ($authority ==2) {
-                            $data.="<b> Teacher</b>";
-                            $data.="<br>".getSubjectsAndClassTaught($user_id)."</p>";
-                        }elseif ($authority == 3) {
-                            $data.="<b> Deputy principal</b>";
-                            $data.="<br>".getSubjectsAndClassTaught($user_id)."</p>";
-                        }elseif ($authority == 4) {
-                            $data.="<b> Staff</b>";
-                            $data.="<br>".getSubjectsAndClassTaught($user_id)."</p>";
-                        }elseif ($authority == 5) {
-                            $data.="<b> Class teacher</b><br>";
-                            $data.="Your assigned class: ".getClassTaught($user_id)."<br>".getSubjectsAndClassTaught($user_id)."</p>";
+
+                        // authority
+                        $auth = $authority;
+                        if ($auth == 0) {
+                            $data .= "<b>". "System Administrator </b>";
+                            $data .= "<br> ".getSubjectsAndClassTaught($user_id)."";
+                        } else if ($auth == "1") {
+                            $data .= "<b>". "Principal </b>";
+                            $data .= "<br> ".getSubjectsAndClassTaught($user_id)."";
+                        } else if ($auth == "2") {
+                            $data .= "<b>". "Deputy Principal Academics </b>";
+                            $data .= "<br> ".getSubjectsAndClassTaught($user_id)."";
+                        } else if ($auth == "3") {
+                            $data .= "<b>". "Deputy Principal Administration </b>";
+                            $data .= "<br> ".getSubjectsAndClassTaught($user_id)."";
+                        } else if ($auth == "4") {
+                            $data .= "<b>". "Dean of Students </b>";
+                            $data .= "<br> ".getSubjectsAndClassTaught($user_id)."";
+                        } else if ($auth == "5") {
+                            $data .= "<b>". "Finance Office </b>";
+                            $data .= "<br> ".getSubjectsAndClassTaught($user_id)."";
+                        } else if ($auth == "6") {
+                            $data .= "<b>". "Human Resource Officer </b>";
+                            $data .= "<br> ".getSubjectsAndClassTaught($user_id)."";
+                        } else if ($auth == "7") {
+                            $data .= "<b>". "Head of Department </b>";
+                            $data .= "<br> ".getSubjectsAndClassTaught($user_id)."";
+                        } else if ($auth == "8") {
+                            $data .= "<b>". "Trainer/Lecturer </b>";
+                            $data .= "<br> ".getSubjectsAndClassTaught($user_id)."";
+                        } else {
+                            $data .= "<b>". ucwords(strtolower($auth))."</b>";
+                            $data .= "<br> ".getSubjectsAndClassTaught($user_id)."";
                         }
-                    echo $data.="<span class='hide' id='my_information'>".$row['fullname']."|".$row['dob']."|".$row['school_code']."|".$row['phone_number']."|".$row['gender']."|".$row['address']."|".$row['nat_id']."|".$row['tsc_no']."|".$row['username']."|".$row['auth']."|".$row['email']."</span>";
+                        
+                        // echo data
+                        echo $data.="<span class='hide' id='my_information'>".$row['fullname']."|".$row['dob']."|".$row['school_code']."|".$row['phone_number']."|".$row['gender']."|".$row['address']."|".$row['nat_id']."|".$row['tsc_no']."|".$row['username']."|".$row['auth']."|".$row['email']."</span>";
                 }
             }
             $stmt->close();

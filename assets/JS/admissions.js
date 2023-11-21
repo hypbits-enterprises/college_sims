@@ -65,7 +65,9 @@ function getClasses(object_id, select_class_id, value_prefix, obj = null) {
 
 function select_courses_edit() {
     // get courses list
-    getCourseListEdit(this.value);
+    // get another search by course list
+    var datapass = "?get_course_list_search=true&course_levels="+this.value;
+    sendData2("GET","administration/admissions.php",datapass,cObj("get_student_class_list"),cObj("course_list_find_loader"));
 }
 // select courses
 function select_courses() {
@@ -663,7 +665,8 @@ cObj("managestaf").onclick = function () {
     removesidebar();
     getStaff_roles_maanage();
 
-    // display 
+    // display my staff
+    viewstaffavailablebtn();
 }
 
 cObj("promoteStd").onclick = function () {
@@ -708,6 +711,28 @@ cObj("feestruct").onclick = function () {
     cObj("feestructure").classList.remove("hide");
     removesidebar();
     getClasses("fees_struct_class", "daros", "");
+    setTimeout(() => {
+        var timeout = 0;
+        var ids = setInterval(() => {
+            timeout++;
+            //after two minutes of slow connection the next process wont be executed
+            if (timeout == 1200) {
+                stopInterval(ids);
+            }
+
+            // loadings
+            if (cObj("loadings").classList.contains("hide")) {
+                cObj("daros").addEventListener("change", get_course_list_fees_struct);
+                stopInterval(ids);
+            }
+        }, 100);
+    }, 200);
+}
+
+function get_course_list_fees_struct() {
+    // get the course list
+    var datapass = "?get_course_list_fees_struct=true&course_level="+this.value;
+    sendData2("GET","administration/admissions.php",datapass,cObj("search_fees_window_course"),cObj("show_course_list_loader"));
 }
 
 cObj("expenses_btn").onclick = function () {
@@ -1064,50 +1089,46 @@ window.onload = function () {
     sendData("GET", "administration/admissions.php", datapass, cObj("admissionessentials"));
     var userid = cObj("authoriti").value;
     createTimetabe(userid);
-    if (userid == 5) {
-        var admin = document.getElementsByClassName("htbtn");
-        for (let index = 0; index < admin.length; index++) {
-            const element = admin[index];
-            element.style.display = 'none';
-        }
-        cObj("class_tr_only").classList.add("hide");
-        cObj("class_tr_onl").classList.remove("hide");
-        cObj("class_assigned_tr").value = cObj("classselected").value;
-        cObj("clas_tr_na").classList.remove("topsearch2");
-        cObj("clas_tr_na").classList.add("hide");
-        cObj("class_tr_search").classList.remove("hide");
-        cObj("updatestudinfor").classList.add("hide");
-        //in name
-        var ct_cg_val = cObj("ct_cg_gc").value;
-        if (ct_cg_val == "Yes") {
-            cObj("admitbtn").style.display = "flex";
-            cObj("updatestudinfor").classList.remove("hide");
-        }
-    } else if (userid == 2) {
-        var admin = document.getElementsByClassName("htbtn");
-        for (let index = 0; index < admin.length; index++) {
-            const element = admin[index];
-            element.style.display = 'none';
-        }
-        var admin = document.getElementsByClassName("tr_hides");
-        for (let index = 0; index < admin.length; index++) {
-            const element = admin[index];
-            element.style.display = 'none';
-        }
-        cObj("class_tr_only").classList.add("hide");
-        cObj("class_tr_onl").classList.remove("hide");
-        cObj("class_assigned_tr").value = cObj("classselected").value;
-        cObj("clas_tr_na").classList.remove("topsearch2");
-        cObj("clas_tr_na").classList.add("hide");
-        cObj("class_tr_search").classList.remove("hide");
-        cObj("updatestudinfor").classList.add("hide");
-    } else {
-        // console.log(userid);
-        cObj("clas_tr_na").classList.add("topsearch2");
-        cObj("clas_tr_na").classList.remove("hide");
-        showNyMenu(userid);
 
-    }
+    // if (userid == 5) {
+    //     var admin = document.getElementsByClassName("htbtn");
+    //     for (let index = 0; index < admin.length; index++) {
+    //         const element = admin[index];
+    //         element.style.display = 'none';
+    //     }
+    //     cObj("class_tr_only").classList.add("hide");
+    //     cObj("class_tr_onl").classList.remove("hide");
+    //     cObj("class_assigned_tr").value = cObj("classselected").value;
+    //     cObj("class_tr_search").classList.remove("hide");
+    //     cObj("updatestudinfor").classList.add("hide");
+    //     //in name
+    //     var ct_cg_val = cObj("ct_cg_gc").value;
+    //     if (ct_cg_val == "Yes") {
+    //         cObj("admitbtn").style.display = "flex";
+    //         cObj("updatestudinfor").classList.remove("hide");
+    //     }
+    // } else if (userid == 2) {
+    //     var admin = document.getElementsByClassName("htbtn");
+    //     for (let index = 0; index < admin.length; index++) {
+    //         const element = admin[index];
+    //         element.style.display = 'none';
+    //     }
+    //     var admin = document.getElementsByClassName("tr_hides");
+    //     for (let index = 0; index < admin.length; index++) {
+    //         const element = admin[index];
+    //         element.style.display = 'none';
+    //     }
+    //     cObj("class_tr_only").classList.add("hide");
+    //     cObj("class_tr_onl").classList.remove("hide");
+    //     cObj("class_assigned_tr").value = cObj("classselected").value;
+    //     cObj("class_tr_search").classList.remove("hide");
+    //     cObj("updatestudinfor").classList.add("hide");
+    // } else {
+    //     // console.log(userid);
+    //     showNyMenu(userid);
+
+    // }
+
     /***********start of class displays************/
     if (typeof (cObj("showmystuds")) != 'undefined' && cObj("showmystuds") != null) {
         cObj("showmystuds").onclick = function () {
@@ -1207,14 +1228,14 @@ window.onload = function () {
     // get if the reports button is set
     var datapass = "set_report_button=true";
     sendDataPost("POST", "/sims/ajax/administration/admissions.php", datapass, cObj("set_reports"), cObj("set_reports2"));
-    // get the student list 
-    // 
-    // load initial data
+    // get the student list
+
+    // allow editing of school logo
+    cObj("sch_logos").onclick = function () {
+        cObj("update_school_profile").click();
+    }
 
     if (auth == '1') {
-        cObj("sch_logos").onclick = function () {
-            cObj("update_school_profile").click();
-        }
         //get number of students
         var datapass = "?getStudentCount=true";
         sendData("GET", "administration/admissions.php", datapass, cObj("studentscount"));
@@ -1271,10 +1292,9 @@ window.onload = function () {
         var datapass = "?active_exams_lts=true";
         sendData("GET", "academic/academic.php", datapass, cObj("active_examination"));
 
+        // subject list
         var datapass = "?subs_lists=true";
         sendData("GET", "academic/academic.php", datapass, cObj("my_subjects"));
-
-        //head teacher dashboard end
     }
 
     //deputy prncipal
@@ -1461,7 +1481,7 @@ cObj("display_my_students").onclick = function () {
 }
 
 function createTimetabe(id) {
-    if (id == 2 || id == 5) {
+    if (id == 5 || id == 6 || id == 7 || id == 8) {
         cObj("create_tt_in").classList.add("hide");
     }
 }
@@ -1733,51 +1753,48 @@ function clicks() {
                         }
                     }
 
-                    // staff role
+                    // staff role assignment
                     var auth = splitdata[11];
                     var data = "";
                     if (auth == 0) {
-                        data += "Administrator";
+                        data += "System Administrator";
                     } else if (auth == "1") {
-                        data += "Headteacher";
+                        data += "Principal";
                     } else if (auth == "2") {
-                        data += "Teacher";
+                        data += "Deputy Principal Academics";
                     } else if (auth == "3") {
-                        data += "Deputy principal";
+                        data += "Deputy Principal Administration";
                     } else if (auth == "4") {
-                        data += "Staff";
-                    } else if (auth == "6") {
-                        data += "Student";
+                        data += "Dean of Students";
                     } else if (auth == "5") {
-                        data += "Class Teacher";
+                        data += "Finance Office";
+                    } else if (auth == "6") {
+                        data += "Human Resource Officer";
+                    } else if (auth == "7") {
+                        data += "Head of Department";
+                    } else if (auth == "8") {
+                        data += "Trainer/Lecturer";
                     } else {
                         data += auth;
                     }
                     cObj("myauthorities").innerHTML = "<span style='color:blue;'>{" + data + "}</span>";
-                    // getStaff_roles_maanage();
-                    setTimeout(() => {
-                        var timeout = 0;
-                        var ids = setInterval(() => {
-                            timeout++;
-                            //after two minutes of slow connection the next process wont be executed
-                            if (timeout == 1200) {
-                                stopInterval(ids);
+
+                    // set the value of the role
+                    if(cObj("auths") != undefined){
+                        var authority_children = cObj("auths").children;
+                        for (let index = 0; index < authority_children.length; index++) {
+                            const element = authority_children[index];
+                            console.log(element.value +" "+ auth);
+                            if (element.value == auth) {
+                                element.selected = true;
+                                console.log(element.value +" "+ auth+" find");
+                                break;
                             }
-                            if (cObj("load_roles43").classList.contains("hide")) {
-                                setTimeout(() => {
-                                    var staff_role_class = document.getElementsByClassName("staff_role_class");
-                                    for (let index = 0; index < staff_role_class.length; index++) {
-                                        const element = staff_role_class[index];
-                                        if (element.value == auth) {
-                                            element.selected = true;
-                                            break;
-                                        }
-                                    }
-                                }, 500);
-                                stopInterval(ids);
-                            }
-                        }, 100);
-                    }, 100);
+                        }
+                    }
+                    // end of staff role assignment
+
+
                     cObj("del" + splitdata[9] + "").selected = true;
                     cObj("act" + splitdata[10] + "").selected = true;
                     cObj("staffid").innerText = splitdata[13];
@@ -1945,28 +1962,36 @@ cObj("sach").onchange = function () {
         cObj("admnosd").classList.add("hide");
         cObj("classenroll").classList.add("hide");
         cObj("bcnos").classList.add("hide");
+        cObj("course_lists_search_bar").classList.add("hide");
     } else if (this.value == "AdmNo") {
         cObj("swindow").classList.remove("hide");
         cObj("named").classList.add("hide");
         cObj("admnosd").classList.remove("hide");
         cObj("classenroll").classList.add("hide");
+        cObj("course_lists_search_bar").classList.add("hide");
         cObj("bcnos").classList.add("hide");
     } else if (this.value == "class") {
         cObj("swindow").classList.remove("hide");
         cObj("named").classList.add("hide");
         cObj("admnosd").classList.add("hide");
         cObj("classenroll").classList.remove("hide");
+        cObj("course_lists_search_bar").classList.remove("hide");
         cObj("bcnos").classList.add("hide");
     } else if (this.value == "bcno") {
         cObj("swindow").classList.remove("hide");
         cObj("named").classList.add("hide");
         cObj("admnosd").classList.add("hide");
         cObj("classenroll").classList.add("hide");
+        cObj("course_lists_search_bar").classList.add("hide");
         cObj("bcnos").classList.remove("hide");
     } else if (this.value == "allstuds") {
+        cObj("course_lists_search_bar").classList.add("hide");
         cObj("swindow").classList.add("hide");
+        cObj("bcnos").classList.add("hide");
     } else if (this.value == "regtoday") {
+        cObj("course_lists_search_bar").classList.add("hide");
         cObj("swindow").classList.add("hide");
+        cObj("bcnos").classList.add("hide");
     }
 }
 
@@ -2004,6 +2029,14 @@ cObj("findingstudents").onclick = function () {
                     redBorder(cObj("selclass"));
                     erroro++;
                 }
+            } else {
+                erroro++;
+            }
+            
+            // get course_list
+            if (cObj("course_chosen_search") != null) {
+                grayBorder(cObj("course_chosen_search"));
+                datapassing += "&course_chosen=" + valObj("course_chosen_search");
             } else {
                 erroro++;
             }
@@ -3900,11 +3933,26 @@ cObj("close_add_expense2").onclick = function () {
 }
 cObj("add_expense").onclick = function () {
     cObj("add_expense_par").classList.remove("hide");
-    var datapass = "?get_class_add_expense=true";
-    sendData2("GET", "finance/financial.php", datapass, cObj("class_list_fees"), cObj("loadings213111"));
+    getClasses("class_list_fees","course_level_fees_structure","","loadings213111");
+    setTimeout(() => {
+        var ids = setInterval(() => {
+            if (cObj("loadings213111").classList.contains("hide")) {
+                // add an event listener
+                cObj("course_level_fees_structure").addEventListener("change",getTheCourseList);
+                stopInterval(ids);
+            }
+        }, 100);
+    }, 200);
 }
+
+function getTheCourseList() {
+    var datapass = "?get_course_fees_structure=true&course_level="+this.value;
+    sendData2("GET","administration/admissions.php",datapass,cObj("course_fees_structure"),cObj("loading_course_level_fees_struct"));
+}
+
 cObj("save_add_expense").onclick = function () {
     //check for errors
+    cObj("err_handler_10").innerHTML = "";
     var err = checkBlank("exp_name");
     err += checkBlank("term_one");
     err += checkBlank("term_two");
@@ -3914,41 +3962,46 @@ cObj("save_add_expense").onclick = function () {
         err++;
     }
     if (err == 0) {
-        cObj("err_handler_10").innerHTML = "<p class='red_notice'></p>";
-        //check if classes is selected
-        var sell = 0;
-        var class_list = "";
-        var checkers = document.getElementsByClassName("add_expense_check");
-        for (let index = 0; index < checkers.length; index++) {
-            const element = checkers[index];
-            if (element.checked == true) {
-                sell++;
-                class_list += "|" + element.id.substr(6) + "|,";
-            }
+        // check if the courses are present
+        if(cObj("course_level_fees_structure") == undefined){
+            cObj("err_handler_10").innerHTML = "<p class='red_notice'>Courses levels are not set!</p>";
+            return 0;
         }
-        if (sell > 0) {
-            class_list = class_list.substr(0, class_list.length - 1);
-            cObj("err_handler_10").innerHTML = "";
+        // check if the course list is present
+        if(cObj("course_lists_fees_structure")  == undefined){
+            cObj("err_handler_10").innerHTML = "<p class='red_notice'>Courses are not set!</p>";
+            return 0;
+        }
+        err = 0;
+        err += checkBlank("course_lists_fees_structure");
+        err += checkBlank("course_level_fees_structure");
+        if (err == 0) {
+            //check if classes is selected
             //get class list and get the datas
             var expense_name = valObj("exp_name");
             var term_one = valObj("term_one");
             var term_two = valObj("term_two");
             var term_three = valObj("term_three");
             var roles = valObj("boarders_regular");
-            var datapass = "?add_expense=true&expense_name=" + expense_name + "&term_one=" + term_one + "&term_two=" + term_two + "&term_three=" + term_three + "&class_lists=" + class_list + "&roles=" + roles;
+            var course = valObj("course_lists_fees_structure");
+            var course_level = valObj("course_level_fees_structure");
+
+            // send to the server for processing!
+            var datapass = "?add_expense=true&expense_name=" + expense_name + "&term_one=" + term_one + "&term_two=" + term_two + "&term_three=" + term_three + "&course_level=" + course_level + "&roles=" + roles+"&course="+course;
             sendData1("GET", "finance/financial.php", datapass, cObj("err_handler_10"));
             setTimeout(() => {
                 var ids = setInterval(() => {
                     if (cObj("loadings").classList.contains("hide")) {
                         cObj("err_handler_10").innerHTML = "";
                         cObj("exp_names").reset();
-                        cObj("add_expense_par").classList.add("hide");
+                        // cObj("add_expense_par").classList.add("hide");
+                        cObj("close_add_expense2").click();
                         stopInterval(ids);
                     }
                 }, 100);
             }, 200);
-        } else {
-            cObj("err_handler_10").innerHTML = "<p class='red_notice'>Select a class to proceed!</p>";
+        }else{
+            cObj("err_handler_10").innerHTML = "<p class='red_notice'>Check all fields covered with red border!</p>";
         }
     } else {
         cObj("err_handler_10").innerHTML = "<p class='red_notice'>Check for errors for the fields covered with red border!</p>";
@@ -3970,7 +4023,7 @@ function getMyClassList() {
                 var remove_class = document.getElementsByClassName("remove_class");
                 for (let index = 0; index < remove_class.length; index++) {
                     const element = remove_class[index];
-                    element.addEventListener("click", removeClassSys)
+                    element.addEventListener("click", promptUserDeleteClass);
                 }
                 var arrange_class = document.getElementsByClassName("arrange_class");
                 for (let index1 = 0; index1 < arrange_class.length; index1++) {
@@ -3989,9 +4042,16 @@ function getMyClassList() {
 }
 function changeClassName() {
     var our_id = this.id.substr(14);
-    cObj("old_clas_name").innerText = classNameAdms(our_id);
-    cObj("old_class_name").value = our_id;
-    cObj("change_class_name_window").classList.remove("hide");
+    
+    if (cObj("class_value_"+our_id) != undefined) {
+        var class_value = hasJsonStructure(valObj("class_value_"+our_id)) ? JSON.parse(valObj("class_value_"+our_id)) : [];
+        cObj("old_clas_name").innerText = classNameAdms(class_value.classes);
+        cObj("old_class_name_edit").value = class_value.classes;
+        cObj("new_class_name").value = class_value.classes;
+        cObj("class_id").value = class_value.id;
+        cObj("change_class_name_window").classList.remove("hide");
+        
+    }
 }
 
 cObj("cancel_class_change").onclick = function () {
@@ -4000,9 +4060,10 @@ cObj("cancel_class_change").onclick = function () {
 
 cObj("accept_class_change").onclick = function () {
     var err = checkBlank("new_class_name");
-    err += checkBlank("old_class_name");
+    err += checkBlank("class_id");
+    err += checkBlank("old_class_name_edit");
     if (err == 0) {
-        var datapass = "?change_class_name=true&new_class_name=" + valObj("new_class_name") + "&old_class_name=" + valObj("old_class_name");
+        var datapass = "?change_class_name=true&new_class_name=" + valObj("new_class_name") + "&class_id=" + valObj("class_id")+"&old_class_name="+cObj("old_class_name_edit");
         sendData2("GET", "administration/admissions.php", datapass, cObj("add_class_err_handler"), cObj("class_list_clock"));
         setTimeout(() => {
             var timeout = 0;
@@ -4016,10 +4077,13 @@ cObj("accept_class_change").onclick = function () {
                     cObj("new_class_name").value = "";
                     getMyClassList();
                     cObj("cancel_class_change").click();
+                    setTimeout(() => {
+                        cObj("add_class_err_handler").innerHTML = "";
+                    }, 3000);
                     stopInterval(ids);
                 }
             }, 100);
-        }, 500);
+        }, 100);
     }
 }
 
@@ -4045,8 +4109,28 @@ function arrangeClasses() {
         }, 100);
     }, 500);
 }
-function removeClassSys() {
-    var class_val = this.id.substr(3);
+function promptUserDeleteClass() {
+    // get the row id
+    var this_data = this.id.substr(3);
+
+    // get the class name and set to the prompt message
+    var class_data = hasJsonStructure(valObj("class_value_"+this_data)) ? JSON.parse(valObj("class_value_"+this_data)) : [];
+    cObj("delete_class_id").innerText = class_data.classes;
+    cObj("delete_classes_id").value = class_data.id;
+
+    // get the prompt window
+    cObj("del_classes_win").classList.remove("hide");
+}
+// delete class
+cObj("close_del_cl_win").onclick = function () {
+    cObj("del_classes_win").classList.add("hide");
+}
+
+cObj("del_class_btn").onclick = function () {
+    removeClassSys(valObj("delete_classes_id"));
+}
+function removeClassSys(class_id) {
+    var class_val = class_id;
     var datapass = "?remove_class=" + class_val;
     sendData1("GET", "administration/admissions.php", datapass, cObj("add_class_err_handler"));
     setTimeout(() => {
@@ -4062,6 +4146,7 @@ function removeClassSys() {
                 setTimeout(() => {
                     cObj("add_class_err_handler").innerHTML = "";
                 }, 10000);
+                cObj("close_del_cl_win").click();
                 stopInterval(ids);
             }
         }, 100);
@@ -5761,7 +5846,7 @@ function getStaff_roles() {
                 stopInterval(ids);
             }
             if (cObj("load_roles2").classList.contains("hide")) {
-                var data_to_display = "<select  class='form-control' style='width: 90%;' name='authority' id='authority'><option value='' hidden>Select..</option><option value='0'>Administrator</option><option value='1'>Headteacher/Principal</option><option value='3'>Deputy principal</option><option value='2'>Teacher</option><option value='5'>Class teacher</option><option value='6'>School Driver</option>";
+                var data_to_display = "<select  class='form-control' style='width: 90%;' name='auths' id='auths'><option value='' hidden>Select Role</option><option value='0'>System Administrator</option><option value='1'>Principal</option><option value='2'>Deputy Principal Academics</option><option value='3'>Deputy Principal Administration</option><option value='4'>Dean of students</option><option value='5'>Finance officer</option><option value='6'>Human resource officer</option><option value='7'>Head of department</option><option value='8'>Trainer/Lecturer</option>";
                 // console.log(cObj("role_data_23").innerText);
                 var data_in = cObj("role_data_2322").innerText.length;
                 if (data_in > 0) {
@@ -5794,7 +5879,8 @@ function getStaff_roles_maanage() {
                 stopInterval(ids);
             }
             if (cObj("load_roles43").classList.contains("hide")) {
-                var data_to_display = "<select  class='form-control' style='width: 90%;' name='auths' id='auths'><option class='staff_role_class' value='' hidden>Select..</option><option class='staff_role_class' value='0'>Administrator</option><option class='staff_role_class' value='1'>Headteacher/Principal</option><option class='staff_role_class' value='3'>Deputy principal</option><option class='staff_role_class' value='2'>Teacher</option><option class='staff_role_class' value='5'>Class teacher</option><option class='staff_role_class' value='6'>School Driver</option>";
+                // var data_to_display = "<select  class='form-control' style='width: 90%;' name='auths' id='auths'><option class='staff_role_class' value='' hidden>Select..</option><option class='staff_role_class' value='0'>Administrator</option><option class='staff_role_class' value='1'>Headteacher/Principal</option><option class='staff_role_class' value='3'>Deputy principal</option><option class='staff_role_class' value='2'>Teacher</option><option class='staff_role_class' value='5'>Class teacher</option><option class='staff_role_class' value='6'>School Driver</option>";
+                var data_to_display = "<select  class='form-control' style='width: 90%;' name='auths' id='auths'><option value='' hidden>Select Role</option><option value='0'>System Administrator</option><option value='1'>Principal</option><option value='2'>Deputy Principal Academics</option><option value='3'>Deputy Principal Administration</option><option value='4'>Dean of students</option><option value='5'>Finance officer</option><option value='6'>Human resource officer</option><option value='7'>Head of department</option><option value='8'>Trainer/Lecturer</option>";
                 // console.log(cObj("role_data_23").innerText);
                 var data_in = cObj("staff_detail_out").innerText.length;
                 if (data_in > 0) {

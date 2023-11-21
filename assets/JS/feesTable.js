@@ -130,10 +130,10 @@ function viewTransactions() {
     cObj("payment_details_window").classList.remove("hide");
     // get the data of the transaction
     var data = valObj("support_docs_"+this_id);
-    console.log(data);
+    // console.log(data);
     if (hasJsonStructure(data)) {
         data = JSON.parse(data);
-        console.log(data);
+        // console.log(data);
         cObj("payment_description_2").innerText = data[3];
         cObj("payment_description_3").innerText = data[12]+" : "+data[11];
         cObj("payment_description_4").innerText = data[4];

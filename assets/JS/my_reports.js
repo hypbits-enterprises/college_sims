@@ -1,9 +1,9 @@
 // set the report button to the different roles present in the database
 function getMyReportclasses() {
     var datapass = "getmystudents=select_report_class";
-    sendDataPost("POST","/sims/ajax/administration/admissions.php",datapass,cObj("reports_classes"),cObj("class_load_report"));
+    sendDataPost("POST","ajax/administration/admissions.php",datapass,cObj("reports_classes"),cObj("class_load_report"));
     var datapass = "getmystudents=student_class_fin";
-    sendDataPost("POST","/sims/ajax/administration/admissions.php",datapass,cObj("class_fin_in"),cObj("class_fin_in_load"));
+    sendDataPost("POST","ajax/administration/admissions.php",datapass,cObj("class_fin_in"),cObj("class_fin_in_load"));
 }
 
 cObj("select_entity").onchange = function () {

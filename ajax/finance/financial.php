@@ -10,13 +10,14 @@
         include("../../comma.php");
         if (isset($_GET['payfordetails'])) {
             $class = "";
+            $course_value = isset($_GET['course_value']) ? $_GET['course_value'] : "0";
             if (isset($_GET['class_use'])) {
                 // object id
                 $object_id = "payfor";
                 if (isset($_GET['object_id'])) {
                     $object_id = $_GET['object_id'];
                 }
-                $class = "%|".$_GET['class_use']."|%";
+                $class = "".$_GET['class_use']."";
                 $student_admission = $_GET['student_admission'];
                 if ($_GET['class_use'] == "-1" || $_GET['class_use'] == "-2") {
                     $select = "<select class='payments_options' id='$object_id'><option value='' hidden>Select option..</option>";
@@ -24,7 +25,7 @@
                     $select.="</select>";
                     echo $select;
                 }else{
-                    $select = "SELECT `expenses` FROM `fees_structure` WHERE `activated` = 1 and `classes` like ?";
+                    $select = "SELECT * FROM `fees_structure` WHERE `course` = '".$course_value."' AND `classes` = ? and `activated` = 1";
                     $stmt = $conn2->prepare($select);
                     $stmt->bind_param("s",$class);
                     $stmt->execute();
@@ -144,6 +145,7 @@
                 $date = date("Y-m-d");
                 $times = date("H:i:s");
                 $balance = getBalance($admnos,$term,$conn2);
+                $student_data = students_details($admnos,$conn2);
                 $select = "SELECT `stud_admin` , `transaction_id`, `status`, `transaction_code`, `mode_of_pay` , (SELECT(concat(`first_name`,' ',`second_name`)) FROM `student_data` WHERE `adm_no` = `stud_admin`) AS 'Name' ,  `date_of_transaction` , `time_of_transaction` , `amount` , `balance`, `payment_for` FROM `finance` WHERE `stud_admin` = ? ORDER BY `transaction_id` DESC LIMIT 5 ";
                 $stmt = $conn2->prepare($select);
                 $stmt->bind_param("s",$admnos);
@@ -184,8 +186,8 @@
                     // dont display the fees change information at the momment
                     $headings = "";
                     $fees_change = "";
+                    
                     // end of information
-
                     $balancecalc = calculatedBalanceReport($admnos,$term,$conn2);
                     $fees_paid = getFeespaidByStudent($admnos,$conn2);
                     $discounts = getDiscount($admnos,$conn2);
@@ -194,12 +196,60 @@
                     if (isset($_GET['student_name_cr'])) {
                         $default_student_ids = $_GET['student_name_cr'];
                     }
-                    $tableinformation1 = "<p style='text-align:center;margin-bottom:10px;'>Displaying results for <strong class='student_names' id='$default_student_ids'>".$name."</strong>".$boarding." ".$transporter."<br> Student id: <strong id = 'students_id_ddds'>".$admnos."</strong><br>Student Class : ".className($getclass)."<br><span id=''>Discount : ".$discount."</span></p><hr>";
-                    $tableinformation1.="<p style='margin:10px 0;' >As at <b>".$times."</b> on <b>".$date."</b> <br>Term: <b>".$term."</b><br><span style='color:gray;' ><b>Total Fees Paid this Academic Year (without provisionals) : Kes ".number_format($fees_paid)."</b><br><span style='color:gray;' ><b>Last academic year balance : Kes ".number_format($last_academic_balance)."</b><br><span style='color:gray;' ><b>Total fees to be paid as per <b>".$term."</b>: ".$fees_to_pay."</b></span><br><span style='color:gray;'><b>System calculated balance: Ksh</b> ".$balancecalc.".</span>".$headings.$fees_change."<hr><strong>Current Balance is: Ksh <span id='closed_balance'  class='queried' title='click to change the student balance'>".$balance."</span></strong><input type='text' value='".$admnos."'  id='presented' hidden></p>";
-                    $tableinformation1.="<p class='red_notice fa-sm hide' id='read_note'>Changing of the student balance is not encouraged, its to be done only when the student is newly registered to the system or there is change in the fees structure</p><br>";
-                    $tableinformation1.="<div class='hide' id='fee_balance_new'><input type='number' id='new_bala_ces' placeholder='Enter New Balance'> <div class='acc_rej'><p class = 'redAcc' id='accBalance'>✔</p><p class='greenRej' id='rejectBalances' >✖</p></div></div>";
-                    $tableinformation ="<p>- Below are the last 5 transactions recorded or less<br>- Find all the transaction made by the student by clicking the <b>Manage transaction</b> button at the menu.</p><p id='reversehandler'></p><p style = 'font-weight:550;font-size:17px;text-align:center;'><u>Finance table</u></p>";
-                    $tableinformation.="<p class = 'hide class_studs_in'>".explode("^",$names)[1]."</p>";
+
+                    // get the course name
+                    $course_name = "N/A";
+                    $select_course = "SELECT * FROM `settings` WHERE `sett` = 'courses'";
+                    $statement = $conn2->prepare($select_course);
+                    $statement->execute();
+                    $result = $statement->get_result();
+                    if($result){
+                        if($row = $result->fetch_assoc()){
+                            $valued = $row['valued'];
+                            $courses_list = isJson($valued) ? json_decode($valued) : [];
+
+                            // loop through  the course
+                            for ($index=0; $index < count($courses_list); $index++) { 
+                                if ($courses_list[$index]->id == $student_data['course_done']) {
+                                    $course_name = $courses_list[$index]->course_name;
+                                }
+                            }
+                        }
+                    }
+                    // end of getting course name
+                    // removed text details
+                    // "<br> <b>Student Reg-No</b>.: <strong id = 'students_id_ddds'>" . $admnos . "</strong><br><b>Student Course Level</b> : " . className($getclass) . "<br><b>Course Enrolled</b> : " . ucwords(strtolower($course_name)) . "<br><span id=''><b>Discount</b> : " . $discount . "</span>"
+
+                    $tableinformation1 = "<p style='text-align:center;margin-bottom:10px;'>Displaying results for <strong class='student_names' id='$default_student_ids'>" . $name . "</strong>" . $boarding . " " . $transporter . "</p>";
+                    $tableinformation1.="<div class='tableme p-1'>
+                                            <table class='tableme'>
+                                                <tr>
+                                                    <th>Student Details</th>
+                                                    <th>Value</th>
+                                                </tr>
+                                                <tr>
+                                                    <td><b>Student Reg-No</b>.</td>
+                                                    <td><strong id = 'students_id_ddds'>" . $admnos . "</strong></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><b>Student Course Level</b></td>
+                                                    <td>" . className($getclass) . "</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><b>Course Enrolled</b></td>
+                                                    <td><input hidden id='course_value_finance' value='".$student_data['course_done']."'>" . ucwords(strtolower($course_name)) . "</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><b>Discount</b> </td>
+                                                    <td>" . $discount . "</td>
+                                                </tr>
+                                            </table>
+                                        </div><hr>";
+                    $tableinformation1 .= "<p style='margin:10px 0;' >As at <b>" . $times . "</b> on <b>" . $date . "</b> <br>Term: <b>" . $term . "</b><br><span style='color:gray;' ><b>Total Fees Paid this Academic Year (without provisionals) : Kes " . number_format($fees_paid) . "</b><br><span style='color:gray;' ><b>Last academic year balance : Kes " . number_format($last_academic_balance) . "</b><br><span style='color:gray;' ><b>Total fees to be paid as per <b>" . $term . "</b>: " . $fees_to_pay . "</b></span><br><span style='color:gray;'><b>System calculated balance: Ksh</b> " . $balancecalc . ".</span>" . $headings . $fees_change . "<hr><strong>Current Balance is: Ksh <span id='closed_balance'  class='queried' title='click to change the student balance'>" . $balance . "</span></strong><input type='text' value='" . $admnos . "'  id='presented' hidden></p>";
+                    $tableinformation1 .= "<p class='red_notice fa-sm hide' id='read_note'>Changing of the student balance is not encouraged, its to be done only when the student is newly registered to the system or there is change in the fees structure</p><br>";
+                    $tableinformation1 .= "<div class='hide' id='fee_balance_new'><input type='number' id='new_bala_ces' placeholder='Enter New Balance'> <div class='acc_rej'><p class = 'redAcc' id='accBalance'>✔</p><p class='greenRej' id='rejectBalances' >✖</p></div></div>";
+                    $tableinformation = "<p>- Below are the last 5 transactions recorded or less<br>- Find all the transaction made by the student by clicking the <b>Manage transaction</b> button at the menu.</p><p id='reversehandler'></p><p style = 'font-weight:550;font-size:17px;text-align:center;'><u>Finance table</u></p>";
+                    $tableinformation .= "<p class = 'hide class_studs_in'>" . explode("^", $names)[1] . "</p>";
                     // set class and fees balances
                     if (isset($_GET['class_id']) && isset($_GET['fees_bal_id'])) {
                         $tableinformation1.="<input type ='hidden' id='".$_GET['class_id']."' value='$getclass'>";
@@ -1036,13 +1086,87 @@
             }else{
                 echo "<p class='border border-danger p-1 m-1 text-danger'>An error occured!</p>";
             }
+        }elseif(isset($_GET['get_fees_struct_courses'])){
+            // store course level
+            $course_level_name = $_GET['course_level'];
+            $student_course_id = $_GET['course_id'];
+
+            // get all classes
+            $select = "SELECT * FROM `settings` WHERE `sett` = 'class'";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $course_levels = [];
+            
+            // get results
+            if($result){
+                if($row = $result->fetch_assoc()){
+                    $course_levels = isJson($row['valued']) ? json_decode($row['valued']) : [];
+                }
+            }
+
+            // course id
+            $course_id = null;
+            for($index = 0; $index < count($course_levels); $index++){
+                if($course_levels[$index]->classes == $course_level_name){
+                    $course_id = $course_levels[$index]->id;
+                    break;
+                }
+            }
+
+            // get the courses
+            $select = "SELECT * FROM `settings` WHERE `sett` = 'courses'";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            // generate the select option
+            $selector = "<select class='form-control' id='course_chosen_fees_structure'><option hidden value=''>Select course</option>";
+            if($result){
+                if($row = $result->fetch_assoc()){
+                    $my_courses = isJson($row['valued']) ? json_decode($row['valued']) : [];
+                    for($index = 0; $index < count($my_courses); $index++){
+                        // get courses
+                        $courses_levels = isJson($my_courses[$index]->course_levels) ? json_decode($my_courses[$index]->course_levels) : [];
+
+                        // loop through all courses to see if its the one in this level
+                        $present = false;
+                        for($in = 0; $in < count($courses_levels); $in++){
+                            if($courses_levels[$in] == $course_id){
+                                $present = true;
+                            }
+                        }
+                        if($present){
+                            $selector .= "<option ".($student_course_id == $my_courses[$index]->id ? "selected" : "")." value='".$my_courses[$index]->id."'>".$my_courses[$index]->course_name."</option>";
+                        }
+                    }
+                }
+            }
+            $selector.="</select>";
+            echo $selector;
         }elseif (isset($_GET['feesstructurefind'])) {
             $class = $_GET['class'];
-            $select = "SELECT `expenses`,`roles` ,`TERM_1`,`TERM_2`,`TERM_3`,`classes`,`activated`,`ids` FROM fees_structure WHERE `classes` LIKE ?";
-            $daros = "%|".$class."|%";
+            $course_id = $_GET['course_id'];
+            $select = "SELECT * FROM `fees_structure` WHERE `classes` LIKE ? AND `course` = '".$course_id."'";
+            $daros = "%".$class."%";
             if($class == "-3"){
-                $select = "SELECT `expenses`,`roles` ,`TERM_1`,`TERM_2`,`TERM_3`,`classes`,`activated`,`ids` FROM fees_structure WHERE `classes` = ?";
-                $daros = "";
+                // get all the course levels that dont have a class and a course
+                $select = "SELECT * FROM `settings` WHERE `sett` = 'class';";
+                $stmt = $conn2->prepare($select);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                $where_clause = "";
+                if($result){
+                    if($row = $result->fetch_assoc()){
+                        // valued
+                        $valued = isJson($row['valued']) ? json_decode($row['valued']) : [];
+                        for($index = 0; $index < count($valued); $index++){
+                            $where_clause .= " AND `classes` != '".$valued[$index]->classes."'";
+                        }
+                    }
+                }
+                $select = "SELECT * FROM `fees_structure` WHERE `classes` != ? AND `classes` != '-1' AND `classes` != '-2' ".$where_clause;
+                $daros = "-3";
             }
             $stmt = $conn2->prepare($select);
             $stmt->bind_param("s",$daros);
@@ -1073,7 +1197,7 @@
                         $total3 =0;
                         $index = 1;
                 while ($row = $res->fetch_assoc()) {
-                    $table.="<tr><td>".$index."</td><td class='vote_heads' id = 'expense_name".$row['ids']."'>".$row['expenses']."</td>";
+                    $table.="<tr><td><input hidden id='fees_structure_value_".$row['ids']."' value='".json_encode($row)."'>".$index."</td><td class='vote_heads' id = 'expense_name".$row['ids']."'>".$row['expenses']."</td>";
                     $table.="<td class = 't-one' id = 't_one".$row['ids']."'>".$row['TERM_1']."</td>";
                     $table.="<td class = 't-two' id = 't_two".$row['ids']."'>".$row['TERM_2']."</td>";
                     $table.="<td class = 't-three' id = 't_three".$row['ids']."'>".$row['TERM_3']."</td>";
@@ -1091,6 +1215,36 @@
                 $table.="<tr><td colspan='2'><b>Total</b></td><td>Ksh ".$total1."</td><td>Ksh ".$total2."</td><td>Ksh ".$total3."</td></tr><tr><td colspan='2' ><b>Grand total </b></td><td>Ksh ".($total1+$total2+$total3)."</td></tr></table></div>";
                 echo $table;
             }
+        }elseif(isset($_GET['get_levels_fees_structure'])){
+            // course level
+            $get_levels_fees_structure = $_GET['get_levels_fees_structure'];
+            $course_level = $_GET['course_level'];
+
+            // get the courses level
+            $select = "SELECT * FROM `settings` WHERE `sett` = 'class'";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            // hold the select
+            $string_to_display = "<select class='form-control ' id='fees_structure_edit_level'> <option value='' hidden>Select..</option>";
+            if ($result) {
+                if ($row = $result->fetch_assoc()) {
+                    // retrieve class lists from the database
+                    $class = isJson($row['valued']) ? json_decode($row['valued']) : [];
+                    $all_classes = [];
+                    for ($index=0; $index < count($class); $index++) { 
+                        array_push($all_classes,$class[$index]->classes);
+                    }
+                    
+                    // create the select
+                    for ($index=count($all_classes)-1; $index >= 0; $index--) {
+                        $string_to_display.="<option ".($course_level == $all_classes[$index] ? "selected" : "")." value='".$all_classes[$index]."'>".className($all_classes[$index])."</option>";
+                    }
+                }
+            }
+            $string_to_display.="</select>";
+            echo $string_to_display;
         }elseif (isset($_GET['m_pesa_code'])) {
             $mpesa_code = $_GET['m_pesa_code'];
             $select = "SELECT `transaction_code` FROM finance WHERE `transaction_code` = ? AND `mode_of_pay` = 'mpesa' ";
@@ -1207,15 +1361,13 @@
                 }
             }
         }elseif (isset($_GET['add_expense'])) {
-            $insert = "INSERT INTO `fees_structure` (`expenses`,`TERM_1`,`TERM_2`,`TERM_3`,`classes`,`activated`,`roles`,`date_changed`,`term_1_old`,`term_2_old`,`term_3_old`) VALUES (?,?,?,?,?,?,?,?,?,?,?)";
+            $insert = "INSERT INTO `fees_structure` (`expenses`,`TERM_1`,`TERM_2`,`TERM_3`,`classes`,`roles`,`course`) VALUES (?,?,?,?,?,?,?)";
             $stmt = $conn2->prepare($insert);
-            $activated = 1;
-            $date_changed = date("Y-m-d");
-            $stmt->bind_param("sssssssssss",$_GET['expense_name'],$_GET['term_one'],$_GET['term_two'],$_GET['term_three'],$_GET['class_lists'],$activated,$_GET['roles'],$date_changed,$_GET['term_one'],$_GET['term_two'],$_GET['term_three']);
+            $stmt->bind_param("sssssss",$_GET['expense_name'],$_GET['term_one'],$_GET['term_two'],$_GET['term_three'],$_GET['course_level'],$_GET['roles'],$_GET['course']);
             if($stmt->execute()){
-                echo  "<p class = 'green_notice'>Votehead inserted successfully!</p>";
-            }else {
-                echo  "<p class = 'red_notice'>Votehead not inserted!</p>";
+                echo "<p class='text-success'>Fees structure has been set successfully!</p>";
+            }else{
+                echo "<p class='text-danger'>An error occured! Try again later</p>";
             }
         }elseif (isset($_GET['delete_fee'])) {
             $fees_id = $_GET['delete_fee'];
@@ -1260,14 +1412,17 @@
                 }
             }
         }elseif (isset($_GET['update_fees_information'])) {
+            // get the data passed
             $expensename = $_GET['fees_name'];
             $old_expense_name = $_GET['old_names'];
             $t_one = $_GET['t_one'];
             $t_two = $_GET['t_two'];
             $t_three = $_GET['t_three'];
             $fee_ids = $_GET['fee_ids'];
-            $class_list = $_GET['class_list'];
+            $course = $_GET['course'];
+            $course_level = $_GET['course_level'];
             $roles = $_GET['roles'];
+
             // get the previous fees structures for the entity
             $select = "SELECT `TERM_1`,`TERM_2`,`TERM_3` FROM `fees_structure` WHERE `ids` = ?;";
             $stmt = $conn2->prepare($select);
@@ -1285,10 +1440,10 @@
                 }
             }
 
-            $update = "UPDATE `fees_structure` SET `expenses` = ?,`TERM_1` = ? , `TERM_2` = ?, `TERM_3` = ?, `classes` = ?, `roles` = ? , `date_changed` = ? ,`term_1_old` = ? , `term_2_old` = ?, `term_3_old` = ? WHERE `ids` = ?";
+            $update = "UPDATE `fees_structure` SET `expenses` = ?,`TERM_1` = ? , `TERM_2` = ?, `TERM_3` = ?, `classes` = ?, `course` = ?, `roles` = ? , `date_changed` = ? ,`term_1_old` = ? , `term_2_old` = ?, `term_3_old` = ? WHERE `ids` = ?";
             $stmt = $conn2->prepare($update);
             $date_changed = date("Y-m-d",strtotime("3 hours"));
-            $stmt->bind_param("sssssssssss",$expensename,$t_one,$t_two,$t_three,$class_list,$roles,$date_changed,$term_1_old,$term_2_old,$term_3_old,$fee_ids);
+            $stmt->bind_param("ssssssssssss",$expensename,$t_one,$t_two,$t_three,$course_level,$course,$roles,$date_changed,$term_1_old,$term_2_old,$term_3_old,$fee_ids);
             $execute = $stmt->execute();
             if ($execute) {
                 $update = "UPDATE `finance` SET `payment_for` = ? WHERE `payment_for` = ?";
@@ -4745,7 +4900,7 @@
             return 0;
         }
         $select = '';
-        $class = "%|".$classes."|%";
+        $class = "".$classes."";
         $student_data = students_details($admno,$conn2);
         // get the date of registration is in what term
         $date_of_reg = count($student_data) > 0 ? $student_data['D_O_A'] : date("Y-m-d");
@@ -4768,36 +4923,37 @@
         }
         // echo $student_data['D_O_A']." Doa ".$date_of_reg."<br>";
         // get term the student was admitted
+        $course_enrolled = $student_data['course_done'];
         if ($term_admitted == "TERM_1" || $term_admitted == "null") {
             if($current_term == "TERM_1"){
-                $select = "SELECT sum(`TERM_1`) AS 'TOTALS' FROM `fees_structure` WHERE `classes` LIKE ? AND `activated` = 1  and `roles` = 'regular';";
+                $select = "SELECT sum(`TERM_1`) AS 'TOTALS' FROM `fees_structure` WHERE `classes` = ? AND `course` = ? AND `activated` = 1  and `roles` = 'regular';";
             }elseif($current_term == "TERM_2"){
-                $select = "SELECT sum(`TERM_1`)+sum(`TERM_2`) AS 'TOTALS' FROM `fees_structure`  WHERE `classes` LIKE ? AND `activated` = 1  and `roles` = 'regular';";
+                $select = "SELECT sum(`TERM_1`)+sum(`TERM_2`) AS 'TOTALS' FROM `fees_structure`  WHERE `classes` = ? AND `course` = ? AND `activated` = 1  and `roles` = 'regular';";
             }elseif($current_term == "TERM_3"){
-                $select = "SELECT sum(`TERM_1`)+sum(`TERM_2`)+sum(`TERM_3`) AS 'TOTALS' FROM `fees_structure`  WHERE `classes` LIKE ? AND `activated` = 1  and `roles` = 'regular';";
+                $select = "SELECT sum(`TERM_1`)+sum(`TERM_2`)+sum(`TERM_3`) AS 'TOTALS' FROM `fees_structure`  WHERE `classes` = ? AND `course` = ? AND `activated` = 1  and `roles` = 'regular';";
             }
         }elseif($term_admitted == "TERM_2"){
             if($current_term == "TERM_2"){
-                $select = "SELECT sum(`TERM_2`) AS 'TOTALS' FROM `fees_structure`  WHERE `classes` LIKE ? AND `activated` = 1  and `roles` = 'regular';";
+                $select = "SELECT sum(`TERM_2`) AS 'TOTALS' FROM `fees_structure`  WHERE `classes` = ? AND `course` = ? AND `activated` = 1  and `roles` = 'regular';";
             }elseif($current_term == "TERM_3"){
-                $select = "SELECT sum(`TERM_2`)+sum(`TERM_3`) AS 'TOTALS' FROM `fees_structure`  WHERE `classes` LIKE ? AND `activated` = 1  and `roles` = 'regular';";
+                $select = "SELECT sum(`TERM_2`)+sum(`TERM_3`) AS 'TOTALS' FROM `fees_structure`  WHERE `classes` = ? AND `course` = ? AND `activated` = 1  and `roles` = 'regular';";
             }
         }elseif($term_admitted == "TERM_3"){
             if($current_term == "TERM_3"){
-                $select = "SELECT sum(`TERM_3`) AS 'TOTALS' FROM `fees_structure`  WHERE `classes` LIKE ? AND `activated` = 1  and `roles` = 'regular';";
+                $select = "SELECT sum(`TERM_3`) AS 'TOTALS' FROM `fees_structure`  WHERE `classes` = ? AND `course` = ? AND `activated` = 1  and `roles` = 'regular';";
             }
         }else {
             if($current_term == "TERM_1"){
-                $select = "SELECT sum(`TERM_1`) AS 'TOTALS' FROM `fees_structure` WHERE `classes` LIKE ? AND `activated` = 1  and `roles` = 'regular';";
+                $select = "SELECT sum(`TERM_1`) AS 'TOTALS' FROM `fees_structure` WHERE `classes` = ? AND `course` = ? AND `activated` = 1  and `roles` = 'regular';";
             }elseif($current_term == "TERM_2"){
-                $select = "SELECT sum(`TERM_1`)+sum(`TERM_2`) AS 'TOTALS' FROM `fees_structure`  WHERE `classes` LIKE ? AND `activated` = 1  and `roles` = 'regular';";
+                $select = "SELECT sum(`TERM_1`)+sum(`TERM_2`) AS 'TOTALS' FROM `fees_structure`  WHERE `classes` = ? AND `course` = ? AND `activated` = 1  and `roles` = 'regular';";
             }elseif($current_term == "TERM_3"){
-                $select = "SELECT sum(`TERM_1`)+sum(`TERM_2`)+sum(`TERM_3`) AS 'TOTALS' FROM `fees_structure`  WHERE `classes` LIKE ? AND `activated` = 1  and `roles` = 'regular';";
+                $select = "SELECT sum(`TERM_1`)+sum(`TERM_2`)+sum(`TERM_3`) AS 'TOTALS' FROM `fees_structure`  WHERE `classes` = ? AND `course` = ? AND `activated` = 1  and `roles` = 'regular';";
             }
         }
         $stmt = $conn2->prepare($select);
         // echo $select." ".$term_admitted." ".$current_term."<br>";
-        $stmt->bind_param("s",$class);
+        $stmt->bind_param("ss",$class,$course_enrolled);
         $stmt->execute();
         $res = $stmt->get_result();
         if($res){

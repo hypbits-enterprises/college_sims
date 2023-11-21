@@ -19,31 +19,40 @@
         </div>
 
         <div class="contedd">
-            <p>You are logged in as <?php 
-                        if(isset($_SESSION['auth'])){
-                            $authority = $_SESSION['auth'];
-                        $data ="";
-                        if($authority==0){
-                            $data.="<b>admin</b></p>";
-                        }elseif ($authority==1) {
-                            $data.="<b> Headteacher</b></p>";
-                        }elseif ($authority ==2) {
-                            $data.="<b> Teacher</b></p>";
-                        }elseif ($authority == 3) {
-                            $data.="<b> Deputy principal</b></p>";
-                        }elseif ($authority == 4) {
-                            $data.="<b> Staff</b></p>";
-                        }elseif ($authority == 5) {
-                            $data.="<b> Class teacher</b></p>";
-                        }elseif ($authority == 6) {
-                            $data.="<b> Student</b></p>";
+            <p>You are logged in as 
+                <?php 
+                    if(isset($_SESSION['auth'])){
+                        $auth = $_SESSION['auth'];
+                        $data = "";
+                        if ($auth == 0) {
+                            $data .= "<b>". "System Administrator"."</b>";
+                        }else if ($auth == "1"){
+                            $data .= "<b>". "Principal"."</b>";
+                        }else if ($auth == "2"){
+                            $data .= "<b>". "Deputy Principal Academics"."</b>";
+                        }else if ($auth == "3"){
+                            $data .= "<b>". "Deputy Principal Administration"."</b>";
+                        }else if ($auth == "4"){
+                            $data .= "<b>". "Dean of Students"."</b>";
+                        }else if ($auth == "5"){
+                            $data .= "<b>". "Finance Office"."</b>";
+                        }else if ($auth == "6"){
+                            $data .= "<b>". "Human Resource Officer"."</b>";
+                        }else if ($auth == "7"){
+                            $data .= "<b>". "Head of Department"."</b>";
+                        }else if ($auth == "8"){
+                            $data .= "<b>". "Trainer/Lecturer"."</b>";
+                        }else {
+                            $data .= "<b>". ucwords(strtolower($auth))."</b>";
                         }
-                        echo $data;}else{
+                        echo $data;
+                    }else{
                             echo "Login to proceed";
-                        }?></p>
-                        
+                    }
+                ?>
+            </p>
             <p>Welcome to your dashboard <br>Use the navigation bar on your left to select a task you want to carry out!</p>
-            <p>Below I have summarized infomation of what you might need updating</p>
+            <p>Below I have summarized infomation of what you might need to know.</p>
         </div>
     </div>
     <div class="cardholder">

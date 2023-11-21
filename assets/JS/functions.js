@@ -87,6 +87,15 @@ function ucword(string) {
     }
     return "";
 }
+
+function isJSON(value) {
+    try {
+        JSON.parse(value);
+        return true;
+    } catch (error) {
+        return false;
+    }
+}
 function checkBlank(id) {
     let err = 0;
     if (cObj(id).value.trim().length > 0) {

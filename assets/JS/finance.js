@@ -1,8 +1,17 @@
 cObj("showfeesstructure").onclick = function () {
     if (cObj("daros") != "undefined" && cObj("daros") != null) {
         var err = checkBlank("daros");
+        err += cObj("search_fees_course_list") == undefined ? 1 : 0;
+
+        // continue if there is not error
         if (err == 0) {
-            var datapass = "?feesstructurefind=true&class=" + valObj("daros");
+            if (checkBlank("search_fees_course_list") == 1) {
+                cObj("displayfin").innerHTML = "<p style='color:red;'>Select fees course list to proceed!</p>";
+                return 0;
+            }
+
+            // get the datapass
+            var datapass = "?feesstructurefind=true&class=" + valObj("daros")+"&course_id="+valObj("search_fees_course_list");
             sendData1("GET", "finance/financial.php", datapass, cObj("displayfin"));
             setTimeout(() => {
                 var ids = setInterval(() => {
@@ -35,38 +44,59 @@ cObj("showfeesstructure").onclick = function () {
 function editFees() {
     //get the values from the table
     var fees_id = this.id.substr(3);
-    cObj("exp_name1").value = cObj("expense_name" + fees_id).innerText;
-    cObj("term_one1").value = cObj("t_one" + fees_id).innerText;
-    cObj("term_two1").value = cObj("t_two" + fees_id).innerText;
-    cObj("term_three1").value = cObj("t_three" + fees_id).innerText;
-    cObj("original_exp_name").innerText = cObj("expense_name" + fees_id).innerText;
-    var proles = cObj("proles" + fees_id).innerText;
-    cObj(proles + "12").selected = true;
-    cObj("fee_id_s").innerText = fees_id;
-    //show class list
-    var datapass = "?getclasslist2=true&fees_id=" + fees_id;
-    sendData2("GET", "finance/financial.php", datapass, cObj("class_list_fees_update"), cObj("loadings21322"));
-    setTimeout(() => {
-        var ids = setInterval(() => {
-            if (cObj("loadings21322").classList.contains("hide")) {
-                var class_fees_ass = cObj("class_fees_ass").innerText.split(",");
-                //split class
-                var update_expense_check = document.getElementsByClassName("update_expense_check");
-                for (let index = 0; index < update_expense_check.length; index++) {
-                    const element = update_expense_check[index];
-                    var classs = element.id.substr(9);
-                    var present = checkPresent(class_fees_ass, classs);
-                    if (present == 1) {
-                        element.checked = true;
+    var fees_structure = hasJsonStructure(valObj("fees_structure_value_"+fees_id)) ? JSON.parse(valObj("fees_structure_value_"+fees_id)) : [];
+
+    if (typeof fees_structure == "object") {
+        // console.log(fees_structure);
+        cObj("exp_name1").value = fees_structure['expenses'];
+        cObj("term_one1").value = fees_structure['TERM_1'];
+        cObj("term_two1").value = fees_structure['TERM_2'];
+        cObj("term_three1").value = fees_structure['TERM_3'];
+        cObj("original_exp_name").innerText = fees_structure['expenses'];
+        var proles = fees_structure['roles'];
+        cObj(proles + "12").selected = true;
+        cObj("fee_id_s").innerText = fees_id;
+        cObj("course_id_edit").value = fees_structure['course'];
+
+        // get the course list and select the course
+
+        //show class list
+        getClasses("class_list_fees_update","fees_structure_edit_level","","load_course_levels_edit");
+        setTimeout(() => {
+            var ids = setInterval(() => {
+                if (cObj("load_course_levels_edit").classList.contains("hide")) {
+                    // set the selected course level
+                    var children = cObj("fees_structure_edit_level").children;
+                    for (let index = 0; index < children.length; index++) {
+                        const element = children[index];
+                        if (element.value == fees_structure['classes']) {
+                            element.selected = true;
+                            break;
+                        }
                     }
+
+                    // add an event listener
+                    cObj("fees_structure_edit_level").addEventListener("change",F1);
+
+                    // get the course level
+                    var datapass = "?get_fees_struct_courses=true&course_level="+fees_structure['classes']+"&course_id="+fees_structure['course'];
+                    sendData2("GET","finance/financial.php",datapass,cObj("course_list_details"),cObj("course_list_edits_loader"));
+
+                    // get the selected 
+                    stopInterval(ids);
                 }
-                stopInterval(ids);
-            }
-        }, 100);
-    }, 200);
+            }, 100);
+        }, 200);
+    }
     //show the window
     cObj("add_expense_update").classList.remove("hide");
 }
+
+function F1() {
+    var datapass = "?get_fees_struct_courses=true&course_level="+this.value+"&course_id=0";
+    sendData2("GET","finance/financial.php",datapass,cObj("course_list_details"),cObj("course_list_edits_loader"));
+}
+
 function checkPresent(array, strings) {
     if (array.length > 0) {
         for (let index = 0; index < array.length; index++) {
@@ -169,7 +199,8 @@ function getVoteHead(classname,student_id) {
 }
 function voterHeads(classin,student_id) {
     //get the payment details here
-    var datapass2 = "?payfordetails=true&class_use=" + classin+"&student_admission="+student_id;
+    var course_value = cObj("course_value_finance") != undefined ? valObj("course_value_finance") : "0";
+    var datapass2 = "?payfordetails=true&class_use=" + classin+"&student_admission="+student_id+"&course_value="+course_value;
     sendData("GET", "finance/financial.php", datapass2, cObj("payments"));
 }
 function setReverselistener(className) {
@@ -918,72 +949,76 @@ cObj("save_add_expense1").onclick = function () {
     err += checkBlank("term_three1");
     err += checkBlank("boarders1_regular1");
     if (err == 0) {
-        cObj("err_handler_101").innerHTML = "<p class='red_notice'></p>";
-        //check if classes are selected
-        var classes = document.getElementsByClassName("update_expense_check_rebound");
-        var checker = 0;
-        var class_list = "";
-        for (let index = 0; index < classes.length; index++) {
-            const element = classes[index];
-            if (element.checked) {
-                checker++;
-                class_list += "|" + element.id.substr(9) + "|,";
-            }
+        cObj("err_handler_101").innerHTML = "";
+        
+        // check for error before proceeding
+        if(cObj("fees_structure_edit_level") == undefined){
+            cObj("err_handler_101").innerHTML = "<p class='red_notice'>Course levels has not been set up, try again later!</p>";
+            return 0;
         }
-        if (checker > 0) {
-            class_list = class_list.substr(0, class_list.length - 1);
-            var fee_name = cObj("exp_name1").value
-            var term_one1 = cObj("term_one1").value
-            var term_two1 = cObj("term_two1").value
-            var term_three1 = cObj("term_three1").value
-            var fees_id = cObj("fee_id_s").innerText
-            var roles = cObj("boarders1_regular1").value;
-            var datapass = "?update_fees_information=true&fees_name=" + fee_name + "&t_one=" + term_one1 + "&t_two=" + term_two1 + "&t_three=" + term_three1 + "&fee_ids=" + fees_id + "&class_list=" + class_list + "&old_names=" + cObj("original_exp_name").innerText + "&roles=" + roles;
-            sendData1("GET", "finance/financial.php", datapass, cObj("err_handler_101"));
-            setTimeout(() => {
-                var ids = setInterval(() => {
-                    if (cObj("loadings").classList.contains("hide")) {
-                        cObj("add_expense_update").classList.add("hide");
-                        cObj("showfeesstructure").click();
-                        cObj("err_handler_101").innerHTML = "";
-                        stopInterval(ids);
-                    }
-                }, 100);
-            }, 200);
-        } else {
-            cObj("err_handler_101").innerHTML = "<p class='red_notice'>Select a class to proceed!</p>";
+
+        // fees structure
+        if(cObj("course_chosen_fees_structure") == undefined){
+            cObj("err_handler_101").innerHTML = "<p class='red_notice'>Courses have not been set up, try again later!</p>";
+            return 0;
         }
+        // fees
+        if (checkBlank("course_chosen_fees_structure") == 1 || checkBlank("fees_structure_edit_level") == 1) {
+            cObj("err_handler_101").innerHTML = "<p class='red_notice'>Check all fields covered with red border!</p>";
+            return 0;
+        }
+        
+        var fee_name = cObj("exp_name1").value
+        var term_one1 = cObj("term_one1").value
+        var term_two1 = cObj("term_two1").value
+        var term_three1 = cObj("term_three1").value
+        var fees_id = cObj("fee_id_s").innerText
+        var roles = cObj("boarders1_regular1").value;
+        var courses = valObj("course_chosen_fees_structure");
+        var course_level = valObj("fees_structure_edit_level");
+        var datapass = "?update_fees_information=true&fees_name=" + fee_name + "&t_one=" + term_one1 + "&t_two=" + term_two1 + "&t_three=" + term_three1 + "&fee_ids=" + fees_id + "&course=" + courses+"&course_level="+ course_level + "&old_names=" + cObj("original_exp_name").innerText + "&roles=" + roles;
+        sendData1("GET", "finance/financial.php", datapass, cObj("err_handler_101"));
+        setTimeout(() => {
+            var ids = setInterval(() => {
+                if (cObj("loadings").classList.contains("hide")) {
+                    cObj("add_expense_update").classList.add("hide");
+                    cObj("showfeesstructure").click();
+                    cObj("err_handler_101").innerHTML = "";
+                    stopInterval(ids);
+                }
+            }, 100);
+        }, 200);
     } else {
         cObj("err_handler_101").innerHTML = "<p class='red_notice'>Fill all the fields covered with a red border!</p>";
     }
 }
 cObj("exp_name").onblur = function () {
     //gwt its value
-    var expense_name = this.value;
-    if (expense_name.length > 0) {
-        //check if the name is used
-        var datapass = "?check_expense_name=" + expense_name;
-        sendData2("GET", "finance/financial.php", datapass, cObj("expe_err"), cObj("anonymus"));
-        setTimeout(() => {
-            var timeout = 0;
-            var ids = setInterval(() => {
-                timeout++;
-                //after two minutes of slow connection the next process wont be executed
-                if (timeout == 1200) {
-                    stopInterval(ids);
-                }
-                if (cObj("anonymus").classList.contains("hide")) {
-                    //get the if the expe_err has some text in it
-                    if (cObj("expe_err").innerText.length > 0) {
-                        redBorder(this);
-                    } else {
-                        grayBorder(this);
-                    }
-                    stopInterval(ids);
-                }
-            }, 100);
-        }, 200);
-    }
+    // var expense_name = this.value;
+    // if (expense_name.length > 0) {
+    //     //check if the name is used
+    //     var datapass = "?check_expense_name=" + expense_name;
+    //     sendData2("GET", "finance/financial.php", datapass, cObj("expe_err"), cObj("anonymus"));
+    //     setTimeout(() => {
+    //         var timeout = 0;
+    //         var ids = setInterval(() => {
+    //             timeout++;
+    //             //after two minutes of slow connection the next process wont be executed
+    //             if (timeout == 1200) {
+    //                 stopInterval(ids);
+    //             }
+    //             if (cObj("anonymus").classList.contains("hide")) {
+    //                 //get the if the expe_err has some text in it
+    //                 // if (cObj("expe_err").innerText.length > 0) {
+    //                 //     redBorder(this);
+    //                 // } else {
+    //                 //     grayBorder(this);
+    //                 // }
+    //                 stopInterval(ids);
+    //             }
+    //         }, 100);
+    //     }, 200);
+    // }
 }
 function showBalanceInput() {
     cObj("fee_balance_new").classList.remove("hide");

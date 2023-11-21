@@ -1,6 +1,87 @@
 <?php
 session_start();
 date_default_timezone_set('Africa/Nairobi');
+
+// create a function to allow the buttons to be visible
+function allowed($id){
+    $auth = $_SESSION['auth'];
+    if ($auth == 0) {
+        $allowed = ['admitbtn',"findstudsbtn",'callregister','regstaffs','managestaf','promoteStd','payfeess','findtrans','mpesaTrans','feestruct','expenses_btn','finance_report_btn','routes_n_trans','enroll_students','payroll_sys','humanresource','regsub','managesub','managetrnsub','generate_tt_btn','examanagement','exam_fill_btn','enroll_boarding_btn','maanage_dorm','dashbutn','send_feedback','sms_broadcast','update_school_profile','update_personal_profile','set_btns','my_reports'];
+        return checkPresnt($allowed,$id) ? "" : "d-none";
+    } else if ($auth == "1") {
+        $allowed = ['admitbtn',"findstudsbtn",'callregister','regstaffs','managestaf','promoteStd','payfeess','findtrans','mpesaTrans','feestruct','expenses_btn','finance_report_btn','routes_n_trans','enroll_students','payroll_sys','humanresource','regsub','managesub','managetrnsub','generate_tt_btn','examanagement','exam_fill_btn','enroll_boarding_btn','maanage_dorm','dashbutn','send_feedback','sms_broadcast','update_school_profile','update_personal_profile','set_btns','my_reports'];
+        return checkPresnt($allowed,$id) ? "" : "d-none";
+    } else if ($auth == "2") {
+        $allowed = ['',"",'','','','','','','','','','','','','','','regsub','managesub','managetrnsub','generate_tt_btn','examanagement','exam_fill_btn','','','','','sms_broadcast','','update_personal_profile','','my_reports'];
+        return checkPresnt($allowed,$id) ? "" : "d-none";
+    } else if ($auth == "3") {
+        $allowed = ['admitbtn',"findstudsbtn",'','regstaffs','managestaf','','','','','','','','','','','','','','','','','','','','','','','update_school_profile','update_personal_profile','','my_reports'];
+        return checkPresnt($allowed,$id) ? "" : "d-none";
+    } else if ($auth == "4") {
+        $allowed = ['admitbtn',"findstudsbtn",'','regstaffs','managestaf','','','','','','','','','','','','','','','','','','','','','','','','update_personal_profile','','my_reports'];
+        return checkPresnt($allowed,$id) ? "" : "d-none";
+    } else if ($auth == "5") {
+        $allowed = ['admitbtn',"findstudsbtn",'','','','','payfeess','findtrans','mpesaTrans','feestruct','expenses_btn','finance_report_btn','','','payroll_sys','','','','','','','','','','','','','','','','my_reports'];
+        return checkPresnt($allowed,$id) ? "" : "d-none";
+    } else if ($auth == "6") {
+        $allowed = ['',"",'','regstaffs','managestaf','','','','','','','','','','','','','','','','','','','','','send_feedback','sms_broadcast','','','','my_reports'];
+        return checkPresnt($allowed,$id) ? "" : "d-none";
+    } else if ($auth == "7") {
+        $allowed = ['',"",'','','','','','','','','','','','','','','regsub','managesub','managetrnsub','generate_tt_btn','examanagement','exam_fill_btn','','','','','','','','','my_reports'];
+        return checkPresnt($allowed,$id) ? "" : "d-none";
+    } else if ($auth == "8") {
+        $allowed = ['',"",'','','','','','','','','','','','','','','','','','generate_tt_btn','','exam_fill_btn','','','','','','','update_personal_profile','',''];
+        return checkPresnt($allowed,$id) ? "" : "d-none";
+    } else {
+        // get the allowed fields
+        // $data .= "<td>". ucwords(strtolower($auth))."</td>";
+
+        // get the allowed for that particular user
+        include("connections/conn2.php");
+        $select = "SELECT * FROM `settings` WHERE `sett` = 'user_roles';";
+        $stmt = $conn2->prepare($select);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $valued = [];
+        if ($result) {
+            if ($row = $result->fetch_assoc()) {
+                $valued = isJson_report($row['valued']) ? json_decode($row['valued']) : [];
+            }
+        }
+        $allowed = [];
+        for ($index=0; $index < count($valued); $index++) { 
+            if ($valued[$index]->name == $auth) {
+                // get the roles arrays and take the one that has a Status yes
+                $roles = $valued[$index]->roles;
+                for($in = 0; $in < count($roles); $in++){
+                    if ($roles[$in]->Status == "yes") {
+                        array_push($allowed,$roles[$in]->name);
+                    }
+                }
+            }
+        }
+        // $allowed = ['admitbtn',"findstudsbtn",'callregister','regstaffs','managestaf','promoteStd','payfeess','findtrans','mpesaTrans','feestruct','expenses_btn','finance_report_btn','routes_n_trans','enroll_students','payroll_sys','humanresource','regsub','managesub','managetrnsub','generate_tt_btn','examanagement','exam_fill_btn','enroll_boarding_btn','maanage_dorm','dashbutn','send_feedback','sms_broadcast','update_school_profile','update_personal_profile','set_btns','my_reports'];
+        return checkPresnt($allowed,$id) ? "" : "d-none";
+    }
+    return "d-none";
+}
+
+function isJson_report($string) {
+    return ((is_string($string) &&
+            (is_object(json_decode($string)) ||
+            is_array(json_decode($string))))) ? true : false;
+}
+
+function checkPresnt($array, $string){
+    if (count($array)>0) {
+        for ($i=0; $i < count($array); $i++) { 
+            if ($string == $array[$i]) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -38,9 +119,9 @@ date_default_timezone_set('Africa/Nairobi');
     <!-- CSS only -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <link rel="shortcut icon" href="images/ladybird.png" type="image/x-icon">
-    <link rel="stylesheet" href="/sims/assets/CSS/mainpage.css">
-    <link rel="stylesheet" href="/sims/assets/CSS/homepage2.css">
-    <link rel="stylesheet" href="/sims/assets/CSS/font-awesome/css/all.css">
+    <link rel="stylesheet" href="assets/CSS/mainpage.css">
+    <link rel="stylesheet" href="assets/CSS/homepage2.css">
+    <link rel="stylesheet" href="assets/CSS/font-awesome/css/all.css">
     <!-- GOOGLE FONTS -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nunito">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
@@ -177,11 +258,6 @@ date_default_timezone_set('Africa/Nairobi');
             }
         }
     }
-    function isJson_report($string) {
-        return ((is_string($string) &&
-                (is_object(json_decode($string)) ||
-                is_array(json_decode($string))))) ? true : false;
-    }
 ?>
 <body>
     <div class="mainpages" id="images_bgs">
@@ -308,13 +384,12 @@ date_default_timezone_set('Africa/Nairobi');
                 <button class="navButs tr_hides">Administration <span class="arrow rotate_right"></span> </button>
                 <div class="contsd">
                     <div class="contsc hide">
-                        <button type="button" class="sidebtns htbtn" id="admitbtn"><span><img class="icons" src="images/register.png"></span> Admit students</button>
-                        <button type="button" class="sidebtns tr_hides" id="findstudsbtn"><span><img class="icons" src="images/findstud.png"></span>Manage students</button>
-                        <button type='button' class="sidebtns tr_hides" id='callregister'><span><img class="icons" src="images/registercall.png"></span>Student Attendance</button>
-                        <button type='button' class="sidebtns htbtn" id='regstaffs'><span><img class="icons" src="images/registerstaff.png"></span>Register staff</button>
-                        <button type='button' class="sidebtns htbtn" id='managestaf'><span><img class="icons" src="images/managestaff.png"></span>Manage staff</button>
-                        <button type='button' class="sidebtns htbtn" id='promoteStd'><span><img class="icons" src="images/managestaff.png"></span>Promote Students</button>
-                        <button type='button' class="sidebtns htbtn" id='humanresource'><span><img class="icons" src="images/managestaff.png"></span>Human Resource</button>
+                        <button type="button" class="sidebtns <?php echo allowed("admitbtn"); ?> htbtn" id="admitbtn"><span><img class="icons" src="images/register.png"></span> Admit students</button>
+                        <button type="button" class="sidebtns <?php echo allowed("findstudsbtn"); ?> tr_hides" id="findstudsbtn"><span><img class="icons" src="images/findstud.png"></span>Manage students</button>
+                        <button type='button' class="sidebtns <?php echo allowed("callregister"); ?> tr_hides d-none" id='callregister'><span><img class="icons" src="images/registercall.png"></span>Student Attendance</button>
+                        <button type='button' class="sidebtns <?php echo allowed("regstaffs"); ?> htbtn" id='regstaffs'><span><img class="icons" src="images/registerstaff.png"></span>Register staff</button>
+                        <button type='button' class="sidebtns <?php echo allowed("managestaf"); ?> htbtn" id='managestaf'><span><img class="icons" src="images/managestaff.png"></span>Manage staff</button>
+                        <button type='button' class="sidebtns <?php echo allowed("promoteStd"); ?> htbtn d-none" id='promoteStd'><span><img class="icons" src="images/managestaff.png"></span>Promote Students</button>
                     </div>
                 </div>
             </div>
@@ -322,22 +397,30 @@ date_default_timezone_set('Africa/Nairobi');
                 <button class="navButs htbtn">Finance<span class="arrow rotate_right"></button>
                 <div class="contsd">
                     <div class="contsc hide">
-                        <button type='button' class="sidebtns htbtn" id='payfeess'><span><img class="icons" src="images/pay.png"></span>Pay Fees</button>
-                        <button type='button' class="sidebtns htbtn" id='findtrans'><span><img class="icons" src="images/manage3.png"></span>Manage transaction</button>
-                        <button type='button' class="sidebtns htbtn" id='mpesaTrans'><span><img class="icons" src="images/manage3.png"></span>MPESA transactions</button>
-                        <button type='button' class="sidebtns htbtn" id='feestruct'><span><img class="icons" src="images/feestructure.png"></span>Fees structure</button>
-                        <button type='button' class="sidebtns htbtn" id='expenses_btn'><span><img class="icons" src="images/feestructure.png"></span>Expense</button>
-                        <button type='button' class="sidebtns htbtn" id='finance_report_btn'><span><img class="icons" src="images/report.png"></span>Financial report</button>
-                        <button type='button' class="sidebtns htbtn" id='payroll_sys'><span><img class="icons" src="images/report.png"></span>Payroll System</button>
+                        <button type='button' class="sidebtns <?php echo allowed("payfeess"); ?> htbtn" id='payfeess'><span><img class="icons" src="images/pay.png"></span>Pay Fees</button>
+                        <button type='button' class="sidebtns <?php echo allowed("findtrans"); ?> htbtn" id='findtrans'><span><img class="icons" src="images/manage3.png"></span>Manage transaction</button>
+                        <button type='button' class="sidebtns <?php echo allowed("mpesaTrans"); ?> htbtn" id='mpesaTrans'><span><img class="icons" src="images/manage3.png"></span>MPESA transactions</button>
+                        <button type='button' class="sidebtns <?php echo allowed("feestruct"); ?> htbtn" id='feestruct'><span><img class="icons" src="images/feestructure.png"></span>Fees structure</button>
+                        <button type='button' class="sidebtns <?php echo allowed("expenses_btn"); ?> htbtn" id='expenses_btn'><span><img class="icons" src="images/feestructure.png"></span>Expense</button>
+                        <button type='button' class="sidebtns <?php echo allowed("finance_report_btn"); ?> htbtn" id='finance_report_btn'><span><img class="icons" src="images/report.png"></span>Financial report</button>
                     </div>
                 </div>
             </div>
-            <div class="conts">
+            <div class="conts d-none">
                 <button class="navButs htbtn">Route & Transport<span class="arrow rotate_right"></button>
                 <div class="contsd">
                     <div class="contsc hide">
-                        <button type='button' class="sidebtns htbtn" id='routes_n_trans'><span><i class="fas fa-light fa-route text-dark"></i></span>Routes & Vans</button>
-                        <button type='button' class="sidebtns htbtn" id='enroll_students'><span><img class="icons" src="images/manage3.png"></span>Enroll Students</button>
+                        <button type='button' class="sidebtns <?php echo allowed("routes_n_trans"); ?> htbtn" id='routes_n_trans'><span><i class="fas fa-light fa-route text-dark"></i></span>Routes & Vans</button>
+                        <button type='button' class="sidebtns <?php echo allowed("enroll_students"); ?> htbtn" id='enroll_students'><span><img class="icons" src="images/manage3.png"></span>Enroll Students</button>
+                    </div>
+                </div>
+            </div>
+            <div class="conts d-none">
+                <button class="navButs htbtn">Human Resource<span class="arrow rotate_right"></button>
+                <div class="contsd">
+                    <div class="contsc hide">
+                        <button type='button' class="sidebtns <?php echo allowed("payroll_sys"); ?> htbtn" id='payroll_sys'><span><img class="icons" src="images/report.png"></span>Payroll</button>
+                        <button type='button' class="sidebtns <?php echo allowed("humanresource"); ?> htbtn" id='humanresource'><span><img class="icons" src="images/managestaff.png"></span>Human Resource</button>
                     </div>
                 </div>
             </div>
@@ -345,21 +428,21 @@ date_default_timezone_set('Africa/Nairobi');
                 <button class="navButs">Academic<span class="arrow rotate_right"></button>
                 <div class="contsd">
                     <div class="contsc">
-                        <button type='button' class="sidebtns htbtn" id='regsub'><span><img class="icons" src="images/addsub.png"></span>Register subject</button>
-                        <button type='button' class="sidebtns htbtn" id='managesub'><span><img class="icons" src="images/managesubs.png"></span>Manage subjects</button>
-                        <button type='button' class="sidebtns htbtn" id='managetrnsub'><span><img class="icons" src="images/manageteach.png"></span>Manage teacher</button>
-                        <button type='button' class="sidebtns " id='generate_tt_btn'><span><img class="icons" src="images/timetable.png"></span>Timetable</button>
-                        <button type='button' class="sidebtns htbtn" id='examanagement'><span><img class="icons" src="images/addmarks.png"></span>Exam Management</button>
-                        <button type='button' class="sidebtns " id='exam_fill_btn'><span><img class="icons" src="images/managemarks.png"></span>Students Marks Entry</button>
+                        <button type='button' class="sidebtns <?php echo allowed("regsub"); ?> htbtn" id='regsub'><span><img class="icons" src="images/addsub.png"></span>Register subject</button>
+                        <button type='button' class="sidebtns <?php echo allowed("managesub"); ?> htbtn" id='managesub'><span><img class="icons" src="images/managesubs.png"></span>Manage subjects</button>
+                        <button type='button' class="sidebtns <?php echo allowed("managetrnsub"); ?> htbtn" id='managetrnsub'><span><img class="icons" src="images/manageteach.png"></span>Manage teacher</button>
+                        <button type='button' class="sidebtns <?php echo allowed("generate_tt_btn"); ?> " id='generate_tt_btn'><span><img class="icons" src="images/timetable.png"></span>Timetable</button>
+                        <button type='button' class="sidebtns <?php echo allowed("examanagement"); ?> htbtn" id='examanagement'><span><img class="icons" src="images/addmarks.png"></span>Exam Management</button>
+                        <button type='button' class="sidebtns <?php echo allowed("exam_fill_btn"); ?> " id='exam_fill_btn'><span><img class="icons" src="images/managemarks.png"></span>Students Marks Entry</button>
                     </div>
                 </div>
             </div>
-            <div class="conts">
+            <div class="conts d-none">
                 <button class="navButs htbtn">Boarding<span class="arrow rotate_right"></button>
                 <div class="contsd">
                     <div class="contsc">
-                        <button type='button' class="sidebtns htbtn" id='enroll_boarding_btn'><span><img class="icons" src="images/enrollboarding.png"></span>Enroll boarding</button>
-                        <button type='button' class="sidebtns htbtn" id='maanage_dorm'><span><img class="icons" src="images/dormitory.png"></span>Manage dormitory</button>
+                        <button type='button' class="sidebtns <?php echo allowed("enroll_boarding_btn"); ?> htbtn" id='enroll_boarding_btn'><span><img class="icons" src="images/enrollboarding.png"></span>Enroll boarding</button>
+                        <button type='button' class="sidebtns <?php echo allowed("maanage_dorm"); ?> htbtn" id='maanage_dorm'><span><img class="icons" src="images/dormitory.png"></span>Manage dormitory</button>
                         <!--<button><span><img class="icons" src="images/information.png"></span>Student information</button>
                         <button><span><img class="icons" src="images/manageinfor.png"></span>Manage information</button>
                         <button><span><img class="icons" src="images/boardingpay.png"></span>Boarding payment</button>-->
@@ -371,7 +454,7 @@ date_default_timezone_set('Africa/Nairobi');
                 <div class="contsd">
                     <div class="contsc hide">
                         <!--<button type="button" id='dashbutn' ><span><img class="icons" src="images/dash.png"></span> Dashboard</button>-->
-                        <button type="button" class="sidebtns" id='send_feedback'><span><img class="icons" src="images/feedback.png"></span>Send feedback</button>
+                        <button type="button" class="sidebtns <?php echo allowed("send_feedback"); ?>" id='send_feedback'><span><img class="icons" src="images/feedback.png"></span>Send feedback</button>
                         <button type='button' class="sidebtns hide d-none htbtn"><span><img class="icons" src="images/about.png"></span>About us</button>
                     </div>
                 </div>
@@ -381,7 +464,7 @@ date_default_timezone_set('Africa/Nairobi');
                 <button class="navButs htbtn">Email & SMS <span class="arrow rotate_right"></button>
                 <div class="contsd">
                     <div class="contsc">
-                        <button type='button' class="sidebtns htbtn" id='sms_broadcast'><span><img class="icons" src="images/broadcast.png"></span>Broadcast Message</button>
+                        <button type='button' class="sidebtns <?php echo allowed("sms_broadcast"); ?> htbtn" id='sms_broadcast'><span><img class="icons" src="images/broadcast.png"></span>Broadcast Message</button>
                     </div>
                 </div>
             </div>
@@ -389,10 +472,10 @@ date_default_timezone_set('Africa/Nairobi');
                 <button class="navButs">Account <span class="arrow rotate_right"></button>
                 <div class="contsd">
                     <div class="contsc">
-                        <button type='button' class="sidebtns htbtn" id='update_school_profile'><span><img class="icons" src="images/updateprofile.png"></span>Update school profile</button>
-                        <button type='button' class="sidebtns " id='update_personal_profile'><span><img class="icons" src="images/updateprofile.png"></span>Update personal profile</button>
-                        <button type='button' class="sidebtns htbtn" id='set_btns'><span><img class="icons" src="images/settings.png"></span>Settings</button>
-                        <button type='button' class="sidebtns htbtn" id='my_reports'><span><i class="fas fa-book text-dark"></i></span>Reports</button>
+                        <button type='button' class="sidebtns <?php echo allowed("update_school_profile"); ?> htbtn" id='update_school_profile'><span><img class="icons" src="images/updateprofile.png"></span>Update school profile</button>
+                        <button type='button' class="sidebtns <?php echo allowed("update_personal_profile"); ?> " id='update_personal_profile'><span><img class="icons" src="images/updateprofile.png"></span>Update personal profile</button>
+                        <button type='button' class="sidebtns <?php echo allowed("set_btns"); ?> htbtn" id='set_btns'><span><img class="icons" src="images/settings.png"></span>Settings</button>
+                        <button type='button' class="sidebtns <?php echo allowed("my_reports"); ?> htbtn" id='my_reports'><span><i class="fas fa-book text-dark"></i></span>Reports</button>
                         <button id="logout" class="sidebtns" style='color:red'><span><img class="icons" src="images/logout.png"></span>Logout</button>
                         <p class="copyright1">Ladybird SMIS Copyright © 2020 - <?php echo date("Y"); ?> | All rights reserved</p>
                     </div>
@@ -406,7 +489,6 @@ date_default_timezone_set('Africa/Nairobi');
 
             <?php
             if ($_SESSION['auth'] == '0') {
-                //as headteacher
                 include("dashboard/admindash.php");
             } elseif ($_SESSION['auth'] == '1') {
                 include("dashboard/htdashboard.php");
@@ -415,12 +497,14 @@ date_default_timezone_set('Africa/Nairobi');
             } elseif ($_SESSION['auth'] == '3') {
                 include("dashboard/deputy_dash.php");
             } elseif ($_SESSION['auth'] == '4') {
-                include("dashboard/htdashboard.php");
+                include("dashboard/teacher.php");
             } elseif ($_SESSION['auth'] == '5') {
                 include("dashboard/classteacherdash.php");
             }else {
                 include("dashboard/teacher.php");
             }
+
+            // include administration
             include("administration/administration.php");
             include("administration/departments_manager.php");
             include("administration/completeadm.php");
@@ -571,7 +655,7 @@ date_default_timezone_set('Africa/Nairobi');
                         <option value="none">None</option>
                     </select>
                 </p>
-                <form method="POST" action="/sims/reports/reports.php" target="_blank">
+                <form method="POST" action="/reports/reports.php" target="_blank">
                     <p>
                         <label for="reciept_size" class="form-control-label"><b>Select receipt size</b></label>
                         <select name="reciept_size" id="reciept_size" class="form-control">
@@ -1874,7 +1958,8 @@ date_default_timezone_set('Africa/Nairobi');
         <!--confirm delete exams-->
         <div class="confirmpaymentwindow hide" id='change_class_name_window'>
             <div class="confirmpayment animate">
-                <input type="hidden" id="old_class_name">
+                <input type="hidden" id="class_id">
+                <input type="hidden" name="" id="old_class_name_edit">
                 <h5 class="text-center">Change " <b id="old_clas_name"></b> " Name</h5>
                 <div class="form-group my-2">
                     <label for="new_class_name" class="form-control-label">New Class Name</label>
@@ -2097,42 +2182,13 @@ date_default_timezone_set('Africa/Nairobi');
                             </select>
                         </div>
                         <div class="conts">
-                            <label class="form-control-label" for="select_classes">Select classes to pay for the expense: <br></label>
-                            <p id="class_list_fees">
-                            <div class="contsload" id="loadings213111">
-                                <img src="images/load2.gif" alt="loading..">
+                            <label class="form-control-label" for="select_classes">Select Course Level: <img class="hide" src="images/ajax_clock_small.gif" id="loadings213111"><br></label>
+                            <div id="class_list_fees">
                             </div>
-                            </p>
-                            <!--<div class="classlist">
-                                <div class = 'checkboxholder' style='margin:10px 0;padding:0px 0px;'>
-                                    <label class="form-control-label" style='margin-right:5px;cursor:pointer;font-size:14px;' for=''>Class 1</label>
-                                    <input class="form-control" class='subjectclass' type='checkbox' name='' id=''>
-                                </div>
-                                <div class = 'checkboxholder' style='margin:10px 0;padding:0px 0px;'>
-                                    <label class="form-control-label" style='margin-right:5px;cursor:pointer;font-size:14px;' for=''>Class 1</label>
-                                    <input class="form-control" class='subjectclass' type='checkbox' name='' id=''>
-                                </div>
-                                <div class = 'checkboxholder' style='margin:10px 0;padding:0px 0px;'>
-                                    <label class="form-control-label" style='margin-right:5px;cursor:pointer;font-size:14px;' for=''>Class 1</label>
-                                    <input class="form-control" class='subjectclass' type='checkbox' name='' id=''>
-                                </div>
-                                <div class = 'checkboxholder' style='margin:10px 0;padding:0px 0px;'>
-                                    <label class="form-control-label" style='margin-right:5px;cursor:pointer;font-size:14px;' for=''>Class 1</label>
-                                    <input class="form-control" class='subjectclass' type='checkbox' name='' id=''>
-                                </div>
-                                <div class = 'checkboxholder' style='margin:10px 0;padding:0px 0px;'>
-                                    <label class="form-control-label" style='margin-right:5px;cursor:pointer;font-size:14px;' for=''>Class 1</label>
-                                    <input class="form-control" class='subjectclass' type='checkbox' name='' id=''>
-                                </div>
-                                <div class = 'checkboxholder' style='margin:10px 0;padding:0px 0px;'>
-                                    <label class="form-control-label" style='margin-right:5px;cursor:pointer;font-size:14px;' for=''>Class 1</label>
-                                    <input class="form-control" class='subjectclass' type='checkbox' name='' id=''>
-                                </div>
-                                <div class = 'checkboxholder' style='margin:10px 0;padding:0px 0px;'>
-                                    <label class="form-control-label" style='margin-right:5px;cursor:pointer;font-size:14px;' for=''>Class 1</label>
-                                    <input class="form-control" class='subjectclass' type='checkbox' name='' id=''>
-                                </div>
-                            </div>-->
+                        </div>
+                        <div class="conts">
+                            <label for="course_lists_fees_structure" class="form-control-label">Course <img class="hide" src="images/ajax_clock_small.gif" id="loading_course_level_fees_struct"></label>
+                            <div id="course_fees_structure"><p class="text-secondary">Courses will appear here if the course level is selected!</p></div>
                         </div>
                     </form>
                     <div class="conts">
@@ -2389,13 +2445,14 @@ date_default_timezone_set('Africa/Nairobi');
                                 <option value="provisional" id="provisional12">Provisional</option>
                             </select>
                         </div>
+                        <input type="hidden" name="" id="course_id_edit">
                         <div class="conts">
-                            <label class="form-control-label" for="select_classes">Select classes to pay for the expense: <br></label>
-                            <p id="class_list_fees_update">
-                            <div class="contsload" id="loadings21322">
-                                <img src="images/load2.gif" alt="loading..">
-                            </div>
-                            </p>
+                            <label class="form-control-label" for="fees_structure_edit_level">Select Course Levels: <img class="hide" src="images/ajax_clock_small.gif" id="load_course_levels_edit"><br></label>
+                            <div id="class_list_fees_update"></div>
+                        </div>
+                        <div class="conts">
+                            <label class="form-control-label" for="course_chosen_fees_structure">Select Course: <img class="hide" src="images/ajax_clock_small.gif" id="course_list_edits_loader"><br></label>
+                            <div id="course_list_details"></div>
                         </div>
                     </form>
                     <div class="conts">
@@ -2542,6 +2599,24 @@ date_default_timezone_set('Africa/Nairobi');
                     <div class="btns">
                         <button type="button" id="add_class_btn">Add Class</button>
                         <button type="button" id="close_add_cl_win">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="confirmpaymentwindow hide" id="del_classes_win">
+            <div class="changesubwindow addsubject animate">
+                <div class="conts">
+                    <p class="funga" id="close_del_class_win">&times</p>
+                    <h6 class="text-center">Delete Class</h6>
+                </div>
+                <div class="conts" id="">
+                    <div class="add_expenses">
+                        <input type="hidden" name="" id="delete_classes_id">
+                        <p class="text-center">Are you sure you want to delete "<b id="delete_class_id"></b>". <br> This action is permanent!</p>
+                    </div>
+                    <div class="btns">
+                        <button type="button" id="del_class_btn">Yes, Delete</button>
+                        <button type="button" id="close_del_cl_win">Close</button>
                     </div>
                 </div>
             </div>

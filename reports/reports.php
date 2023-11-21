@@ -1863,9 +1863,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                         array_push($staff_data, $staffs);
                         $number++;
                     }
+
+                    // pdf
                     $pdf = new PDF('L', 'mm', 'A4');
                     // Column headings
-                    $header = array('No', 'Full Name', 'Age', 'Contact', 'Sex', 'I`d no', 'Payroll', 'Role', 'Status', 'Username', 'TSC No.');
+                    $header = array('No', 'Full Name', 'Age', 'Contact', 'Sex', 'I`d no', 'Payroll', 'Role', 'Status', 'Username', 'Emp No.');
                     // Data loading
                     // $data = $pdf->LoadData('countries.txt');
                     // echo count($staff_data);
@@ -11899,25 +11901,33 @@ function getTermV2_exams($conn2)
     $stmt->close();
     $conn2->close();
 }
-function authority($auth_code)
+function authority($auth)
 {
-    if ($auth_code == 0) {
-        return "Admin";
-    } elseif ($auth_code == 1) {
-        return "Headteacher";
-    } elseif ($auth_code == 2) {
-        return "Teacher";
-    } elseif ($auth_code == 3) {
-        return "Deputy Principal";
-    } elseif ($auth_code == 4) {
-        return "Staff";
-    } elseif ($auth_code == 6) {
-        return "School Driver";
-    } elseif ($auth_code == 5) {
-        return "Class Teacher";
-    } else {
-        return $auth_code;
+    $data = "";
+    if ($auth == 0) {
+        $data .= "System Administrator";
+    }else if ($auth == "1"){
+        $data .= "Principal";
+    }else if ($auth == "2"){
+        $data .= "Deputy Principal Academics";
+    }else if ($auth == "3"){
+        $data .= "Deputy Principal Administration";
+    }else if ($auth == "4"){
+        $data .= "Dean of Students";
+    }else if ($auth == "5"){
+        $data .= "Finance Office";
+    }else if ($auth == "6"){
+        $data .= "Human Resource Officer";
+    }else if ($auth == "7"){
+        $data .= "Head of Department";
+    }else if ($auth == "8"){
+        $data .= "Trainer/Lecturer";
+    }else {
+        $data .= ucwords(strtolower($auth));
     }
+    
+    // return data
+    return $data;
 }
 // get specific student details provide conn and student id
 function getStudDetail($conn2, $stud_id)
