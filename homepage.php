@@ -655,7 +655,7 @@ function checkPresnt($array, $string){
                         <option value="none">None</option>
                     </select>
                 </p>
-                <form method="POST" action="/reports/reports.php" target="_blank">
+                <form method="POST" action="reports/reports.php" target="_blank">
                     <p>
                         <label for="reciept_size" class="form-control-label"><b>Select receipt size</b></label>
                         <select name="reciept_size" id="reciept_size" class="form-control">
