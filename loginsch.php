@@ -12,8 +12,8 @@
         header('HTTP/1.1 301 Moved Permanently');
         header('Location: login.php');
         ;}?></title>
-    <link rel="stylesheet" href="/sims/assets/CSS/homepage.css">
-    <link rel="stylesheet" href="/sims/assets/CSS/mainpage.css">
+    <link rel="stylesheet" href="assets/CSS/homepage.css">
+    <link rel="stylesheet" href="assets/CSS/mainpage.css">
     <link rel="shortcut icon" href="images/ladybird.png" type="image/x-icon">
 </head>
 <body>
@@ -99,7 +99,7 @@
     </div>
     <div class="anonymus hide" id="anonymus" title="Click to dismis">
     </div>
-    <script src="/sims/assets/JS/functions.js"></script>
+    <script src="assets/JS/functions.js"></script>
     <script>
         cObj("subpwd").onclick = function () {
             let passwds = valObj("pass");

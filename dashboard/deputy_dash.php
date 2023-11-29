@@ -42,6 +42,8 @@
                             $data .= "<b>". "Head of Department"."</b>";
                         }else if ($auth == "8"){
                             $data .= "<b>". "Trainer/Lecturer"."</b>";
+                        }else if ($auth == "9"){
+                            $data .= "<b>". "Admissions"."</b>";
                         }else {
                             $data .= "<b>". ucwords(strtolower($auth))."</b>";
                         }

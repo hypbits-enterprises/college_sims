@@ -1277,7 +1277,7 @@
                 echo "<p style='color:red;'>"."An error occured during registration!"."</p>";
             }
         }elseif (isset($_GET['getavalablestaff'])) {
-            $select = "SELECT `fullname` ,`phone_number`,`gender`,`nat_id`,`tsc_no`,`auth`,`activated`,`user_id` FROM `user_tbl` where `school_code` = ? AND `user_id` != ?";
+            $select = "SELECT * FROM `user_tbl` where `school_code` = ? AND `user_id` != ?";
             $schoolcodes = $_SESSION['schoolcode'];
             $userid = $_SESSION['userids'];
             include("../../connections/conn1.php");
@@ -1295,6 +1295,7 @@
                 $data.="<th>Role</th>";
                 $data.="<th>Gender</th>";
                 $data.="<th>National id</th>";
+                $data.="<th>Employer Type</th>";
                 $data.="<th>Activated</th>";
                 $data.="<th>Option</th></tr>";
                 $xs2=0;
@@ -1321,6 +1322,8 @@
                             $data .= "<td>". "Head of Department"."</td>";
                         } else if ($auth == "8") {
                             $data .= "<td>". "Trainer/Lecturer"."</td>";
+                        } else if ($auth == "9") {
+                            $data .= "<td>". "Admissions"."</td>";
                         } else {
                             $data .= "<td>". ucwords(strtolower($auth))."</td>";
                         }
@@ -1330,6 +1333,7 @@
                     
                     $data.="<td>".$rowed['gender']."</td>";
                     $data.="<td>".$rowed['nat_id']."</td>";
+                    $data.="<td>". (strlen($rowed['employees_type']) > 0 ? "<span class='text-success'>".$rowed['employees_type']."</span>" : "Not-Set") ."</td>";
                     if (isset($rowed['activated'])) {
                         $activated = $rowed['activated'];
                         if($activated=='1'){
@@ -5381,6 +5385,55 @@
                 echo "<p>No classes to display!</p>";
             }
             // echo "p";
+        }elseif(isset($_POST['show_courses'])){
+            // get the passed data
+            $course_name = $_POST['course_level'];
+            $course_list_id = $_POST['course_list_id'];
+
+            // get the level id
+            $level_id = null;
+            $select = "SELECT * FROM `settings` WHERE `sett` = 'class'";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            if ($result) {
+                if($row = $result->fetch_assoc()){
+                    $valued = isJson_report($row['valued']) ? json_decode($row['valued']) : [];
+                    for($index = 0; $index < count($valued); $index++){
+                        if($valued[$index]->classes == $course_name){
+                            $level_id = $valued[$index]->id;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // get the course list with the course id
+            $select = "SELECT * FROM `settings` WHERE `sett` = 'courses'";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $course_list = [];
+            if($result){
+                if($row = $result->fetch_assoc()){
+                    $course_list = isJson_report($row['valued']) ? json_decode($row['valued']) : [];
+                }
+            }
+
+            // loop through the course list to get the course department
+            $data_to_display = "<select id='".$course_list_id."' name='course_name' class='form-control'><option value='' hidden>Select Course...</option>";
+            for($index = 0; $index < count($course_list); $index++){
+                // course levels
+                $course_levels = isJson_report($course_list[$index]->course_levels) ? json_decode($course_list[$index]->course_levels) : [];
+
+                // check if the course is present in the array
+                $is_present = checkPresnt($course_levels,$level_id);
+                if($is_present){
+                    $data_to_display.="<option value='".$course_list[$index]->id."'>".$course_list[$index]->course_name."</option>";
+                }
+            }
+            $data_to_display .= "</select>";
+            echo $data_to_display;
         }elseif (isset($_POST['get_me_staff'])) {
             $select = "SELECT * FROM `user_tbl` WHERE `school_code` = ?";
             $stmt = $conn->prepare($select);
@@ -6788,6 +6841,8 @@ function isJson_report($string) {
             $data .= "Head of Department";
         } else if ($auth == "8") {
             $data .= "Trainer/Lecturer";
+        } else if ($auth == "9") {
+            $data .= "Admissions";
         } else {
             $data .= ucwords(strtolower($auth));
         }

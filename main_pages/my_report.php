@@ -37,20 +37,24 @@
                     </div>
                     <div class="col-md-4 student ctrl my-2 hide" id="date_select_report">
                         <label for="select_date" class="form-label">Select date</label>
-                        <input type="date" name="select_date" id="select_date" class="form-control" max="<?php echo date("Y-m-d") ?>">
+                        <input type="date" value="<?php echo date("Y-m-d");?>" name="select_date" id="select_date" class="form-control" max="<?php echo date("Y-m-d") ?>">
                     </div>
                     <div class="col-md-4 student ctrl my-2 hide" id="class_select_report">
-                        <label for="select_report_class" class="form-label">Select Class<img src="images/ajax_clock_small.gif" id="class_load_report" class="hide"></label>
+                        <label for="select_report_class" class="form-label">Select Course Level<img src="images/ajax_clock_small.gif" id="class_load_report" class="hide"></label>
                         <span id="reports_classes"></span>
+                    </div>
+                    <div class="col-md-6 student hide" id="specific_course_2">
+                        <label for="course_list_report_1" class="form-label">Select Course<img src="images/ajax_clock_small.gif" id="select_course_loader" class="hide"></label>
+                        <div  id="display_courses_here"><span class="text-secondary"> Course list will appear here if a course level is selected!</span></div>
                     </div>
                     <div class="col-md-8 student ctrl my-2 row hide" id="between_dates">
                         <div class="col-md-6">
                             <label for="from_date_report" class="form-label" id="">From:</label>
-                            <input type="date" name="from_date_report" id="from_date_report" class="form-control" max="<?php echo date("Y-m-d") ?>">
+                            <input type="date" value="<?php echo date("Y-m-d", strtotime("-7 days"));?>" name="from_date_report" id="from_date_report" class="form-control" max="<?php echo date("Y-m-d") ?>">
                         </div>
                         <div class="col-md-6">
                             <label for="to_date_report" class="form-label" id="">To:</label>
-                            <input type="date" name="to_date_report" id="to_date_report" class="form-control" max="<?php echo date("Y-m-d") ?>">
+                            <input type="date" value="<?php echo date("Y-m-d");?>" name="to_date_report" id="to_date_report" class="form-control" max="<?php echo date("Y-m-d") ?>">
                         </div>
                     </div>
                     <!-- admin name -->
@@ -65,7 +69,7 @@
                     </div>
                     <div class="col-md-4 admin ctrl my-2 hide" id="date_select_staff">
                         <label for="select_date_staff" class="form-label">Select date</label>
-                        <input type="date" name="select_date_staff" id="select_date_staff" class="form-control" max="<?php echo date("Y-m-d") ?>">
+                        <input type="date" value="<?php echo date("Y-m-d");?>" name="select_date_staff" id="select_date_staff" class="form-control" max="<?php echo date("Y-m-d") ?>">
                     </div>
                     <div>
                         <button class="block_btn" type="submit" name="pdf"  id="generate_button"><i class="fas fa-file-pdf"></i> PDF</button>
@@ -144,19 +148,19 @@
                     <div class="col-md-8 row stud_fin hide" id="time_period">
                         <div class="col-md-6">
                             <label for="from_date_finance" class="form-label">From</label>
-                            <input type="date" name="from_date_finance" id="from_date_finance" class="form-control" max="<?php echo date("Y-m-d");?>">
+                            <input type="date" value="<?php echo date("Y-m-d", strtotime("-7 days"));?>" name="from_date_finance" id="from_date_finance" class="form-control" max="<?php echo date("Y-m-d");?>">
                         </div>
                         <div class="col-md-6">
                             <label for="to_date_finance" class="form-label">To</label>
-                            <input type="date" name="to_date_finance" id="to_date_finance" class="form-control" max="<?php echo date("Y-m-d");?>">
+                            <input type="date" value="<?php echo date("Y-m-d");?>" name="to_date_finance" id="to_date_finance" class="form-control" max="<?php echo date("Y-m-d");?>">
                         </div>
                     </div>
                     <div class="col-md-4 stud_fin hide" id="specific_date">
                         <label for="specific_date_finance" class="form-label">Select Date</label>
-                        <input type="date" name="specific_date_finance" id="specific_date_finance" class="form-control" max="<?php echo date("Y-m-d");?>">
+                        <input type="date" value="<?php echo date("Y-m-d");?>" name="specific_date_finance" id="specific_date_finance" class="form-control" max="<?php echo date("Y-m-d");?>">
                     </div>
-                    <div class="col-md-8 row stud_fin hide" id="stud_opt_fin">
-                        <div class="col-md-6">
+                    <div class="col-md-12 row stud_fin hide" id="stud_opt_fin">
+                        <div class="col-md-4">
                             <label for="student_options" class="form-label">Select student options</label>
                             <select name="student_options" id="student_options" class="form-control">
                                 <option value="" hidden>Select student options</option>
@@ -165,15 +169,19 @@
                                 <option value="bySpecific">Specific Students</option>
                             </select>
                         </div>
-                        <div class="col-md-6 hide" id="specific_stud_admno">
+                        <div class="col-md-4 hide" id="specific_stud_admno">
                             <label for="student_admno_in" class="form-label">Student Admission Number</label>
                             <div class="autocomplete">
                                 <input type="text" name="student_admno_in" id="student_admno_in" class="form-control" placeholder="Enter Admission No">
                             </div>
                         </div>
-                        <div class="col-md-6 hide" id="specific_class">
-                            <label for="student_class_fin" class="form-label">Select class<img src="images/ajax_clock_small.gif" id="class_fin_in_load" class="hide"></label>
+                        <div class="col-md-4 hide" id="specific_class">
+                            <label for="student_class_fin" class="form-label">Select Course Level<img src="images/ajax_clock_small.gif" id="class_fin_in_load" class="hide"></label>
                             <span id="class_fin_in"></span>
+                        </div>
+                        <div class="col-md-4 hide" id="specific_course_1">
+                            <label for="course_list_report_2" class="form-label">Select Course<img src="images/ajax_clock_small.gif" id="select_course_loader_2" class="hide"></label>
+                            <div  id="display_courses_here_2"><span class="text-secondary"> Course list will appear here if a course level is selected!</span></div>
                         </div>
                     </div>
                     <div class="col-md-6 hide" id="compose_reminder_message">

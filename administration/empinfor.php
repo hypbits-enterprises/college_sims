@@ -77,8 +77,8 @@
                 <input class="form-control w-100" type="text" name="employees_job_title" id="employees_job_title" placeholder = 'Job Title' autocomplete="off" >
             </div>
             <div class="col-md-4">
-                <label class="form-control-label" for="tscnosd"><b>Employee Number: </b><br></label>
-                <input class="form-control w-100" type="text" name="tscnosd" id="tscnosd" placeholder = 'Employee Number' autocomplete="off" >
+                <label class="form-control-label" for="tscnosd"><b>Employment Number: </b><br></label>
+                <input class="form-control w-100" type="text" name="tscnosd" id="tscnosd" placeholder = 'Employment Number' autocomplete="off" >
             </div>
             <div class="col-md-4">
                 <label class="form-control-label" for="nssf_numbers"><b>NSSF No: </b><br></label>

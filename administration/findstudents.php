@@ -56,6 +56,7 @@
                         <span id="findingstudents" class="btn btn-primary btn-sm mt-4 rounded" type="button"><i class="fas fa-search"></i> Search</span>
                     </div>
                 </div>
+                <hr>
                 <p id="swindow"></p>
                 <p id="topsearch2"></p>
                 

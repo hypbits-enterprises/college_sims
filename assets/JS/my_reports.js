@@ -2,10 +2,53 @@
 function getMyReportclasses() {
     var datapass = "getmystudents=select_report_class";
     sendDataPost("POST","ajax/administration/admissions.php",datapass,cObj("reports_classes"),cObj("class_load_report"));
+    setTimeout(() => {
+        var timeout = 0;
+        var ids = setInterval(() => {
+            timeout++;
+            //after two minutes of slow connection the next process wont be executed
+            if (timeout == 1200) {
+                stopInterval(ids);
+            }
+            if (cObj("class_load_report").classList.contains("hide")) {
+                // set the change listener to the class change
+                if (cObj("select_report_class") != undefined) {
+                    cObj("select_report_class").addEventListener("change",showCoursesStudent)
+                }
+                stopInterval(ids);
+            }
+        }, 100);
+    }, 200);
     var datapass = "getmystudents=student_class_fin";
     sendDataPost("POST","ajax/administration/admissions.php",datapass,cObj("class_fin_in"),cObj("class_fin_in_load"));
+    setTimeout(() => {
+        var timeout = 0;
+        var ids = setInterval(() => {
+            timeout++;
+            //after two minutes of slow connection the next process wont be executed
+            if (timeout == 1200) {
+                stopInterval(ids);
+            }
+            if (cObj("class_fin_in_load").classList.contains("hide")) {
+                // set the change listener to the class change
+                if (cObj("student_class_fin") != undefined) {
+                    cObj("student_class_fin").addEventListener("change",showCoursesStudent2)
+                }
+                stopInterval(ids);
+            }
+        }, 100);
+    }, 200);
 }
 
+function showCoursesStudent() {
+    var datapass = "show_courses=true&course_list_id=course_list_report_1&course_level="+this.value;
+    sendDataPost("POST","ajax/administration/admissions.php",datapass,cObj("display_courses_here"),cObj("select_course_loader"));
+}
+
+function showCoursesStudent2() {
+    var datapass = "show_courses=true&course_list_id=course_list_report_2&course_level="+this.value;
+    sendDataPost("POST","ajax/administration/admissions.php",datapass,cObj("display_courses_here_2"),cObj("select_course_loader_2"));
+}
 cObj("select_entity").onchange = function () {
     if (this.value == "student") {
         var student = document.getElementsByClassName("student");
@@ -43,6 +86,7 @@ cObj("select_student_option").onchange = function () {
             element.classList.add("hide");
         }
         cObj("class_select_report").classList.remove("hide");
+        cObj("specific_course_2").classList.remove("hide");
     }else if (stud_option == "students_admitted") {
         var ctrl = document.getElementsByClassName("ctrl");
         for (let index = 0; index < ctrl.length; index++) {
@@ -52,6 +96,7 @@ cObj("select_student_option").onchange = function () {
         // get the students admitted
         cObj("date_select_report").classList.remove("hide");
         cObj("class_select_report").classList.remove("hide");
+        cObj("specific_course_2").classList.remove("hide");
     }else if (stud_option == "school_in_attendance") {
         var ctrl = document.getElementsByClassName("ctrl");
         for (let index = 0; index < ctrl.length; index++) {
@@ -61,6 +106,7 @@ cObj("select_student_option").onchange = function () {
         // get the students admitted
         cObj("date_select_report").classList.remove("hide");
         cObj("class_select_report").classList.remove("hide");
+        cObj("specific_course_2").classList.remove("hide");
     }else if (stud_option == "show_alumni") {
         var ctrl = document.getElementsByClassName("ctrl");
         for (let index = 0; index < ctrl.length; index++) {
@@ -173,11 +219,14 @@ cObj("student_options").onchange = function () {
     var my_val = this.value;
     if (my_val == "byClass") {
         cObj("specific_class").classList.remove("hide");
+        cObj("specific_course_1").classList.remove("hide");
         cObj("specific_stud_admno").classList.add("hide");
     }else if (my_val == "byAll") {
+        cObj("specific_course_1").classList.add("hide");
         cObj("specific_class").classList.add("hide");
         cObj("specific_stud_admno").classList.add("hide");
     }else if (my_val == "bySpecific") {
+        cObj("specific_course_1").classList.add("hide");
         cObj("specific_class").classList.add("hide");
         cObj("specific_stud_admno").classList.remove("hide");
     }

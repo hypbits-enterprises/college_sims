@@ -166,7 +166,9 @@ require("../../assets/encrypt/functions.php");
                     $data .= "<br>". "Head of Department </p>";
                 } else if ($auth == "8") {
                     $data .= "<br>". "Trainer/Lecturer </p>";
-                } else {
+                } else if ($auth == "9") {
+                    $data .= "<br>". "Admissions </p>";
+                }  else {
                     $data .= "<br>". ucwords(strtolower($auth))."</p>";
                 }
                 echo $data;
@@ -247,6 +249,9 @@ require("../../assets/encrypt/functions.php");
                             $data .= "<br> ".getSubjectsAndClassTaught($user_id)."";
                         } else if ($auth == "8") {
                             $data .= "<b>". "Trainer/Lecturer </b>";
+                            $data .= "<br> ".getSubjectsAndClassTaught($user_id)."";
+                        } else if ($auth == "9") {
+                            $data .= "<b>". "Admissions </b>";
                             $data .= "<br> ".getSubjectsAndClassTaught($user_id)."";
                         } else {
                             $data .= "<b>". ucwords(strtolower($auth))."</b>";

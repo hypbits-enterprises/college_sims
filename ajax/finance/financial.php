@@ -188,7 +188,7 @@
                     $fees_change = "";
                     
                     // end of information
-                    $balancecalc = calculatedBalanceReport($admnos,$term,$conn2);
+                    $balancecalc = getBalanceReports($admnos,$term,$conn2);
                     $fees_paid = getFeespaidByStudent($admnos,$conn2);
                     $discounts = getDiscount($admnos,$conn2);
                     $discount = $discounts[0] > 0 ? $discounts[0] : "Kes ".$discounts[1];
@@ -4480,7 +4480,7 @@
         //     $balance = calculatedBalanceReport($admno,$term,$conn2);
         //     return $balance + $transport_payment + $balanceds;
         // }
-        $term = getTermV2($conn2);
+        // $term = getTermV2($conn2);
         // echo $term;
         $balance = calculatedBalanceReport($admno,$term,$conn2);
         return $balance;
@@ -4724,7 +4724,7 @@
         // get balance
         $feestopay += $lastacad;
         $balance = $feestopay - $feespaidbystud;
-        // echo $transport_deduction;
+        // echo $balance;
 
         // if class is transfered or alumni last
         if ($dach == "-2" || $dach == "-1") {

@@ -1774,6 +1774,8 @@ function clicks() {
                         data += "Head of Department";
                     } else if (auth == "8") {
                         data += "Trainer/Lecturer";
+                    } else if (auth == "9") {
+                        data += "Admissions";
                     } else {
                         data += auth;
                     }
@@ -1784,10 +1786,10 @@ function clicks() {
                         var authority_children = cObj("auths").children;
                         for (let index = 0; index < authority_children.length; index++) {
                             const element = authority_children[index];
-                            console.log(element.value +" "+ auth);
+                            // console.log(element.value +" "+ auth);
                             if (element.value == auth) {
                                 element.selected = true;
-                                console.log(element.value +" "+ auth+" find");
+                                // console.log(element.value +" "+ auth+" find");
                                 break;
                             }
                         }
@@ -5846,7 +5848,7 @@ function getStaff_roles() {
                 stopInterval(ids);
             }
             if (cObj("load_roles2").classList.contains("hide")) {
-                var data_to_display = "<select  class='form-control' style='width: 90%;' name='auths' id='auths'><option value='' hidden>Select Role</option><option value='0'>System Administrator</option><option value='1'>Principal</option><option value='2'>Deputy Principal Academics</option><option value='3'>Deputy Principal Administration</option><option value='4'>Dean of students</option><option value='5'>Finance officer</option><option value='6'>Human resource officer</option><option value='7'>Head of department</option><option value='8'>Trainer/Lecturer</option>";
+                var data_to_display = "<select  class='form-control' style='width: 90%;' name='authority' id='authority'><option value='' hidden>Select Role</option><option value='0'>System Administrator</option><option value='1'>Principal</option><option value='2'>Deputy Principal Academics</option><option value='3'>Deputy Principal Administration</option><option value='4'>Dean of students</option><option value='5'>Finance officer</option><option value='6'>Human resource officer</option><option value='7'>Head of department</option><option value='8'>Trainer/Lecturer</option><option value='9'>Admissions</option>";
                 // console.log(cObj("role_data_23").innerText);
                 var data_in = cObj("role_data_2322").innerText.length;
                 if (data_in > 0) {
@@ -5880,7 +5882,7 @@ function getStaff_roles_maanage() {
             }
             if (cObj("load_roles43").classList.contains("hide")) {
                 // var data_to_display = "<select  class='form-control' style='width: 90%;' name='auths' id='auths'><option class='staff_role_class' value='' hidden>Select..</option><option class='staff_role_class' value='0'>Administrator</option><option class='staff_role_class' value='1'>Headteacher/Principal</option><option class='staff_role_class' value='3'>Deputy principal</option><option class='staff_role_class' value='2'>Teacher</option><option class='staff_role_class' value='5'>Class teacher</option><option class='staff_role_class' value='6'>School Driver</option>";
-                var data_to_display = "<select  class='form-control' style='width: 90%;' name='auths' id='auths'><option value='' hidden>Select Role</option><option value='0'>System Administrator</option><option value='1'>Principal</option><option value='2'>Deputy Principal Academics</option><option value='3'>Deputy Principal Administration</option><option value='4'>Dean of students</option><option value='5'>Finance officer</option><option value='6'>Human resource officer</option><option value='7'>Head of department</option><option value='8'>Trainer/Lecturer</option>";
+                var data_to_display = "<select  class='form-control' style='width: 90%;' name='auths' id='auths'><option value='' hidden>Select Role</option><option value='0'>System Administrator</option><option value='1'>Principal</option><option value='2'>Deputy Principal Academics</option><option value='3'>Deputy Principal Administration</option><option value='4'>Dean of students</option><option value='5'>Finance officer</option><option value='6'>Human resource officer</option><option value='7'>Head of department</option><option value='8'>Trainer/Lecturer</option><option value='9'>Admissions</option>";
                 // console.log(cObj("role_data_23").innerText);
                 var data_in = cObj("staff_detail_out").innerText.length;
                 if (data_in > 0) {

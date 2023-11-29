@@ -73,9 +73,9 @@
                             </select> -->
                         </div>
                         <div class="conts my-2">
-                            <label for="tscno"><b>Employer Number: </b><br> </label>
+                            <label for="tscno"><b>Employment Number: </b><br> </label>
                             <p id="tschandler"></p>
-                            <input class="form-control" style="width: 90%;" type="text" name="tscno" id="tscno" placeholder = "Employer Number.">
+                            <input class="form-control" style="width: 90%;" type="text" name="tscno" id="tscno" placeholder = "Employment Number.">
                         </div>
                         <div class="conts my-2">
                             <label for="nssf_number"><b>NSSF number: </b><br> </label>

@@ -32,6 +32,9 @@ function allowed($id){
     } else if ($auth == "8") {
         $allowed = ['',"",'','','','','','','','','','','','','','','','','','generate_tt_btn','','exam_fill_btn','','','','','','','update_personal_profile','',''];
         return checkPresnt($allowed,$id) ? "" : "d-none";
+    } else if ($auth == "9") {
+        $allowed = ['admitbtn',"findstudsbtn",'','','','','','','','','','','','','','','','','','','','','','','','','','','','',''];
+        return checkPresnt($allowed,$id) ? "" : "d-none";
     } else {
         // get the allowed fields
         // $data .= "<td>". ucwords(strtolower($auth))."</td>";
@@ -424,7 +427,7 @@ function checkPresnt($array, $string){
                     </div>
                 </div>
             </div>
-            <div class="conts">
+            <div class="conts d-none">
                 <button class="navButs">Academic<span class="arrow rotate_right"></button>
                 <div class="contsd">
                     <div class="contsc">
