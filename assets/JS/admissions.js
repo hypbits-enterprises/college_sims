@@ -2641,6 +2641,8 @@ function tablebtnlistener() {
                 var auth = cObj("authoriti").value;
                 // if(auth == 1){
                 if (splitdata.length > 10) {
+                    cObj("intake_year_edit").selectedIndex = 0;
+                    cObj("intake_month_edit").selectedIndex = 0;
                     cObj("loadings").classList.remove("hide");
                     cObj("snamed_in").value = splitdata[0]
                     cObj("fnamed_in").value = splitdata[1]
@@ -2843,6 +2845,24 @@ function tablebtnlistener() {
                         cObj("course_details_display").innerHTML = data_to_display;
                     }else{
                         cObj("course_details_display").innerHTML = "<h4 class='text-center'>Course Progress</h4><p class='text-danger text-center'>Your course progress will appear here!</p>";
+                    }
+
+                    // intake month
+                    var intake_year_edit = cObj("intake_year_edit").children;
+                    for (let index = 0; index < intake_year_edit.length; index++) {
+                        const element = intake_year_edit[index];
+                        if(element.value == splitdata[44]){
+                            element.selected = true;
+                        }
+                    }
+                    
+                    // intake year
+                    var intake_month_edit = cObj("intake_month_edit").children;
+                    for (let index = 0; index < intake_month_edit.length; index++) {
+                        const element = intake_month_edit[index];
+                        if(element.value == splitdata[45]){
+                            element.selected = true;
+                        }
                     }
                 }
                 stopInterval(ids);
@@ -3162,6 +3182,10 @@ cObj("updatestudinfor").onclick = function () {
                 // var previous course
                 var course_level_hidden = valObj("course_level_hidden");
                 var course_chosen_level_hidden = valObj("course_chosen_level_hidden");
+
+                // intake
+                var intake_month_edit = valObj("intake_month_edit");
+                var intake_year_edit = valObj("intake_year_edit");
     
                 var parname2 = valObj('pnamed2');
                 var parconts2 = valObj('pcontacted2');
@@ -3174,6 +3198,7 @@ cObj("updatestudinfor").onclick = function () {
                 datapass += "&parentname2=" + parname2 + "&parentcontact=" + parconts2 + "&parentrelation=" + parrelation2 + "&pemails=" + pemail2 + "&snamed=" + snamed + "&fnamed=" + fnamed + "&lnamed=" + lnamed;
                 datapass += "&occupation1=" + occupation1 + "&occupation2=" + occupation2 + "&medical_history=" + medical_history + "&clubs_in_sporters=" + clubs_in_sporters + "&previous_schools=" + previous_schools + "&doas=" + doas;
                 datapass += "&reason_for_leaving=" + reason_for_leaving+"&course_chosen="+course_chosen+"&course_level_hidden="+course_level_hidden+"&course_chosen_level_hidden="+course_chosen_level_hidden+"&existing_course_details="+existing_course;
+                datapass += "&intake_year_edit="+intake_year_edit+"&intake_month_edit="+intake_month_edit;
                 cObj("updateerrors").innerHTML = "";
                 sendData1("GET", "administration/admissions.php", datapass, cObj("updateerrors"));
                 setTimeout(() => {
@@ -3597,6 +3622,7 @@ cObj("submitbtn").onclick = function () {
                 datapass += "&parentrela2=" + parrelation2 + "&pemail2=" + pemail2 + "&parentname2=" + parname2 + "&parentconts2=" + parconts2;
                 datapass += "&parent_accupation1=" + parent_accupation1 + "&parent_accupation2=" + parent_accupation2 + "&last_year_academic_balance=" + last_year_academic_balance;
                 datapass += "&course_chosen="+course_chosen+"&adm_option="+valObj("automated_amd");
+                datapass += "&intake_year="+valObj("intake_year")+"&intake_month="+valObj("intake_month");
                 sendDataPost("POST", "ajax/administration/admissions.php", datapass, cObj("erroradm"),cObj("loadings"));
                 setTimeout(() => {
                     var ids = setInterval(() => {
@@ -3654,6 +3680,8 @@ function checkAdmission() {
     err += checkBlank("sname");
     err += checkBlank("dob");
     err += checkBlank("gender");
+    err += checkBlank("intake_year");
+    err += checkBlank("intake_month");
     if (typeof (cObj("errolment")) != 'undefined' && cObj("errolment") != null) {
         err += checkBlank("errolment");
     } else {

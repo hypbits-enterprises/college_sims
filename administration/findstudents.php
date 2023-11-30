@@ -310,6 +310,24 @@
                                     <label class="form-control-label" for="addressed"><b>Address</b></label><br>
                                     <input class="form-control w-100" type="text" autocomplete="off" id="addressed" placeholder="Area of residence">
                                 </div>
+                                <div class="col-md-4">
+                                    <label for="intake_month_edit" class="form-control-label">Intake Month</label>
+                                    <select name="intake_month_edit" id="intake_month_edit" class="form-control">
+                                        <option value="" hidden>Select an Option</option>
+                                        <option value="JAN">JAN</option>
+                                        <option value="MAY">MAY</option>
+                                        <option value="SEP">SEP</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="intake_year_edit" class="form-control-label">Intake Year</label>
+                                    <select name="intake_year_edit" id="intake_year_edit" class="form-control">
+                                        <option value="" hidden>Select an Option</option>
+                                        <?php for($index = date("Y"); $index > 2017; $index--):?>
+                                            <option value="<?=$index?>"><?=$index?></option>
+                                        <?php endfor;?>
+                                    </select>
+                                </div>
                             </div>
                             <div class="form-control d-flex flex-wrap my-2 rounded form-group row">
                                 <div id="course_details_display">

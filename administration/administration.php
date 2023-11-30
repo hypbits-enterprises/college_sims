@@ -72,6 +72,29 @@
                             <p class="red_notice" id="admgenman"></p>
                         </div>
                     </div>
+                    <div class="conts row">
+                        <div class="col-md-12">
+                            <p class="text-center"><b>Intake</b></p>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="intake_month" class="form-control-label">Intake Month</label>
+                            <select name="intake_month" id="intake_month" class="form-control">
+                                <option value="" hidden>Select an Option</option>
+                                <option value="JAN">JAN</option>
+                                <option value="MAY">MAY</option>
+                                <option value="SEP">SEP</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="intake_year" class="form-control-label">Intake Year</label>
+                            <select name="intake_year" id="intake_year" class="form-control">
+                                <option value="" hidden>Select an Option</option>
+                                <?php for($index = date("Y"); $index > 2017; $index--):?>
+                                    <option value="<?=$index?>"><?=$index?></option>
+                                <?php endfor;?>
+                            </select>
+                        </div>
+                    </div>
                     <div class="conts">
                         <label for="errolment">Course Level:<span style='color:red;'>*</span><br></label>
                         <div id="class_admission"></div>

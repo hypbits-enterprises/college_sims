@@ -478,8 +478,8 @@
                                 $stmt->execute();
                                 $result = $stmt->get_result();
                                 if($result){
-                                    if($row = $result->fetch_assoc()){
-                                        $valued = isJson_report($row['valued']) ? json_decode($row['valued']) : [];
+                                    if($rw = $result->fetch_assoc()){
+                                        $valued = isJson_report($rw['valued']) ? json_decode($rw['valued']) : [];
                                         for($ind = 0; $ind < count($valued); $ind++){
                                             if($valued[$ind]->id == $l_i){
                                                 $l_n = $valued[$ind]->classes;
@@ -498,8 +498,8 @@
                                 $stmt->execute();
                                 $result = $stmt->get_result();
                                 if($result){
-                                    if($row = $result->fetch_assoc()){
-                                        $valued = isJson_report($row['valued']) ? json_decode($row['valued']) : [];
+                                    if($rw = $result->fetch_assoc()){
+                                        $valued = isJson_report($rw['valued']) ? json_decode($rw['valued']) : [];
                                         for($ind = 0; $ind < count($valued); $ind++){
                                             if($valued[$ind]->id == $c_i){
                                                 $c_n = $valued[$ind]->course_name;
@@ -521,6 +521,8 @@
                         // array push
                         array_push($data_array,$course_details);
                         array_push($data_array,$mycourselist_raw);
+                        array_push($data_array,$row['intake_year']);
+                        array_push($data_array,$row['intake_month']);
                     }else{
                     }
                 }else {
@@ -778,6 +780,8 @@
             $doas = $_GET['doas'];
             $course_chosen = $_GET['course_chosen'];
             $existing_course_details = $_GET['existing_course_details'];
+            $intake_year_edit = $_GET['intake_year_edit'];
+            $intake_month_edit = $_GET['intake_month_edit'];
             // echo $doas." in null";
 
             // process the student course progress
@@ -847,7 +851,7 @@
                         
                         $module_terms = [];
                         // term 1
-                        $terms = getTerm();
+                        $terms = getTermV3($conn2);
                         $academic_terms = getAcademicStartV1($conn2,$terms);
                         $term = new stdClass();
                         $term->id = 1;
@@ -909,9 +913,9 @@
             }
 
             // echo $previous_schools;
-            $update = "UPDATE `student_data` SET `year_of_study` = ?,`stud_class` = ?, `BCNo`= ?,`index_no` = ?,`gender` = ?, `disabled` = ? , `disable_describe` = ? , `address` = ? ,`parentName` = ?,`parentContacts` = ?,`parent_relation` = ?,`parent_email` = ?,`parent_name2` = ?,`parent_contact2` = ?, `parent_relation2` = ?, `parent_email2` = ?, `first_name` = ? ,`surname` = ? ,`second_name` = ? ,`primary_parent_occupation` = ?, `secondary_parent_occupation` = ?, `medical_history` = ?, `clubs_id` = ?, `prev_sch_attended` = ?,`D_O_A` = ?, `transfered_comment` = ?, `course_done` = ? WHERE `adm_no`=?";
+            $update = "UPDATE `student_data` SET `year_of_study` = ?,`stud_class` = ?, `BCNo`= ?,`index_no` = ?,`gender` = ?, `disabled` = ? , `disable_describe` = ? , `address` = ? ,`parentName` = ?,`parentContacts` = ?,`parent_relation` = ?,`parent_email` = ?,`parent_name2` = ?,`parent_contact2` = ?, `parent_relation2` = ?, `parent_email2` = ?, `first_name` = ? ,`surname` = ? ,`second_name` = ? ,`primary_parent_occupation` = ?, `secondary_parent_occupation` = ?, `medical_history` = ?, `clubs_id` = ?, `prev_sch_attended` = ?,`D_O_A` = ?, `transfered_comment` = ?, `course_done` = ?,`intake_year` = ?, `intake_month` = ? WHERE `adm_no`=?";
             $stmt = $conn2->prepare($update);
-            $stmt->bind_param("ssssssssssssssssssssssssssss",$newYOS,$class,$bcnos,$index,$genders,$disabled,$describe,$address,$pnamed,$pcontacts,$prelation,$pemail,$parentname2,$parentcontact,$parentrelation,$pemails,$fnamed,$snamed,$lnamed,$occupation1,$occupation2,$medical_history,$clubs_in_sporters,$previous_schools,$doas,$reason_for_leaving,$course_chosen,$adminno);
+            $stmt->bind_param("ssssssssssssssssssssssssssssss",$newYOS,$class,$bcnos,$index,$genders,$disabled,$describe,$address,$pnamed,$pcontacts,$prelation,$pemail,$parentname2,$parentcontact,$parentrelation,$pemails,$fnamed,$snamed,$lnamed,$occupation1,$occupation2,$medical_history,$clubs_in_sporters,$previous_schools,$doas,$reason_for_leaving,$course_chosen,$intake_year_edit,$intake_month_edit,$adminno);
             if($stmt->execute()){
                 echo "<p style='color:green;font-size:12px;'>Student  data updated successfully!</p>";
             }else{
@@ -4978,6 +4982,8 @@
             }
             $parent_accupation1 = $_POST['parent_accupation1'];
             $parent_accupation2 = $_POST['parent_accupation2'];
+            $intake_year = $_POST['intake_year'];
+            $intake_month = $_POST['intake_month'];
 
             // get the level id
             $level_id = null;
@@ -5012,7 +5018,7 @@
             
             $module_terms = [];
             // term 1
-            $terms = getTerm();
+            $terms = getTermV3($conn2);
             $academic_terms = getAcademicStartV1($conn2,$terms);
             $term = new stdClass();
             $term->id = 1;
@@ -5049,9 +5055,9 @@
             // ----------------END OF SETTING COURSE DETAILS--------------
             
             $doa = date("Y-m-d");
-            $insert = "INSERT INTO `student_data` (`surname`,`adm_no`,`first_name`,`second_name`,`student_upi`,`D_O_B`,`gender`,`stud_class`,`D_O_A`,`parentName`,`parentContacts`,`parent_relation`,`parent_email`,`parent_name2`,`parent_contact2`,`parent_relation2`,`parent_email2`,`address`,`BCNo`,`primary_parent_occupation`,`secondary_parent_occupation`,`course_done`,`my_course_list`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+            $insert = "INSERT INTO `student_data` (`surname`,`adm_no`,`first_name`,`second_name`,`student_upi`,`D_O_B`,`gender`,`stud_class`,`D_O_A`,`parentName`,`parentContacts`,`parent_relation`,`parent_email`,`parent_name2`,`parent_contact2`,`parent_relation2`,`parent_email2`,`address`,`BCNo`,`primary_parent_occupation`,`secondary_parent_occupation`,`course_done`,`my_course_list`,`intake_year`,`intake_month`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
             $stmt = $conn2->prepare($insert);
-            $stmt->bind_param("sssssssssssssssssssssss",$suname,$admno,$fname,$sname,$upis,$dob,$gender,$classenrol,$doa,$parentname,$parentcontact,$parentrelation,$parentemail,$parentname2,$parentcontact2,$parentrelation2,$pmail2,$address,$bcno,$parent_accupation1,$parent_accupation2,$course_chosen,$course_details_string);
+            $stmt->bind_param("sssssssssssssssssssssssss",$suname,$admno,$fname,$sname,$upis,$dob,$gender,$classenrol,$doa,$parentname,$parentcontact,$parentrelation,$parentemail,$parentname2,$parentcontact2,$parentrelation2,$pmail2,$address,$bcno,$parent_accupation1,$parent_accupation2,$course_chosen,$course_details_string,$intake_year,$intake_month);
             if($stmt->execute()){
                 $data = "<p style ='color:green;font-size:12px;'>".$fname." ".$sname." has been admitted successfully<br>Use their admission number to search their information</p>";
                 $stmt->close();
