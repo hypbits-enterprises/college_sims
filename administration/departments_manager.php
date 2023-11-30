@@ -17,7 +17,7 @@
             </div>
             <hr>
             <span class="btn btn-primary btn-sm p-1" id="add_a_departments"><i class="fas fa-plus"></i> Add Department</span>
-            <div class="container rounded border border-secondary my-2 p-1 hide animate" id="add_department_window">
+            <div class="container rounded border border-secondary my-2 p-1 hide" id="add_department_window">
                 <h6 class="text-primary text-center"><u>Add Department</u> <img class="hide" src="images/ajax_clock_small.gif" id="department_loader"></h6>
                 <div class="row">
                     <div class="form-group col-md-6">
@@ -39,7 +39,7 @@
                 </div>
             </div>
             <hr>
-            <div class="container rounded border border-secondary my-2 p-1 animate" id="dept_table_display">
+            <div class="container rounded border border-secondary my-2 p-1" id="dept_table_display">
                 <p class="hide" id="department_data"></p>
                 <h6 class="text-center text-primary">Department Table <img class="hide" src="images/ajax_clock_small.gif" id="department_loader_tables"></h6>
                 <div class="table-responsive" id="data_table_department_table">

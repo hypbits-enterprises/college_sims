@@ -276,11 +276,15 @@
                                     <img src="images/ajax_clock_small.gif" class="hide" id="class_loaders_id_in">
                                     <label class="form-control-label" for="classed"><b>Course Level: </b><br></label>
                                     <div id="class_holders"></div>
+                                    <div id="course_level_error_window"></div>
+                                    <input type="hidden" name="" id="course_level_hidden">
                                 </div>
                                 <div class="col-md-4">
                                     <img src="images/ajax_clock_small.gif" class="hide" id="course_list_edit_loader">
                                     <label class="form-control-label" for="course_chosen_edit"><b>Course: </b><br></label>
                                     <div id="course_list_edit"></div>
+                                    <div id="course_chosen_error_window"></div>
+                                    <input type="hidden" name="" id="course_chosen_level_hidden">
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-control-label" for="dobs"><b>Date of birth </b><br></label>
@@ -306,6 +310,43 @@
                                     <label class="form-control-label" for="addressed"><b>Address</b></label><br>
                                     <input class="form-control w-100" type="text" autocomplete="off" id="addressed" placeholder="Area of residence">
                                 </div>
+                            </div>
+                            <div class="form-control d-flex flex-wrap my-2 rounded form-group row">
+                                <div id="course_details_display">
+                                    <h4 class="text-center">Course Levels</h4>
+                                    <table class="table">
+                                        <tr>
+                                            <th>Course Level</th>
+                                            <th>Course Name</th>
+                                            <th>Module Terms</th>
+                                            <th>Status</th>
+                                            <th>Completed</th>
+                                            <th>Period</th>
+                                        </tr>
+                                        <tr>
+                                            <td rowspan="3" style="vertical-align: middle;"><b>Diploma Module 1</b></td>
+                                            <td rowspan="3" style="vertical-align: middle;"><b>Engineering</b></td>
+                                            <td>Term 1</td>
+                                            <td>In-Active</td>
+                                            <td>Completed</td>
+                                            <td>Jan 12th June 2023 <br> Jan 30th June 2024</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Term 2</td>
+                                            <td>In-Active</td>
+                                            <td>In-Complete</td>
+                                            <td>Jan 12th June 2023 <br> Jan 30th June 2024</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Term 3</td>
+                                            <td>Active</td>
+                                            <td>In-Complete</td>
+                                            <td>Jan 12th June 2023 <br> Jan 30th June 2024</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <span class="btn btn-secondary btn-sm w-50 mx-auto my-2" id="save_course_progress"><i class="fa fa-save"></i> Save Course Progress <img src="images/ajax_clock_small.gif" class="hide" id="save_course_progress_loader"></span>
+                                <div id="error_handler_course_progress"></div>
                             </div>
                             <div class="form-control d-flex flex-wrap my-2 rounded row">
                                 <div class="titles">
@@ -348,7 +389,7 @@
                                 </div>
                                 <div class="col-md-12">
                                     <label class="form-control-label" for="descriptionsd"><b>Disabled description: </b><br></label>
-                                    <textarea style='padding:4px 2px;' class="form-control w-100" autocomplete="off" id="descriptionsd" cols="30" rows="5"></textarea>
+                                    <textarea style='padding:4px 2px;' class="form-control w-100" placeholder="Disabled Description" autocomplete="off" id="descriptionsd" cols="30" rows="5"></textarea>
                                 </div>
                                 <div class="col-md-12">
                                     <label for="medical_histry" class="form-control-label"><b>Medical History</b></label>

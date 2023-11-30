@@ -2931,6 +2931,20 @@ function checkPresnt($array, $string){
             </div>
         </div>
     </div>
+    <div class="dialogholder hide" id="set_admission_number_prefix">
+        <div class="dialogwindow animate">
+            <h6>Set Admission Number Prefix <img src="images/ajax_clock_small.gif" class="hide" id="set_admission_number_prefix_loader"></h6>
+            <p class="hide" id="admission_numbers_prefix_value"></p>
+            <div class="container my-2">
+                <label for="admission_number_prefix" class="form-control-label"><b>Admission Number Prefix:</b></label>
+                <input type="text" class="form-control w-100 mx-0" id="admission_number_prefix" placeholder="Admission Number Prefix">
+            </div>
+            <div class="buttons align-center">
+                <button type='button' id='confirm_set_admission_number'>Edit</button>
+                <button type='button' id='cancel_set_admission_number'>Cancel</button>
+            </div>
+        </div>
+    </div>
     <div class="dialogholder hide" id="edit_clubs_win">
         <div class="dialogwindow animate">
             <h6>Edit Sports House </h6>

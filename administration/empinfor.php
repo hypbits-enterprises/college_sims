@@ -69,8 +69,8 @@
             </div>
             <div class="col-md-4">
                 <p id="error_job_number"></p>
-                <label class="form-control-label" for="employees_job_number"><b>Job Number: <img class="hide" src="images/ajax_clock_small.gif" id="job_number_loader"></span></b><br></label>
-                <input class="form-control w-100" type="text" name="employees_job_number" id="employees_job_number" placeholder = 'Job Number' autocomplete="off" >
+                <label class="form-control-label" for="employees_job_number"><b>Personal File Number: <img class="hide" src="images/ajax_clock_small.gif" id="job_number_loader"></span></b><br></label>
+                <input class="form-control w-100" type="text" name="employees_job_number" id="employees_job_number" placeholder = 'Personal File Number' autocomplete="off" >
             </div>
             <div class="col-md-4">
                 <label class="form-control-label" for="employees_job_title"><b>Job Title: </b><br></label>

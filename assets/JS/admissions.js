@@ -33,8 +33,43 @@ function getCourseListEdit(course_level) {
     // get the course lists
     var datapass = "?get_course_list_edit=true&course_level="+course_level;
     sendData2("GET","administration/admissions.php",datapass,cObj("course_list_edit"),cObj("course_list_edit_loader"));
-    
+    setTimeout(() => {
+        var timeout = 0;
+        var ids = setInterval(() => {
+            timeout++;
+            //after two minutes of slow connection the next process wont be executed
+            if (timeout == 1200) {
+                stopInterval(ids);
+            }
+            if (cObj("course_list_edit_loader").classList.contains("hide")) {
+                cObj("course_chosen_edit").addEventListener("change",courseChange);
+                // stop
+                stopInterval(ids);
+            }
+        }, 100);
+    }, 100);
 }
+
+function courseChange() {
+    // warn the user of switching to a different level if they have not complete this level and also the same should be done for the courses
+    var select_options = document.getElementsByClassName("select_options");
+    var level_count = 0;
+    for (let index = 0; index < select_options.length; index++) {
+        const element = select_options[index];
+        console.log(element.value);
+        if (element.value != 2 && element.value != 1) {
+            level_count++;
+        }
+    }
+
+    // if the level count is greater than zero it means that there is a term that has not been completed by the student
+    if(level_count > 0 && this.value != valObj("course_chosen_level_hidden")){
+        cObj("course_chosen_error_window").innerHTML = "<p class='text-danger'>You have changed the student`s course without them completing. Make sure they have completed every term before moving them to any level.</p>";
+    }else{
+        cObj("course_chosen_error_window").innerHTML = "";
+    }
+}
+
 cObj("pleasewaiting").onclick = function () {
     //removePleasewait();
 }
@@ -171,13 +206,31 @@ cObj("findstudsbtn").onclick = function () {
 function showClassChange() {
     if (this.value == "-2") {
         cObj("reason_for_leaving_window").classList.remove("hide");
-    } else {
+    }else {
         cObj("reason_for_leaving_window").classList.add("hide");
     }
 
     // get the course that the student can be enrolled to
     var course_level = cObj("classed") != undefined ? valObj("classed") : "-1";
     getCourseListEdit(course_level);
+
+    // warn the user of switching to a different level if they have not complete this level and also the same should be done for the courses
+    var select_options = document.getElementsByClassName("select_options");
+    var level_count = 0;
+    for (let index = 0; index < select_options.length; index++) {
+        const element = select_options[index];
+        console.log(element.value);
+        if (element.value != 2 && element.value != 1) {
+            level_count++;
+        }
+    }
+
+    // if the level count is greater than zero it means that there is a term that has not been completed by the student
+    if(level_count > 0 && this.value != valObj("course_level_hidden")){
+        cObj("course_level_error_window").innerHTML = "<p class='text-danger'>You have changed the student`s course level without them completing. Make sure they have completed every term before moving them to any level.</p>";
+    }else{
+        cObj("course_level_error_window").innerHTML = "";
+    }
 }
 cObj("update_school_profile").onclick = function () {
     hideWindow();
@@ -622,6 +675,7 @@ cObj("set_btns").onclick = function () {
     getPaymentOptions();
     displayExpCategories();
     get_courses();
+    get_admission_prefix();
 }
 
 if (typeof (cObj("callrollcall")) != 'undefined' && cObj("callrollcall") != null) {
@@ -1661,7 +1715,86 @@ cObj("yes_delete_permanently").onclick = function () {
     }, 200);
 }
 
+cObj("change_admissions_prefix").onclick = function () {
+    // get the admission number prefix
+    var datapass = "?get_admission_prefix=true";
+    sendData2("GET","administration/admissions.php",datapass,cObj("admission_numbers_prefix_value"),cObj("set_admission_number_prefix_loader"));
+    setTimeout(() => {
+        var timeout = 0;
+        var ids = setInterval(() => {
+            timeout++;
+            //after two minutes of slow connection the next process wont be executed
+            if (timeout == 1200) {
+                stopInterval(ids);
+            }
+            if (cObj("set_admission_number_prefix_loader").classList.contains("hide")) {
+                var admission_value = cObj("admission_numbers_prefix_value").innerText;
+                cObj("admission_number_prefix").value = admission_value.length > 0 ? admission_value : "Not-Set";
+                //removePleasewait();
+                stopInterval(ids);
+            }
+        }, 100);
+    }, 200);
+    cObj("set_admission_number_prefix").classList.remove("hide");
+}
 
+cObj("confirm_set_admission_number").onclick = function () {
+    var err = checkBlank("admission_number_prefix");
+    if (err == 0) {
+        err = valObj("admission_number_prefix") == "Not-Set" ? 1 : 0;
+        if (err == 0) {
+            // gray border
+            grayBorder(cObj("admission_number_prefix"));
+
+            // save the admission number
+            var datapass = "?save_admission_prefix=true&admission_prefix="+valObj("admission_number_prefix");
+            sendData2("GET","administration/admissions.php",datapass,cObj("admission_number_prefix_error"),cObj("set_admission_number_prefix_loader"));
+            setTimeout(() => {
+                var timeout = 0;
+                var ids = setInterval(() => {
+                    timeout++;
+                    //after two minutes of slow connection the next process wont be executed
+                    if (timeout == 1200) {
+                        stopInterval(ids);
+                    }
+                    if (cObj("set_admission_number_prefix_loader").classList.contains("hide")) {
+                        cObj("cancel_set_admission_number").click();
+                        get_admission_prefix();
+                        setTimeout(() => {
+                            cObj("admission_number_prefix_error").innerHTML = "";
+                        }, 3000);
+                        //removePleasewait();
+                        stopInterval(ids);
+                    }
+                }, 100);
+            }, 200);
+        }else{
+            redBorder(cObj("admission_number_prefix"));
+        }
+    }
+}
+
+cObj("cancel_set_admission_number").onclick = function () {
+    cObj("set_admission_number_prefix").classList.add("hide");
+}
+
+function get_admission_prefix() {
+    var datapass = "?get_admission_prefix_details=true";
+    sendData2("GET","administration/admissions.php",datapass,cObj("admission_number_prefix_window"),cObj("admission_number_prefix_loader"));
+    setTimeout(() => {
+        var timeout = 0;
+        var ids = setInterval(() => {
+            timeout++;
+            //after two minutes of slow connection the next process wont be executed
+            if (timeout == 1200) {
+                stopInterval(ids);
+            }
+            if (cObj("admission_number_prefix_loader").classList.contains("hide")) {
+                stopInterval(ids);
+            }
+        }, 100);
+    }, 200);
+}
 
 function viewstaffavailablebtn() {
     cObj("informationwindow").classList.remove("hide");
@@ -2483,6 +2616,8 @@ function setListenerBtnTab(id) {
     cObj(id).addEventListener("click", tablebtnlistener);
 }
 function tablebtnlistener() {
+    // remove the course level window
+    cObj("course_level_error_window").innerHTML = "";
     cObj("select_clubs_sports_def").selected = true;
     var admno = this.id.substr(4);
     //send the id to the database.
@@ -2515,8 +2650,21 @@ function tablebtnlistener() {
                     } else {
                         cObj("reason_for_leaving_window").classList.add("hide");
                     }
-                    // console.log(splitdata[6]);
-                    cObj("cl" + splitdata[6]) != undefined ? cObj("cl" + splitdata[6]).selected = true : "";
+                    
+                    // get the children for the select and select the children that has that value
+                    var classed = cObj("classed") != undefined ? cObj("classed").children : [];
+                    for (let index = 0; index < classed.length; index++) {
+                        const element = classed[index];
+                        if(element.value == splitdata[6]){
+                            element.selected = true;
+                        }
+                    }
+
+                    // course level and course
+                    cObj("course_level_hidden").value = splitdata[6];
+                    cObj("course_chosen_level_hidden").value = splitdata[41];
+
+                    // cObj("cl" + splitdata[6]) != undefined ? cObj("cl" + splitdata[6]).selected = true : "";
                     cObj("adminnos").value = splitdata[7]
                     if (splitdata[3] == 0) {
                         cObj("indexnos").value = "N/A";
@@ -2659,11 +2807,94 @@ function tablebtnlistener() {
                     // get the courses to be done based on the level of education of the student
                     var datapass = "?getCoursesEdit=true&course_level="+splitdata[6]+"&course_id="+course_id;
                     sendData2("GET","administration/admissions.php",datapass,cObj("course_list_edit"),cObj("course_list_edit_loader"));
+                    setTimeout(() => {
+                        var timeout = 0;
+                        var ids = setInterval(() => {
+                            timeout++;
+                            //after two minutes of slow connection the next process wont be executed
+                            if (timeout == 1200) {
+                                stopInterval(ids);
+                            }
+                            if (cObj("course_list_edit_loader").classList.contains("hide")) {
+                                cObj("course_chosen_edit").addEventListener("change",courseChange);
+                                // stop
+                                stopInterval(ids);
+                            }
+                        }, 100);
+                    }, 100);
+
+                    // proceed and make the table that will show the course history of the kid.
+                    let course_history = splitdata[42];
+
+                    // course history is null
+                    if(course_history != null){
+                        // display that in the table.
+                        var data_to_display = "<h4 class='text-center'>Course Progress <input id='course_level_value' hidden value='"+JSON.stringify(splitdata[43])+"'></h4><table class='table'><tr><th>Course Level</th><th>Course Name</th><th>Module Terms</th><th>Status</th><th>period</th></tr>";
+                        data_to_display+="<tr><td rowspan='3' style='vertical-align: middle;'><b>"+course_history.course_level_name+"</b></td><td rowspan='3' style='vertical-align: middle;'><b>"+course_history.course_name+"</b></td><td>"+course_history.module_terms[0].term_name+"</td><td><label class='form-control-label' for='checked1' >Status : </label> <select class='form-control select_options' id='select_option_0'><option value='' hidden>Select Option</option><option value='0' "+(course_history.module_terms[0].status == 0 ? "selected" : "")+">In-Active</option><option "+(course_history.module_terms[0].status == 1 ? "selected" : "")+" value='1'>Active</option><option "+(course_history.module_terms[0].status == 2 ? "selected" : "")+" value='2'>Completed</option></select></td><td>"+(course_history.module_terms[0].start_date.length > 0 ? "Start Date : "+"<b>"+formatDate_1(course_history.module_terms[0].start_date)+"</b>"+"<br>End Date : "+"<b>"+formatDate_1(course_history.module_terms[0].end_date)+"</b>" : "In-Active") +"</td></tr>";
+
+                        // loop through the data
+                        for (let index = 1; index < course_history.module_terms.length; index++) {
+                            const element = course_history.module_terms[index];
+                            data_to_display+="<tr><td>"+course_history.module_terms[index].term_name+"</td><td><label class='form-control-label' for='select_option_1' >Status : </label> <select class='form-control select_options' id='select_option_"+index+"'><option value='' hidden>Select Option</option><option value='0' "+(course_history.module_terms[index].status == 0 ? "selected" : "")+">In-Active</option><option "+(course_history.module_terms[index].status == 1 ? "selected" : "")+" value='1'>Active</option><option "+(course_history.module_terms[index].status == 2 ? "selected" : "")+" value='2'>Completed</option></select></td><td>"+(course_history.module_terms[index].start_date.length > 0 ? "Start Date : "+"<b>"+formatDate_1(course_history.module_terms[index].start_date)+"</b>"+"<br>End Date : "+"<b>"+formatDate_1(course_history.module_terms[index].end_date)+"</b>" : "In-Active") +"</td></tr>";
+                        }
+                        data_to_display += "</table>";
+
+                        // diplay the data of the course
+                        cObj("course_details_display").innerHTML = data_to_display;
+                    }else{
+                        cObj("course_details_display").innerHTML = "<h4 class='text-center'>Course Progress</h4><p class='text-danger text-center'>Your course progress will appear here!</p>";
+                    }
                 }
                 stopInterval(ids);
             }
         }, 100);
     }, 200);
+}
+
+cObj("save_course_progress").onclick = function () {
+    if (cObj("course_level_value") != undefined) {
+        var course_level_value = hasJsonStructure(valObj("course_level_value")) ? JSON.parse(valObj("course_level_value")) : [];
+        console.log(course_level_value);
+
+        // get the value for the course level
+        var select_options = document.getElementsByClassName("select_options");
+        var statuses = [];
+        for (let index = 0; index < select_options.length; index++) {
+            const element = select_options[index];
+            statuses.push(element.value);
+        }
+
+        // statuses
+        console.log(statuses);
+
+        // modify the course levels
+        let module_terms = course_level_value.module_terms;
+        for (let index = 0; index < module_terms.length; index++) {
+            const element = module_terms[index];
+            element.status = statuses[index];
+        }
+
+        // show course levels
+        console.log(course_level_value);
+
+        // update the database
+        var datapass = "update_course_progress=true&course_updated="+JSON.stringify(course_level_value)+"&student_id="+valObj("adminnos");
+        sendDataPost("POST","ajax/administration/admissions.php",datapass,cObj("error_handler_course_progress"),cObj("save_course_progress_loader"));
+        setTimeout(() => {
+            var timeout = 0;
+            var ids = setInterval(() => {
+                timeout++;
+                //after two minutes of slow connection the next process wont be executed
+                if (timeout == 1200) {
+                    stopInterval(ids);
+                }
+                if (cObj("save_course_progress_loader").classList.contains("hide")) {
+                    cObj("view"+valObj("adminnos")).click();
+                    stopInterval(ids);
+                }
+            }, 100);
+        }, 200);
+    }
 }
 
 function edit_prev_school() {
@@ -2927,17 +3158,22 @@ cObj("updatestudinfor").onclick = function () {
                 var doas = valObj("doas");
                 var reason_for_leaving = valObj("reason_for_leaving_desc");
                 var course_chosen = valObj("course_chosen_edit");
+
+                // var previous course
+                var course_level_hidden = valObj("course_level_hidden");
+                var course_chosen_level_hidden = valObj("course_chosen_level_hidden");
     
                 var parname2 = valObj('pnamed2');
                 var parconts2 = valObj('pcontacted2');
                 var parrelation2 = valObj('parrelationship2');
                 var pemail2 = valObj('pemails2');
+                var existing_course = cObj("course_level_value") != undefined ? valObj("course_level_value") : null;
                 //collect the data and send to the database
                 var datapass = "?updatestudinfor=true&class=" + classed + "&index=" + index + "&bcnos=" + bcnos + "&dob=" + dobs + "&genders=" + gender + "&disabled=" + disabled + "&describe=" + describe;
                 datapass += "&address=" + addressed + "&pnamed=" + pnamed + "&pcontacts=" + pcontacted + "&paddress=" + paddressed + "&pemail=" + pemails + "&prelation=" + parrelationship + "&adminnumber=" + admnos;
                 datapass += "&parentname2=" + parname2 + "&parentcontact=" + parconts2 + "&parentrelation=" + parrelation2 + "&pemails=" + pemail2 + "&snamed=" + snamed + "&fnamed=" + fnamed + "&lnamed=" + lnamed;
                 datapass += "&occupation1=" + occupation1 + "&occupation2=" + occupation2 + "&medical_history=" + medical_history + "&clubs_in_sporters=" + clubs_in_sporters + "&previous_schools=" + previous_schools + "&doas=" + doas;
-                datapass += "&reason_for_leaving=" + reason_for_leaving+"&course_chosen="+course_chosen;
+                datapass += "&reason_for_leaving=" + reason_for_leaving+"&course_chosen="+course_chosen+"&course_level_hidden="+course_level_hidden+"&course_chosen_level_hidden="+course_chosen_level_hidden+"&existing_course_details="+existing_course;
                 cObj("updateerrors").innerHTML = "";
                 sendData1("GET", "administration/admissions.php", datapass, cObj("updateerrors"));
                 setTimeout(() => {
@@ -3360,7 +3596,7 @@ cObj("submitbtn").onclick = function () {
                 datapass += "&parentrela=" + parrelation + "&pemail=" + pemail + "&bcno=" + bcno + "&address=" + address + "&admnos=" + admno;
                 datapass += "&parentrela2=" + parrelation2 + "&pemail2=" + pemail2 + "&parentname2=" + parname2 + "&parentconts2=" + parconts2;
                 datapass += "&parent_accupation1=" + parent_accupation1 + "&parent_accupation2=" + parent_accupation2 + "&last_year_academic_balance=" + last_year_academic_balance;
-                datapass += "&course_chosen="+course_chosen;
+                datapass += "&course_chosen="+course_chosen+"&adm_option="+valObj("automated_amd");
                 sendDataPost("POST", "ajax/administration/admissions.php", datapass, cObj("erroradm"),cObj("loadings"));
                 setTimeout(() => {
                     var ids = setInterval(() => {
@@ -3371,6 +3607,7 @@ cObj("submitbtn").onclick = function () {
                                 cObj("admissionno").innerText = admno;
                                 cObj("studname").innerText = names;
                                 cObj("admitform").reset();
+                                
                                 //bring the complete admission window
                                 hideWindow();
                                 cObj("completeadmission").classList.remove("hide");
@@ -8335,6 +8572,34 @@ cObj("update_departments").onclick = function () {
     }
 }
 
+function formatDate_1(dateString) {
+    // Parse the input date string
+    const year = dateString.substring(0, 4);
+    const month = parseInt(dateString.substring(4, 6)) - 1; // Months are zero-based
+    const day = parseInt(dateString.substring(6, 8));
+    const hour = parseInt(dateString.substring(8, 10));
+    const minute = parseInt(dateString.substring(10, 12));
+    const second = parseInt(dateString.substring(12, 14));
+
+    // Create a JavaScript Date object
+    const date = new Date(year, month, day, hour, minute, second);
+
+    // Define the weekday names and suffixes for ordinal numbers
+    const weekdayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const ordinalSuffixes = ["th", "st", "nd", "rd", "th", "th", "th", "th", "th", "th"];
+
+    // Get the weekday, day, month, hour, and minute in the desired format
+    const weekday = weekdayNames[date.getDay()];
+    const dayWithSuffix = day + ordinalSuffixes[day % 10];
+    const monthName = new Intl.DateTimeFormat("en-US", { month: "long" }).format(date);
+    const hour12 = date.getHours() > 12 ? date.getHours() - 12 : date.getHours();
+    const period = date.getHours() >= 12 ? "PM" : "AM";
+
+    // Format the date string
+    const formattedDate = `${weekday} ${dayWithSuffix} ${monthName} ${year}`;
+
+    return formattedDate;
+}
 function formatDate(dateString) {
     // Parse the input date string
     const year = dateString.substring(0, 4);

@@ -13,97 +13,7 @@
     if($_SERVER['REQUEST_METHOD'] == 'GET'){
         include("../../connections/conn2.php");
         if(isset($_GET['admit'])){
-           $suname = $_GET['surname'];
-           $fname = $_GET['fname'];
-           $sname = $_GET['sname'];
-           $dob = $_GET['dob'];
-           $gender = $_GET['gender'];
-           $classenrol = $_GET['enrolment'];
-           $parentname = $_GET['parentname'];
-           $parentcontact = $_GET['parentconts'];
-           $parentrelation = $_GET['parentrela'];
-
-           $parentname2 = $_GET['parentname2'];
-           $parentcontact2 = $_GET['parentconts2'];
-           $parentrelation2 = $_GET['parentrela2'];
-           $pmail2 = $_GET['pemail2'];
-
-           if (strlen($parentname2) < 1) {
-               $parentname2 = "none";
-           }
-           if (strlen($parentcontact2) < 1) {
-               $parentcontact2 = "none";
-           }
-           if (strlen($parentrelation2) < 1) {
-               $parentrelation2 = "none";
-           }
-           if (strlen($pmail2) < 1) {
-               $pmail2 = "none";
-           }
-
-           $admno = $_GET['admnos'];
-           $upis = $_GET['upis'];
-           $bcno = 0;
-                if(isset($_GET['bcno'])){
-                    $bcno = $_GET['bcno'];
-                }
-                    $parentemail = 'none';
-                if(isset($_GET['pemail'])){
-                    $parentemail = $_GET['pemail'];
-                }
-                
-                    $address = 0;
-                if(isset($_GET['address'])){
-                    $address = $_GET['address'];
-                }
-                $parent_accupation1 = $_GET['parent_accupation1'];
-                $parent_accupation2 = $_GET['parent_accupation2'];
-
-                $doa = date("Y-m-d");
-                $INSERT = "INSERT INTO `student_data`  (`surname`,`adm_no`,`first_name`,`second_name`,`student_upi`,`D_O_B`,`gender`,`stud_class`,`D_O_A`,`parentName`,`parentContacts`,`parent_relation`,`parent_email`,`parent_name2`,`parent_contact2`,`parent_relation2`,`parent_email2`,`address`,`BCNo`,`primary_parent_occupation`,`secondary_parent_occupation`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-                $stmt = $conn2->prepare($INSERT);
-                $stmt->bind_param("sssssssssssssssssssss",$suname,$admno,$fname,$sname,$upis,$dob,$gender,$classenrol,$doa,$parentname,$parentcontact,$parentrelation,$parentemail,$parentname2,$parentcontact2,$parentrelation2,$pmail2,$address,$bcno,$parent_accupation1,$parent_accupation2);
-                if($stmt->execute()){
-                    $data = "<p style ='color:green;font-size:12px;'>".$fname." ".$sname." has been admitted successfully<br>Use their admission number to search their information</p>";
-                    $stmt->close();
-                    $select = "SELECT `surname`,`first_name`,`second_name`,`adm_no` FROM `student_data` order by `ids` DESC LIMIT 1";
-                    $stmt = $conn2->prepare($select);
-                    $stmt->execute();
-                    $result = $stmt->get_result();
-                    $admissionNumber = 0;
-                    if($result){
-                        if($row=$result->fetch_assoc()){
-                            $admissionNumber = $row['adm_no'];
-                            $name = $row['first_name']." ".$row['second_name'];
-                        }
-                        //insert the notification to the database 
-                        $notice_stat = 0;
-                        $reciever_id = "all";
-                        $reciever_auth = 1;
-                        $messageName = "Admission of <b>".$fname." ".$sname."</b> in class: <b>".$classenrol."</b> was successfull";
-                        $messagecontent = "<b>".$fname." ".$sname."</b> has been successfully admitted to class: ".$classenrol."";
-                        $sender_ids = "Administration System";
-                        insertNotice($conn2,$messageName,$messagecontent,$notice_stat,$reciever_id,$reciever_auth,$sender_ids);
-                        $classtrid = getClassTeacher($conn2,$classenrol);
-                        if ($classtrid != "Null") {
-                            //insert the notification to the database 
-                            $notice_stat = 0;
-                            $reciever_id = $classtrid;
-                            $reciever_auth = 5;
-                            $messageName = "Admission of <b>".$fname." ".$sname."</b> in your class was successfull";
-                            $messagecontent = "<b>".$fname." ".$sname."</b> has been successfully admitted to class: <b>".$classenrol."</b>";
-                            insertNotice($conn2,$messageName,$messagecontent,$notice_stat,$reciever_id,$reciever_auth,$sender_ids);
-                        }
-                        $data.= "<input type='text' id='admnohold' value=".$admissionNumber." hidden> <input type='text' id='namehold' value='".$name."' hidden>";
-                        echo $data;
-                    }else {
-                        echo "Search for the latest students to see their admission number";
-                    }
-                }else{
-                    echo "<p style ='color:red;font-size:12px;'>Student data not submitted<br>There seem to be an error please try again later</p>";
-                }
-                $stmt->close();
-                $conn2->close();
+            echo "<p class='text-danger'>This section does not work!</p>";
         }elseif(isset($_GET['get_course_fees_structure'])){
             $course_level = $_GET['course_level'];
             
@@ -545,9 +455,72 @@
                         $attendance_this_year = presentStatsYear($conn2,$admno,$row['stud_class']);
                         array_push($data_array,$attendance_this_term);
                         array_push($data_array,$attendance_this_year);
-                        array_push($data_array,strlen($row['transfered_comment'])> 0 ?$row['transfered_comment'] : "");
-                        array_push($data_array,(($row['discount_percentage']*1) || ($row['discount_value']*1) > 0) ? (($row['discount_value']*1) > 0 ? "Kes ".$row['discount_value'] : $row['discount_percentage']."%") : "Not Set");
+                        array_push($data_array,strlen($row['transfered_comment'])> 0 ? $row['transfered_comment'] : "");
+                        array_push($data_array,(($row['discount_percentage'] * 1) || ($row['discount_value']*1) > 0) ? (($row['discount_value']*1) > 0 ? "Kes ".$row['discount_value'] : $row['discount_percentage']."%") : "Not Set");
                         array_push($data_array,$row['course_done']);
+                        
+                        // get the course details
+                        $course_details = null;
+                        $mycourselist_raw = null;
+                        $course_list = isJson_report($row['my_course_list']) ? json_decode($row['my_course_list']) : [];
+                        $mycourse_list = isJson_report($row['my_course_list']) ? json_decode($row['my_course_list']) : [];
+                        for($index = 0; $index < count($course_list); $index++){
+                            if($course_list[$index]->course_status == 1){
+                                // course details
+                                $course_details = $course_list[$index];
+                                $mycourselist_raw = $mycourse_list[$index];
+
+                                // get the level name
+                                $l_i = $course_details->course_level;
+                                $l_n = "N/A";
+                                $select = "SELECT * FROM `settings` WHERE `sett` = 'class'";
+                                $stmt = $conn2->prepare($select);
+                                $stmt->execute();
+                                $result = $stmt->get_result();
+                                if($result){
+                                    if($row = $result->fetch_assoc()){
+                                        $valued = isJson_report($row['valued']) ? json_decode($row['valued']) : [];
+                                        for($ind = 0; $ind < count($valued); $ind++){
+                                            if($valued[$ind]->id == $l_i){
+                                                $l_n = $valued[$ind]->classes;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                                $course_details->course_level_name = $l_n;
+                                
+                                // get the course name
+                                $c_n = "N/A";
+                                $c_i = $course_details->course_name;
+                                $select = "SELECT * FROM `settings` WHERE `sett` = 'courses'";
+                                $stmt = $conn2->prepare($select);
+                                $stmt->execute();
+                                $result = $stmt->get_result();
+                                if($result){
+                                    if($row = $result->fetch_assoc()){
+                                        $valued = isJson_report($row['valued']) ? json_decode($row['valued']) : [];
+                                        for($ind = 0; $ind < count($valued); $ind++){
+                                            if($valued[$ind]->id == $c_i){
+                                                $c_n = $valued[$ind]->course_name;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // course details
+                                $course_details->course_id = $c_i*1;
+                                $course_details->course_name = $c_n;
+
+                                // break
+                                break;
+                            }
+                        }
+
+                        // array push
+                        array_push($data_array,$course_details);
+                        array_push($data_array,$mycourselist_raw);
                     }else{
                     }
                 }else {
@@ -760,6 +733,8 @@
             $class = $_GET['class'];
             $index = $_GET['index'];
             $bcnos = $_GET['bcnos'];
+            $course_level_hidden = $_GET['course_level_hidden'];
+            $course_chosen_level_hidden = $_GET['course_chosen_level_hidden'];
             $yearOfStudy = studentYOS($conn2,$_GET['adminnumber']);
             $oldYear = withoutLatest($conn2,$_GET['adminnumber']);
             $newYOS = explode(":",$yearOfStudy)[0].":".$class;
@@ -802,7 +777,136 @@
             $previous_schools = $_GET['previous_schools'];
             $doas = $_GET['doas'];
             $course_chosen = $_GET['course_chosen'];
+            $existing_course_details = $_GET['existing_course_details'];
             // echo $doas." in null";
+
+            // process the student course progress
+            // if they have changed the course update the new course
+            $changed = 0;
+            $course_level_hidden = $_GET['course_level_hidden'];
+            $course_chosen_level_hidden = $_GET['course_chosen_level_hidden'];
+            if($course_level_hidden != $class || $course_chosen_level_hidden != $course_chosen){
+                $changed = 1;
+            }
+
+            if($changed == 1){
+                // get the course id
+                $course_chosen_id = isJson_report($existing_course_details) ? json_decode($existing_course_details)->id : null;
+                // select option
+                $select = "SELECT * FROM `student_data` WHERE `adm_no` = ?";
+                $stmt = $conn2->prepare($select);
+                $stmt->bind_param("s",$adminno);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                if($result){
+                    if($row = $result->fetch_assoc()){
+                        $my_course_list = isJson_report($row['my_course_list']) ? json_decode($row['my_course_list']) : [];
+                        
+                        // loop through course list to deactivate it and create a new one that will be appended
+                        $highest_id = 0;
+                        for($ind = 0; $ind < count($my_course_list); $ind++){
+                            // change the course active status
+                            $my_course_list[$ind]->course_status = 0;
+
+                            // get the course highest id
+                            if($my_course_list[$ind]->id > $highest_id){
+                                $highest_id = $my_course_list[$ind]->id;
+                            }
+                        }
+
+                        // get the level id
+                        $level_id = null;
+                        $select = "SELECT * FROM `settings` WHERE `sett` = 'class';";
+                        $stmt = $conn2->prepare($select);
+                        $stmt->execute();
+                        $res = $stmt->get_result();
+                        if($res){
+                            if($row = $res->fetch_assoc()){
+                                $valued = isJson_report($row['valued']) ? json_decode($row['valued']) : [];
+                                for($index = 0; $index < count($valued); $index++){
+                                    if($class == $valued[$index]->classes){
+                                        $level_id = $valued[$index]->id;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // ------------------------SET COURSE DETAILS----------------------------
+
+                        // get the course name
+                        $course_id = $course_chosen;
+
+                        // set up the course details
+                        $course_detail = new stdClass();
+                        $course_detail->course_level = $level_id;
+                        $course_detail->course_name = $course_id;
+                        $course_detail->course_status = 1;
+                        $course_detail->id = $highest_id+1;
+                        $course_detail->module_terms = [];
+                        
+                        $module_terms = [];
+                        // term 1
+                        $terms = getTerm();
+                        $academic_terms = getAcademicStartV1($conn2,$terms);
+                        $term = new stdClass();
+                        $term->id = 1;
+                        $term->term_name = "TERM_1";
+                        $term->status = 1;
+                        $term->start_date = date("YmdHis",strtotime($academic_terms[0]));
+                        $term->end_date = date("YmdHis",strtotime($academic_terms[1]));
+                        array_push($module_terms,$term);
+                        
+                        // term 2
+                        $term = new stdClass();
+                        $term->id = 2;
+                        $term->term_name = "TERM_2";
+                        $term->status = 0;
+                        $term->start_date = "";
+                        $term->end_date = "";
+                        array_push($module_terms,$term);
+
+                        // term 3
+                        $term = new stdClass();
+                        $term->id = 3;
+                        $term->term_name = "TERM_3";
+                        $term->status = 0;
+                        $term->start_date = "";
+                        $term->end_date = "";
+                        array_push($module_terms,$term);
+
+                        // push this module terms
+                        $course_detail->module_terms = $module_terms;
+
+                        // stringify the JSON data
+                        // replace the course progress if its presnet
+                        $present = 0;
+                        for($in = 0; $in < count($my_course_list); $in++){
+                            if($my_course_list[$in]->course_level == $level_id && $my_course_list[$in]->course_name == $course_chosen){
+                                // change the course id because the one set is the increament one
+                                $course_detail->id = $my_course_list[$in]->id;
+                                $my_course_list[$in] = $course_detail;
+                                $present = 1;
+                                break;
+                            }
+                        }
+
+                        // if not present add it to the array list
+                        if($present == 0){
+                            array_push($my_course_list,$course_detail);
+                        }
+
+                        // $course_details_string = json_encode([$course_detail]);
+
+                        // update the student course progress list
+                        $update = "UPDATE `student_data` SET `my_course_list` = ? WHERE `adm_no` = ?";
+                        $stmt = $conn2->prepare($update);
+                        $this_data = json_encode($my_course_list);
+                        $stmt->bind_param("ss",$this_data,$adminno);
+                        $stmt->execute();
+                    }
+                }
+            }
 
             // echo $previous_schools;
             $update = "UPDATE `student_data` SET `year_of_study` = ?,`stud_class` = ?, `BCNo`= ?,`index_no` = ?,`gender` = ?, `disabled` = ? , `disable_describe` = ? , `address` = ? ,`parentName` = ?,`parentContacts` = ?,`parent_relation` = ?,`parent_email` = ?,`parent_name2` = ?,`parent_contact2` = ?, `parent_relation2` = ?, `parent_email2` = ?, `first_name` = ? ,`surname` = ? ,`second_name` = ? ,`primary_parent_occupation` = ?, `secondary_parent_occupation` = ?, `medical_history` = ?, `clubs_id` = ?, `prev_sch_attended` = ?,`D_O_A` = ?, `transfered_comment` = ?, `course_done` = ? WHERE `adm_no`=?";
@@ -1295,7 +1399,7 @@
                 $data.="<th>Role</th>";
                 $data.="<th>Gender</th>";
                 $data.="<th>National id</th>";
-                $data.="<th>Employer Type</th>";
+                $data.="<th>Employee Type</th>";
                 $data.="<th>Activated</th>";
                 $data.="<th>Option</th></tr>";
                 $xs2=0;
@@ -1352,6 +1456,66 @@
                 $data.="</table></div>";
                 echo $data;
             }
+        }elseif(isset($_GET['get_admission_prefix'])){
+            // get admission prefix
+            $get_admission_prefix = $_GET['get_admission_prefix'];
+            $select = "SELECT * FROM `settings` WHERE `sett` = 'admission_prefix'";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $admission_prefix = "";
+            if($result){
+                if($row = $result->fetch_assoc()){
+                    $valued = $row['valued'];
+                    $admission_prefix = $valued;
+                }
+            }
+            echo $admission_prefix;
+        }elseif(isset($_GET['save_admission_prefix'])){
+            // save the admission prefix
+            $admission_prefix = $_GET['admission_prefix'];
+            $update = "SELECT * FROM `settings` WHERE `sett` = 'admission_prefix'";
+            $stmt = $conn2->prepare($update);
+            $stmt->execute();
+            $stmt->store_result();
+            $rnums = $stmt->num_rows;
+
+            // if the rnums is more than 0 that means the admission prefix is already set
+            if($rnums > 0){
+                // update the setting
+                $update = "UPDATE `settings` SET `valued` = ? WHERE `sett` = 'admission_prefix'";
+                $stmt = $conn2->prepare($update);
+                $stmt->bind_param("s",$admission_prefix);
+                $stmt->execute();
+            }else{
+                $insert = "INSERT INTO `settings` (`sett`, `valued`) VALUES (?,?)";
+                $stmt = $conn2->prepare($insert);
+                $sett = "admission_prefix";
+                $stmt->bind_param("ss",$sett,$admission_prefix);
+                $stmt->execute();
+            }
+
+            // the success message
+            echo "<p class='text-success'>Admission prefix has been set successfully!</p>";
+        }elseif(isset($_GET['get_admission_prefix_details'])){
+            // get admission prefix details
+            $update = "SELECT * FROM `settings` WHERE `sett` = 'admission_prefix'";
+            $stmt = $conn2->prepare($update);
+            $stmt->execute();
+
+            // results
+            $results = $stmt->get_result();
+            $data_to_display = "<p class='text-primary'>Not-Set</p>";
+            if($results){
+                if($row = $results->fetch_assoc()){
+                    if(strlen($row['valued']) > 0){
+                        $data_to_display = "<p class='text-primary'>Admission Prefix : <b>".$row['valued']."</b> <br><span class='text-secondary'>Example : ".$row['valued']."001</span></p>";
+                    }
+                }
+            }
+
+            // data to display
+            echo $data_to_display;
         }elseif (isset($_GET['staffdata'])) {
             $id = $_GET['staffdata'];
             include("../../connections/conn1.php");
@@ -3042,7 +3206,23 @@
             if ($result) {
                 if ($row = $result->fetch_assoc()) {
                     $admno = $row['valued'];
-                    echo checkAdmUsed($conn2,$admno);
+                    $admission_number = checkAdmUsed($conn2,$admno);
+                    $select = "SELECT * FROM `settings` WHERE `sett` = 'admission_prefix'";
+                    $stmt = $conn2->prepare($select);
+                    $stmt->execute();
+
+                    // get results
+                    $res = $stmt->get_result();
+                    $prefix = "";
+                    if($res){
+                        if($row = $res->fetch_assoc()){
+                            $valued = $row['valued'];
+                            $prefix = $valued;
+                        }
+                    }
+
+                    // prefix
+                    echo $prefix.$admno;
                 }
             }
         }elseif (isset($_GET['genmanuall'])) {
@@ -4799,10 +4979,79 @@
             $parent_accupation1 = $_POST['parent_accupation1'];
             $parent_accupation2 = $_POST['parent_accupation2'];
 
+            // get the level id
+            $level_id = null;
+            $select = "SELECT * FROM `settings` WHERE `sett` = 'class';";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+            $res = $stmt->get_result();
+            if($res){
+                if($row = $res->fetch_assoc()){
+                    $valued = isJson_report($row['valued']) ? json_decode($row['valued']) : [];
+                    for($index = 0; $index < count($valued); $index++){
+                        if($classenrol == $valued[$index]->classes){
+                            $level_id = $valued[$index]->id;
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            // ------------------------SET COURSE DETAILS----------------------------
+
+            // get the course name
+            $course_id = $course_chosen;
+
+            // set up the course details
+            $course_detail = new stdClass();
+            $course_detail->course_level = $level_id;
+            $course_detail->course_name = $course_id;
+            $course_detail->course_status = 1;
+            $course_detail->id = 1;
+            $course_detail->module_terms = [];
+            
+            $module_terms = [];
+            // term 1
+            $terms = getTerm();
+            $academic_terms = getAcademicStartV1($conn2,$terms);
+            $term = new stdClass();
+            $term->id = 1;
+            $term->term_name = "TERM_1";
+            $term->status = 1;
+            $term->start_date = date("YmdHis",strtotime($academic_terms[0]));
+            $term->end_date = date("YmdHis",strtotime($academic_terms[1]));
+            array_push($module_terms,$term);
+            
+            // term 2
+            $term = new stdClass();
+            $term->id = 2;
+            $term->term_name = "TERM_2";
+            $term->status = 0;
+            $term->start_date = "";
+            $term->end_date = "";
+            array_push($module_terms,$term);
+            
+            // term 3
+            $term = new stdClass();
+            $term->id = 3;
+            $term->term_name = "TERM_3";
+            $term->status = 0;
+            $term->start_date = "";
+            $term->end_date = "";
+            array_push($module_terms,$term);
+
+            // push this module terms
+            $course_detail->module_terms = $module_terms;
+
+            // stringify the JSON data
+            $course_details_string = json_encode([$course_detail]);
+
+            // ----------------END OF SETTING COURSE DETAILS--------------
+            
             $doa = date("Y-m-d");
-            $insert = "INSERT INTO `student_data` (`surname`,`adm_no`,`first_name`,`second_name`,`student_upi`,`D_O_B`,`gender`,`stud_class`,`D_O_A`,`parentName`,`parentContacts`,`parent_relation`,`parent_email`,`parent_name2`,`parent_contact2`,`parent_relation2`,`parent_email2`,`address`,`BCNo`,`primary_parent_occupation`,`secondary_parent_occupation`,`course_done`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+            $insert = "INSERT INTO `student_data` (`surname`,`adm_no`,`first_name`,`second_name`,`student_upi`,`D_O_B`,`gender`,`stud_class`,`D_O_A`,`parentName`,`parentContacts`,`parent_relation`,`parent_email`,`parent_name2`,`parent_contact2`,`parent_relation2`,`parent_email2`,`address`,`BCNo`,`primary_parent_occupation`,`secondary_parent_occupation`,`course_done`,`my_course_list`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
             $stmt = $conn2->prepare($insert);
-            $stmt->bind_param("ssssssssssssssssssssss",$suname,$admno,$fname,$sname,$upis,$dob,$gender,$classenrol,$doa,$parentname,$parentcontact,$parentrelation,$parentemail,$parentname2,$parentcontact2,$parentrelation2,$pmail2,$address,$bcno,$parent_accupation1,$parent_accupation2,$course_chosen);
+            $stmt->bind_param("sssssssssssssssssssssss",$suname,$admno,$fname,$sname,$upis,$dob,$gender,$classenrol,$doa,$parentname,$parentcontact,$parentrelation,$parentemail,$parentname2,$parentcontact2,$parentrelation2,$pmail2,$address,$bcno,$parent_accupation1,$parent_accupation2,$course_chosen,$course_details_string);
             if($stmt->execute()){
                 $data = "<p style ='color:green;font-size:12px;'>".$fname." ".$sname." has been admitted successfully<br>Use their admission number to search their information</p>";
                 $stmt->close();
@@ -4816,23 +5065,24 @@
                         $admissionNumber = $row['adm_no'];
                         $name = $row['first_name']." ".$row['second_name'];
                     }
-                    //insert the notification to the database 
-                    $notice_stat = 0;
-                    $reciever_id = "all";
-                    $reciever_auth = 1;
-                    $messageName = "Admission of <b>".$fname." ".$sname."</b> in class: <b>".$classenrol."</b> was successfull";
-                    $messagecontent = "<b>".$fname." ".$sname."</b> has been successfully admitted to class: ".$classenrol."";
-                    $sender_ids = "Administration System";
-                    insertNotice($conn2,$messageName,$messagecontent,$notice_stat,$reciever_id,$reciever_auth,$sender_ids);
-                    $classtrid = getClassTeacher($conn2,$classenrol);
-                    if ($classtrid != "Null") {
-                        //insert the notification to the database 
-                        $notice_stat = 0;
-                        $reciever_id = $classtrid;
-                        $reciever_auth = 5;
-                        $messageName = "Admission of <b>".$fname." ".$sname."</b> in your class was successfull";
-                        $messagecontent = "<b>".$fname." ".$sname."</b> has been successfully admitted to class: <b>".$classenrol."</b>";
-                        insertNotice($conn2,$messageName,$messagecontent,$notice_stat,$reciever_id,$reciever_auth,$sender_ids);
+                    // increase the admission number if the admission number has been autogenerated
+                    if($_POST['adm_option'] == "automate_adm"){
+                        $select = "SELECT * FROM `settings` WHERE `sett` = 'lastadmgen'";
+                        $stmt = $conn2->prepare($select);
+                        $stmt->execute();
+                        $res = $stmt->get_result();
+                        if($res){
+                            if($row = $res->fetch_assoc()){
+                                $valued = $row['valued'] * 1;
+                                $valued+=1;
+
+                                // update the database
+                                $update = "UPDATE `settings` SET `valued` = ? WHERE `sett` = 'lastadmgen'";
+                                $stmt = $conn2->prepare($update);
+                                $stmt->bind_param("s",$valued);
+                                $stmt->execute();
+                            }
+                        }
                     }
                     $data.= "<input type='text' id='admnohold' value=".$admissionNumber." hidden> <input type='text' id='namehold' value='".$name."' hidden>";
                     echo $data;
@@ -5277,6 +5527,67 @@
                 echo "<p class='text-success'>Student data updated successfully!</p>";
             }else{
                 echo "<p class='text-danger'>An error has occured!</p>";
+            }
+        }elseif(isset($_POST['update_course_progress'])){
+            // COURSE UPDATED
+            $course_updated = isJson_report($_POST['course_updated']) ? json_decode($_POST['course_updated']) : json_decode("{}");
+            $student_id = $_POST['student_id'];
+
+            // configure those that are active with date and those inactive remove the time
+            if($course_updated->module_terms != null){
+                $module_terms = $course_updated->module_terms;
+                for($index = 0; $index < count($module_terms); $index++){
+                    // module terms
+                    if($module_terms[$index]->status == 1){
+                        // term
+                        $terms = getTermV3($conn2);
+                        $academic_terms = getAcademicStartV1($conn2,$terms);
+                        $module_terms[$index]->start_date = date("YmdHis",strtotime($academic_terms[0]));
+                        $module_terms[$index]->end_date = date("YmdHis",strtotime($academic_terms[1]));
+                    }
+
+                    // module terms
+                    if($module_terms[$index]->status == 0){
+                        // term
+                        $module_terms[$index]->start_date = "";
+                        $module_terms[$index]->end_date = "";
+                    }
+                }
+            }
+
+            // UPDATE THE STUDENT COURSE DETAILS
+            $student_data = "SELECT * FROM `student_data` WHERE `adm_no` = ?";
+            $stmt = $conn2->prepare($student_data);
+            $stmt->bind_param("s",$student_id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            if($result){
+                if($row = $result->fetch_assoc()){
+                    // FIRST GET THE COURSE ID
+                    $course_progress_id = isset($course_updated->id) ? $course_updated->id : null;
+                    $my_course_list = isJson_report($row['my_course_list']) ? json_decode($row['my_course_list']) : [];
+                    $present = 0;
+                    for ($index=0; $index < count($my_course_list); $index++) { 
+                        if($my_course_list[$index]->id == $course_progress_id){
+                            $my_course_list[$index] = $course_updated;
+                            $present = 1;
+                            break;
+                        }
+                    }
+
+                    // update if present
+                    if($present == 1){
+                        // update the student data
+                        $update = "UPDATE `student_data` SET `my_course_list` = ? WHERE `adm_no` = ?";
+                        $my_course_list = json_encode($my_course_list);
+                        $stmt = $conn2->prepare($update);
+                        $stmt->bind_param("ss",$my_course_list,$student_id);
+                        $stmt->execute();
+
+                        // course updates
+                        echo "<p class='text-success'>Course updates have been done successfully!</p>";
+                    }
+                }
             }
         }elseif(isset($_POST['deregister_stud'])){
             $deregister_stud = $_POST['deregister_stud'];

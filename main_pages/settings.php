@@ -70,6 +70,16 @@
                 <button type="button" id="add_course"><i class="fas fa-plus"></i> Add Course</button>
             </div>
             <div class="setting_s">
+                <label for="class_list">Admission Number Prefix: <br></label>
+                <img src="images/ajax_clock_small.gif" class="hide" id="admission_number_prefix_loader">
+                <p class="hide" id="prefix_holder_adm"></p>
+                <div class="border border-secondary rounded w-50 p-2" id="admission_number_prefix_window">
+                    <p class="text-primary">TB/SG <span class="text-secondary">Example: TB/2020/001</span></p>
+                </div>
+                <p id="admission_number_prefix_error"></p>
+                <button type="button" id="change_admissions_prefix"><i class="fas fa-plus"></i> Change Prefix</button>
+            </div>
+            <div class="setting_s">
                 <p>Change the time your users are allowed to use the system,<br> Its only the headteacher and the administrator allowed to use the system beyond the time set</p>
                 <p class="hide" id="active_hours"></p>
                 <img src="images/ajax_clock_small.gif" id="active_list_clock">

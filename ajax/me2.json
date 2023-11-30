@@ -1,126 +1,118 @@
 [
     {
-        "name": "Parental Department",
-        "code": "PT-001",
-        "subjects": [
+        "course_level": 1,
+        "course_name": "5",
+        "course_status": 0,
+        "id": 1,
+        "module_terms": [
             {
-                "name": "16"
+                "id": 1,
+                "term_name": "TERM_1",
+                "status": "2",
+                "start_date": "20230101000000",
+                "end_date": "20230410000000"
+            },
+            {
+                "id": 2,
+                "term_name": "TERM_2",
+                "status": "0",
+                "start_date": "20230411000000",
+                "end_date": "20230810000000"
+            },
+            {
+                "id": 3,
+                "term_name": "TERM_3",
+                "status": "0",
+                "start_date": "20230811000000",
+                "end_date": "20231231000000"
             }
-        ],
-        "description": "Parental departments",
-        "date_created": "20230603200151",
-        "members": [
-            {
-                "name": "10",
-                "date_joined": "20230605195930"
-            },
-            {
-                "name": "18",
-                "date_joined": "20230605195930"
-            },
-            {
-                "name": "48",
-                "date_joined": "20230605195930"
-            },
-            {
-                "name": "47",
-                "date_joined": "20230606122226"
-            }
-        ],
-        "hod": "3",
-        "id": 1
+        ]
     },
     {
-        "name": "Humanity Department",
-        "code": "HD-001",
-        "subjects": [],
-        "description": "This is the humanity departments",
-        "date_created": "20230603200240",
-        "members": [
+        "course_level": 4,
+        "course_name": "5",
+        "course_status": 0,
+        "id": 1,
+        "module_terms": [
             {
-                "name": "1",
-                "date_joined": "20230605195842"
+                "id": 1,
+                "term_name": "TERM_1",
+                "status": 1,
+                "start_date": "20230101000000",
+                "end_date": "20230410000000"
             },
             {
-                "name": "2",
-                "date_joined": "20230605195842"
+                "id": 2,
+                "term_name": "TERM_2",
+                "status": 0,
+                "start_date": "20230411000000",
+                "end_date": "20230810000000"
             },
             {
-                "name": "3",
-                "date_joined": "20230605195918"
-            },
-            {
-                "name": "5",
-                "date_joined": "20230605195918"
-            },
-            {
-                "name": "7",
-                "date_joined": "20230605195918"
+                "id": 3,
+                "term_name": "TERM_3",
+                "status": 0,
+                "start_date": "20230811000000",
+                "end_date": "20231231000000"
             }
-        ],
-        "hod": "1",
-        "id": 2
+        ]
     },
     {
-        "name": "Department",
-        "code": "DP-002",
-        "subjects": [],
-        "description": "This is comment should be deleted!",
-        "date_created": "20230604183648",
-        "members": [
+        "course_level": 4,
+        "course_name": "5",
+        "course_status": 0,
+        "id": 1,
+        "module_terms": [
             {
-                "name": "16",
-                "date_joined": "20230605200306"
+                "id": 1,
+                "term_name": "TERM_1",
+                "status": 1,
+                "start_date": "20230101000000",
+                "end_date": "20230410000000"
             },
             {
-                "name": "20",
-                "date_joined": "20230605200306"
+                "id": 2,
+                "term_name": "TERM_2",
+                "status": 0,
+                "start_date": "20230411000000",
+                "end_date": "20230810000000"
             },
             {
-                "name": "40",
-                "date_joined": "20230605200306"
-            },
-            {
-                "name": "41",
-                "date_joined": "20230605200306"
-            },
-            {
-                "name": "42",
-                "date_joined": "20230605200306"
+                "id": 3,
+                "term_name": "TERM_3",
+                "status": 0,
+                "start_date": "20230811000000",
+                "end_date": "20231231000000"
             }
-        ],
-        "hod": "18",
-        "id": 3
+        ]
     },
     {
-        "name": "Sports",
-        "code": "SP-001",
-        "subjects": [],
-        "description": "This is the sports department in schools",
-        "date_created": "20230605195956",
-        "members": [
+        "course_level": 1,
+        "course_name": "5",
+        "course_status": 1,
+        "id": 1,
+        "module_terms": [
             {
-                "name": "12",
-                "date_joined": "20230605200015"
+                "id": 1,
+                "term_name": "TERM_1",
+                "status": 1,
+                "start_date": "20230101000000",
+                "end_date": "20230410000000"
             },
             {
-                "name": "11",
-                "date_joined": "20230605200045"
+                "id": 2,
+                "term_name": "TERM_2",
+                "status": 0,
+                "start_date": "20230411000000",
+                "end_date": "20230810000000"
             },
             {
-                "name": "15",
-                "date_joined": "20230605200045"
-            },
-            {
-                "name": "43",
-                "date_joined": "20230605200045"
-            },
-            {
-                "name": "44",
-                "date_joined": "20230605200045"
+                "id": 3,
+                "term_name": "TERM_3",
+                "status": 0,
+                "start_date": "20230811000000",
+                "end_date": "20231231000000"
             }
-        ],
-        "hod": "2",
-        "id": 4
+        ]
     }
 ]
