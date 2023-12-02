@@ -24,7 +24,7 @@ date_default_timezone_set('Africa/Nairobi');
 class PDF extends FPDF
 {
     protected $B = 0;
-    public $school_logo = "../../.." . "/sims/assets/img/ladybird.png";
+    public $school_logo = "../../" . "assets/img/ladybird.png";
     protected $school_name = "LADYBIRD PRIMARY SCHOOL";
     protected $school_po = "552";
     protected $school_BOX_CODE = "50400";
@@ -32,7 +32,7 @@ class PDF extends FPDF
     public $school_document_title = "Students List";
     protected $school_header_position = 300;
     protected $conn = null;
-
+    public $arm_of_gov = "../../assets/img/arm_of_gov.png";
     // set school_logo
     function setSchoolLogo($logo)
     {
@@ -79,6 +79,7 @@ class PDF extends FPDF
     {
         // Logo
         $this->Image(dirname(__FILE__) . $this->school_logo, 6, 6, 20);
+        $this->Image(dirname(__FILE__) . $this->arm_of_gov, ($this->school_header_position == 300 ? ($this->school_header_position - 30) : ($this->school_header_position - 15)), 6, 18);
         // Arial  15
         $this->SetFont('Arial', 'B', 13);
         // Title
@@ -1260,16 +1261,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
         $to_date_report = $_POST['to_date_report'];
         $staff_options = $_POST['staff_options'];
         $select_date_staff = $_POST['select_date_staff'];
+        $intake_months_reports = $_POST['intake_months_reports'];
+        $intake_year_reports = $_POST['intake_year_reports'];
         
         if ($select_entity == "student") {
             $course_names = $_POST['course_name'];
             // get the student data per class
             if ($select_student_option == "all_students") {
+                if((strlen($intake_year_reports) > 0 && strlen($intake_months_reports) == 0) || strlen($intake_year_reports) == 0 && strlen($intake_months_reports) > 0){
+                    echo "<p style='color:red;'>Ensure you`ve selected the intake month and year!</p>";
+                    return 0;
+                }
                 // get the class the student is selected
                 if (strlen($select_report_class) > 0) {
                     $select = "SELECT * FROM `student_data` ";
                     $add_course = strlen(trim($course_names)) > 0 ? " AND `course_done` = '".$course_names."' " : "";
                     $condition = $select_report_class != "all" ? " WHERE `stud_class` = '$select_report_class' ".$add_course."" : " WHERE `stud_class` != '-1' AND `stud_class` != '-2'";
+
+                    // add the intake condition
+                    $intake_condition = (strlen($intake_year_reports) > 0 && strlen($intake_months_reports) > 0) ? " AND `intake_year` = '".$intake_year_reports."' AND `intake_month` = '".$intake_months_reports."' " : "";
+                    $condition.=$intake_condition;
+                    // echo $condition;
                     if ($select_report_class != "all") {
                         $select = $select . $condition;
                         // echo $select;
@@ -1376,7 +1388,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                         }
                         $course_title = strlen(trim($course_names)) > 0 ? " in ".$courses_name." " : "";
                         $tittle = $select_report_class != "all" ? "List for " . classNameReport($select_report_class) . " $course_title" : "Student List for Whole School";
+
                         // end of the title editing
+                        $intake_title = (strlen($intake_year_reports) > 0 && strlen($intake_months_reports) > 0) ? " : Intake ".$intake_months_reports." ".$intake_year_reports."" : "";
+                        $tittle.=$intake_title;
 
                         $data = $student_data;
                         $pdf->set_document_title($tittle);
@@ -1432,13 +1447,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
 
                             $pdf = new PDF('L', 'mm', 'A4');
                             $tittle = $select_report_class != "all" ? "List for " . classNameReport($select_report_class) . "" : "Student List for Whole School";
+                            $intake_title = (strlen($intake_year_reports) > 0 && strlen($intake_months_reports) > 0) ? " : Intake ".$intake_months_reports." ".$intake_year_reports."" : "";
+                            $tittle.=$intake_title;
                             $pdf->set_document_title($tittle);
                             $pdf->setSchoolLogo("../../" . schoolLogo($conn));
                             $pdf->set_school_name($_SESSION['schname']);
                             $pdf->set_school_po($_SESSION['po_boxs']);
                             $pdf->set_school_box_code($_SESSION['box_codes']);
                             $pdf->set_school_contact($_SESSION['school_contact']);
+
+                            // select statement
                             $select = $select . " WHERE `stud_class` = ?";
+                            $select .=  (strlen($intake_year_reports) > 0 && strlen($intake_months_reports) > 0) ? " AND `intake_year` = '".$intake_year_reports."' AND `intake_month` = '".$intake_months_reports."' " : "";
                             for ($index = 0; $index < count($school_classes); $index++) {
                                 $stmt = $conn2->prepare($select);
                                 $stmt->bind_param("s", $school_classes[$index]);
@@ -1530,7 +1550,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                         }
                     }
                 } else {
-                    echo "<p style='color:red;'><b>Note:</b><br>Please set the student class to display the students information";
+                    echo "<p style='color:red;'><b>Note:</b><br>Please select the student course level to display the students information";
                 }
             } elseif ($select_student_option == "students_admitted") {
                 if (strlen($select_report_class) > 0 && strlen($select_date) > 0) {
@@ -1975,7 +1995,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                         }
                     }
                 } else {
-                    echo "<p style='color:red;'><b>Note:</b><br>Please set the student class to display the students information</p>";
+                    echo "<p style='color:red;'><b>Note:</b><br>Please select the student course level to display the students information</p>";
                 }
             } elseif ($select_student_option == "show_alumni") {
                 $select = "SELECT * FROM `student_data` WHERE `stud_class` = '-1';";
@@ -2344,17 +2364,51 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
         $staff_options = $_POST['staff_options'];
         $select_date_staff = $_POST['select_date_staff'];
         $course_names = $_POST['course_name'];
+        $intake_months_reports = $_POST['intake_months_reports'];
+        $intake_year_reports = $_POST['intake_year_reports'];
 
         if ($select_entity == "student") {
             // get the student data per class
             if ($select_student_option == "all_students") {
+                if((strlen($intake_year_reports) > 0 && strlen($intake_months_reports) == 0) || strlen($intake_year_reports) == 0 && strlen($intake_months_reports) > 0){
+                    echo "<p style='color:red;'>Ensure you`ve selected the intake month and year!</p>";
+                    return 0;
+                }
+
+                // get the course
+                $all_courses = [];
+                $select = "SELECT * FROM `settings` WHERE `sett` = 'courses'";
+                $statements = $conn2->prepare($select);
+                $statements->execute();
+                $res = $statements->get_result();
+                if($res){
+                    if($rows = $res->fetch_assoc()){
+                        $all_courses = isJson_report($rows['valued']) ? json_decode($rows['valued']) : [];
+                    }
+                }
+
+                // get the department
+                $all_department = [];
+                $select = "SELECT * FROM `settings` WHERE `sett` = 'departments'";
+                $statements = $conn2->prepare($select);
+                $statements->execute();
+                $res = $statements->get_result();
+                if($res){
+                    if($rows = $res->fetch_assoc()){
+                        $all_department = isJson_report($rows['valued']) ? json_decode($rows['valued']) : [];
+                    }
+                }
                 // get the class the student is selected
                 if (strlen($select_report_class) > 0) {
                     $select = "SELECT * FROM `student_data` ";
                     $add_course = strlen(trim($course_names)) > 0 ? " AND `course_done` = '".$course_names."' " : "";
                     $condition = $select_report_class != "all" ? " WHERE `stud_class` = '$select_report_class' ".$add_course."" : " WHERE `stud_class` != '-1' AND `stud_class` != '-2'";
+                    // add the intake condition
+                    $intake_condition = (strlen($intake_year_reports) > 0 && strlen($intake_months_reports) > 0) ? " AND `intake_year` = '".$intake_year_reports."' AND `intake_month` = '".$intake_months_reports."' " : "";
+                    $condition.=$intake_condition;
+
+                    // get for specific class
                     if ($select_report_class != "all") {
-                        $tittle = $select_report_class != "all" ? "List for " . classNameReport($select_report_class) . "" : "Student List for Whole School";
                         $select = $select . $condition;
                         // 
                         $stmt = $conn2->prepare($select);
@@ -2364,40 +2418,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                         $number = 1;
                         $boys = 0;
                         $girls = 0;
-
-                        // get the course
-                        $all_courses = [];
-                        $select = "SELECT * FROM `settings` WHERE `sett` = 'courses'";
-                        $statements = $conn2->prepare($select);
-                        $statements->execute();
-                        $res = $statements->get_result();
-                        if($res){
-                            if($rows = $res->fetch_assoc()){
-                                $all_courses = isJson_report($rows['valued']) ? json_decode($rows['valued']) : [];
+                        
+                        // course titles
+                        $courses_name = "N/A";
+                        for($index =0; $index < count($all_courses); $index++){
+                            if($all_courses[$index]->id == $course_names){
+                                $course_name = $all_courses[$index]->course_name;
+                                $courses_name = $course_name;
+                                break;
                             }
                         }
 
-                        // get the department
-                        $all_department = [];
-                        $select = "SELECT * FROM `settings` WHERE `sett` = 'departments'";
-                        $statements = $conn2->prepare($select);
-                        $statements->execute();
-                        $res = $statements->get_result();
-                        if($res){
-                            if($rows = $res->fetch_assoc()){
-                                $all_department = isJson_report($rows['valued']) ? json_decode($rows['valued']) : [];
-                            }
-                        }
+                        // course title
+                        $course_title = strlen(trim($course_names)) > 0 ? " in ".$courses_name." " : "";
+                        $tittle = $select_report_class != "all" ? "List for " . classNameReport($select_report_class) . " $course_title" : "Student List for Whole School";
+
                         while ($row = $result->fetch_assoc()) {
                             $student_name = ucwords(strtolower($row['surname'] . " " . $row['first_name'] . " " . $row['second_name']));
                             $adm_no = $row['adm_no'];
                             $gender = $row['gender'];
                             if ($gender == "Male") {
                                 $boys++;
-                                $gender = "M";
                             } else {
                                 $girls++;
-                                $gender = "F";
                             }
                             $level_name = classNameReport($row['stud_class']);
                             $dob = $row['D_O_B'];
@@ -2411,7 +2454,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                             $parentContacts = $row['parentContacts'];
                             $parent_name2 = ucwords(strtolower($row['parent_name2']));
                             $parent_contact2 = $row['parent_contact2'];
-                            $address = $row['address'];
 
                             // show departments
                             $course_id = $row['course_done'];
@@ -2434,9 +2476,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                                     break;
                                 }
                             }
-
-                            // course level
-                            $each_stud = array($number, $student_name, $adm_no, $gender, $course_name, $level_name, $department_name, $dob, $doa, $address);
+                            $each_stud = array($number, $student_name, $adm_no, $gender,  $course_name, $level_name, $department_name, $row['intake_month'],$row['intake_year'], $dob, $doa, $parentName, $parentContacts, $parent_name2, $parent_contact2);
                             array_push($student_data, $each_stud);
                             $number++;
                         }
@@ -2446,12 +2486,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                         $spreadsheet = new Spreadsheet();
 
                         // Set document properties
+                        $tittle = strlen($tittle) > 31 ? substr($tittle,0,31) : $tittle;
                         $spreadsheet->getProperties()->setCreator($_SESSION['username'])
                             ->setLastModifiedBy($_SESSION['username'])
                             ->setTitle($tittle)
                             ->setSubject($tittle)
                             ->setDescription($_SESSION['username']." ".$tittle);
-                            $header = array('No', 'Student Name', 'Reg no', 'Sex', 'Course', 'Level', 'Department', 'D.O.B', 'D.O.A', 'Address');
+                            $header = array('No', 'Student Name', 'Reg no', 'Sex', 'Course', 'Level', 'Department',"Intake Month", "Intake Year", 'D.O.B', 'Date Of Adm', '1st Parent Name', 'Contacts', '2nd Parent Name', 'Contacts');
                         
                         // Add data
                         $worksheet = $spreadsheet->getActiveSheet();
@@ -2502,8 +2543,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                     } else {
                         $school_classes = getSchoolCLass($conn2);
                         if (count($school_classes) > 0) {
+                            // document tittle
                             $tittle = $select_report_class != "all" ? "List for " . classNameReport($select_report_class) . "" : "Student List for Whole School";
+                            $intake_title = (strlen($intake_year_reports) > 0 && strlen($intake_months_reports) > 0) ? " : Intake ".$intake_months_reports." ".$intake_year_reports."" : "";
+                            $tittle.=$intake_title;
+
+                            // select statment
                             $select = $select . " WHERE `stud_class` = ?";
+
+                            $select .=  (strlen($intake_year_reports) > 0 && strlen($intake_months_reports) > 0) ? " AND `intake_year` = '".$intake_year_reports."' AND `intake_month` = '".$intake_months_reports."' " : "";
 
                             // Create new Spreadsheet object
                             $spreadsheet = new Spreadsheet();
@@ -2534,7 +2582,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                                     } else {
                                         $girls++;
                                     }
-                                    $stud_class = classNameReport($row['stud_class']);
+                                    $level_name = classNameReport($row['stud_class']);
                                     $dob = $row['D_O_B'];
                                     $date1 = date_create($dob);
                                     $date2 = date_create(date("Y-m-d"));
@@ -2546,12 +2594,34 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                                     $parentContacts = $row['parentContacts'];
                                     $parent_name2 = ucwords(strtolower($row['parent_name2']));
                                     $parent_contact2 = $row['parent_contact2'];
-                                    $each_stud = array($number, $student_name, $adm_no, $gender, $stud_class, $dob, $doa, $parentName, $parentContacts, $parent_name2, $parent_contact2);
+        
+                                    // show departments
+                                    $course_id = $row['course_done'];
+                                    $course_name = "N/A";
+                                    $department_id = null;
+                                    for($in =0; $in < count($all_courses); $in++){
+                                        if($all_courses[$in]->id == $course_id){
+                                            $course_name = $all_courses[$in]->course_name;
+                                            $courses_name = $course_name;
+                                            $department_id = $all_courses[$in]->department;
+                                            break;
+                                        }
+                                    }
+        
+                                    // get the department names
+                                    $department_name = "N/A";
+                                    for($in = 0; $in < count($all_department); $in++){
+                                        if($all_department[$in]->code == $department_id){
+                                            $department_name = $all_department[$in]->name;
+                                            break;
+                                        }
+                                    }
+                                    $each_stud = array($number, $student_name, $adm_no, $gender,  $course_name, $level_name, $department_name, $row['intake_month'],$row['intake_year'],$dob, $doa, $parentName, $parentContacts, $parent_name2, $parent_contact2);
                                     array_push($student_data, $each_stud);
                                     $number++;
                                 }
                                 
-                                $header = array('No', 'Student Name', 'Reg no', 'Sex', 'Class', 'D.O.B', 'Date Of Adm', '1st Parent Name', 'Contacts', '2nd Parent Name', 'Contacts');
+                                $header = array('No', 'Student Name', 'Reg no', 'Sex', 'Course', 'Level', 'Department', "Intake Month", "Intake Year", 'D.O.B', 'Date Of Adm', '1st Parent Name', 'Contacts', '2nd Parent Name', 'Contacts');
                                 
                                 // if its the first sheet dont add the data
                                 if ($index == 0) {
@@ -2628,9 +2698,33 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                         }
                     }
                 } else {
-                    echo "<p style='color:red;'><b>Note:</b><br>Please set the student class to display the students information";
+                    echo "<p style='color:red;'><b>Note:</b><br>Please select the student course level to display the students information";
                 }
             } elseif ($select_student_option == "students_admitted") {
+
+                // get the course
+                $all_courses = [];
+                $select = "SELECT * FROM `settings` WHERE `sett` = 'courses'";
+                $statements = $conn2->prepare($select);
+                $statements->execute();
+                $res = $statements->get_result();
+                if($res){
+                    if($rows = $res->fetch_assoc()){
+                        $all_courses = isJson_report($rows['valued']) ? json_decode($rows['valued']) : [];
+                    }
+                }
+
+                // get the department
+                $all_department = [];
+                $select = "SELECT * FROM `settings` WHERE `sett` = 'departments'";
+                $statements = $conn2->prepare($select);
+                $statements->execute();
+                $res = $statements->get_result();
+                if($res){
+                    if($rows = $res->fetch_assoc()){
+                        $all_department = isJson_report($rows['valued']) ? json_decode($rows['valued']) : [];
+                    }
+                }
                 if (strlen($select_report_class) > 0 && strlen($select_date) > 0) {
                     $select = "SELECT * FROM `student_data` WHERE `D_O_A` = ? AND `stud_class` = ?";
                     if ($select_report_class != "all") {
@@ -2654,7 +2748,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                                 } else {
                                     $girls++;
                                 }
-                                $stud_class = classNameReport($row['stud_class']);
+                                $level_name = classNameReport($row['stud_class']);
                                 $dob = $row['D_O_B'];
                                 $date1 = date_create($dob);
                                 $date2 = date_create(date("Y-m-d"));
@@ -2666,7 +2760,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                                 $parentContacts = $row['parentContacts'];
                                 $parent_name2 = ucwords(strtolower($row['parent_name2']));
                                 $parent_contact2 = $row['parent_contact2'];
-                                $each_stud = array($number, $student_name, $adm_no, $gender, $stud_class, $dob, $doa, $parentName, $parentContacts, $parent_name2, $parent_contact2);
+
+                                // show departments
+                                $course_id = $row['course_done'];
+                                $course_name = "N/A";
+                                $department_id = null;
+                                for($index =0; $index < count($all_courses); $index++){
+                                    if($all_courses[$index]->id == $course_id){
+                                        $course_name = $all_courses[$index]->course_name;
+                                        $courses_name = $course_name;
+                                        $department_id = $all_courses[$index]->department;
+                                        break;
+                                    }
+                                }
+
+                                // get the department names
+                                $department_name = "N/A";
+                                for($index = 0; $index < count($all_department); $index++){
+                                    if($all_department[$index]->code == $department_id){
+                                        $department_name = $all_department[$index]->name;
+                                        break;
+                                    }
+                                }
+                                $each_stud = array($number, $student_name, $adm_no, $gender,  $course_name, $level_name, $department_name,$row['intake_month'],$row['intake_year'],$dob, $doa, $parentName, $parentContacts, $parent_name2, $parent_contact2);
                                 array_push($student_data, $each_stud);
                                 $number++;
                             }
@@ -2680,7 +2796,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                                 ->setSubject($tittle)
                                 ->setDescription($_SESSION['username']." ".$tittle);
                             // Column headings
-                            $header = array('No', 'Student Name', 'Reg no', 'Sex', 'Class', 'D.O.B', 'Date Of Adm', '1st Parent Name', 'Contacts', '2nd Parent Name', 'Contacts');
+                            $header = array('No', 'Student Name', 'Reg no', 'Sex', 'Course', 'Level', 'Department', "Intake Month", "Intake Year", 'D.O.B', 'Date Of Adm', '1st Parent Name', 'Contacts', '2nd Parent Name', 'Contacts');
                             
                             // Data loading
                             $data = $student_data;
@@ -2694,7 +2810,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                                 ->setTitle($tittle)
                                 ->setSubject($tittle)
                                 ->setDescription($_SESSION['username']." ".$tittle);
-                            $header = array('No', 'Student Name', 'Reg no', 'Sex', 'Class', 'D.O.B', 'Date Of Adm', '1st Parent Name', 'Contacts', '2nd Parent Name', 'Contacts');
+                            // $header = array('No', 'Student Name', 'Reg no', 'Sex', 'Class', 'D.O.B', 'Date Of Adm', '1st Parent Name', 'Contacts', '2nd Parent Name', 'Contacts');
                             
                             // Add data
                             $worksheet = $spreadsheet->getActiveSheet();
@@ -2765,7 +2881,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                                 } else {
                                     $girls++;
                                 }
-                                $stud_class = classNameReport($row['stud_class']);
+                                $level_name = classNameReport($row['stud_class']);
                                 $dob = $row['D_O_B'];
                                 $date1 = date_create($dob);
                                 $date2 = date_create(date("Y-m-d"));
@@ -2777,12 +2893,34 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                                 $parentContacts = $row['parentContacts'];
                                 $parent_name2 = ucwords(strtolower($row['parent_name2']));
                                 $parent_contact2 = $row['parent_contact2'];
-                                $each_stud = array($number, $student_name, $adm_no, $gender, $stud_class, $dob, $doa, $parentName, $parentContacts, $parent_name2, $parent_contact2);
+
+                                // show departments
+                                $course_id = $row['course_done'];
+                                $course_name = "N/A";
+                                $department_id = null;
+                                for($index =0; $index < count($all_courses); $index++){
+                                    if($all_courses[$index]->id == $course_id){
+                                        $course_name = $all_courses[$index]->course_name;
+                                        $courses_name = $course_name;
+                                        $department_id = $all_courses[$index]->department;
+                                        break;
+                                    }
+                                }
+
+                                // get the department names
+                                $department_name = "N/A";
+                                for($index = 0; $index < count($all_department); $index++){
+                                    if($all_department[$index]->code == $department_id){
+                                        $department_name = $all_department[$index]->name;
+                                        break;
+                                    }
+                                }
+                                $each_stud = array($number, $student_name, $adm_no, $gender, $course_name, $level_name, $department_name,$row['intake_month'],$row['intake_year'], $dob, $doa, $parentName, $parentContacts, $parent_name2, $parent_contact2);
                                 array_push($student_data, $each_stud);
                                 $number++;
                             }
                             // Column headings
-                            $header = array('No', 'Student Name', 'Reg no', 'Sex', 'Class', 'D.O.B', 'Date Of Adm', '1st Parent Name', 'Contacts', '2nd Parent Name', 'Contacts');
+                            $header = array('No', 'Student Name', 'Reg no', 'Sex', 'Course', 'Level', 'Department', "Intake Month", "Intake Year", 'D.O.B', 'Date Of Adm', '1st Parent Name', 'Contacts', '2nd Parent Name', 'Contacts');
                             // Data loading
                             // $data = $pdf->LoadData('countries.txt');
                             $data = $student_data;
@@ -2795,7 +2933,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                                 ->setTitle($tittle)
                                 ->setSubject($tittle)
                                 ->setDescription($_SESSION['username']." ".$tittle);
-                            $header = array('No', 'Student Name', 'Reg no', 'Sex', 'Class', 'D.O.B', 'Date Of Adm', '1st Parent Name', 'Contacts', '2nd Parent Name', 'Contacts');
+                            // $header = array('No', 'Student Name', 'Reg no', 'Sex', 'Class', 'D.O.B', 'Date Of Adm', '1st Parent Name', 'Contacts', '2nd Parent Name', 'Contacts');
                             
                             // Add data
                             $worksheet = $spreadsheet->getActiveSheet();
@@ -3168,7 +3306,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                         }
                     }
                 } else {
-                    echo "<p style='color:red;'><b>Note:</b><br>Please set the student class to display the students information</p>";
+                    echo "<p style='color:red;'><b>Note:</b><br>Please select the student course level to display the students information</p>";
                 }
             } elseif ($select_student_option == "show_alumni") {
                 $select = "SELECT * FROM `student_data` WHERE `stud_class` = '-1';";
@@ -3205,12 +3343,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                     $l_ind = $year_left[count($year_left) - 1];
                     $year = explode(":", $l_ind)[0];
                     $the_class = explode(":", $l_ind)[1] == "-1" ? "Completed" : classNameReport(explode(":", $l_ind)[1]);
-                    $each_stud = array($number, $student_name, $adm_no, $gender, $stud_class, $dob, $doa, $parentName, $parentContacts, $parent_name2, $parent_contact2);
+                    $each_stud = array($number, $student_name, $adm_no, $gender, $stud_class, $row['intake_month'],$row['intake_year'],$dob, $doa, $parentName, $parentContacts, $parent_name2, $parent_contact2);
                     array_push($student_data, $each_stud);
                     $number++;
                 }
                 // Column headings
-                $header = array('No', 'Student Name', 'Reg no', 'Sex', 'Class', 'D.O.B', 'Date Of Adm', '1st Parent Name', 'Contacts', '2nd Parent Name', 'Contacts');
+                $header = array('No', 'Student Name', 'Reg no', 'Sex', 'Class', "Intake Month","Intake Year", 'D.O.B', 'Date Of Adm', '1st Parent Name', 'Contacts', '2nd Parent Name', 'Contacts');
 
                 // Data loading
                 $tittle = "Alumni List";
@@ -4226,12 +4364,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                             // $data = $student_data;
                             $pdf2->set_document_title($tittle);
                             $pdf2->setHeaderPos(200);
-                            $pdf2->setSchoolLogo("../../" . schoolLogo($conn));
+                            $pdf2->setSchoolLogo("../" . schoolLogo($conn));
                             $pdf2->set_school_name($_SESSION['schname']);
                             $pdf2->set_school_po($_SESSION['po_boxs']);
                             $pdf2->set_school_box_code($_SESSION['box_codes']);
                             $pdf2->set_school_contact($_SESSION['school_contact']);
                             $pdf2->AddPage();
+                            $old_x_pos = 6;
                             for ($indexes = 0; $indexes < count($students); $indexes++) {
                                 $reminder_msg = reminderMsg($students[$indexes], $reminder_message, $conn2);
                                 // EDIT THE INFORMATION TO DISPLAY FOR THE REMINDER
@@ -4291,9 +4430,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                                 $pdf2->SetDrawColor(194, 200, 200);
                                 $pdf2->SetLineWidth(.2);
                                 $pdf2->Cell(180, 1, "", "B", 0, 0);
+                                $pdf2->Ln();
+                                $get_height = round($pdf2->GetY());
+                                // echo $get_height."<br>";
+                                $old_x_pos+=5;
+                                $pdf2->Image($pdf2->school_logo,6,$old_x_pos,15);
+                                $pdf2->Image($pdf2->arm_of_gov,190,$old_x_pos,15);
+                                $old_x_pos = $get_height;
+                                $pdf2->ln();
                                 if ($counter == 3) {
                                     $counter = 0;
                                     $pdf2->AddPage();
+                                    // echo $get_height."Add page<br>";
+                                    $old_x_pos = 6;
                                 }
                                 $counter++;
                             }
@@ -4317,7 +4466,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                         // $data = $student_data;
                         $pdf2->set_document_title($tittle);
                         $pdf2->setHeaderPos(200);
-                        $pdf2->setSchoolLogo("../../" . schoolLogo($conn));
+                        $pdf2->setSchoolLogo("../" . schoolLogo($conn));
                         $pdf2->set_school_name($_SESSION['schname']);
                         $pdf2->set_school_po($_SESSION['po_boxs']);
                         $pdf2->set_school_box_code($_SESSION['box_codes']);
@@ -4327,6 +4476,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                         for ($indexed = 0; $indexed < count($school_classes); $indexed++) {
                             $students = getStudents($school_classes[$indexed], $conn2);
                             if (count($students) > 0) {
+                                $old_x_pos = 6;
                                 for ($indexes = 0; $indexes < count($students); $indexes++) {
                                     $reminder_msg = reminderMsg($students[$indexes], $reminder_message, $conn2);
                                     // EDIT THE INFORMATION TO DISPLAY FOR THE REMINDER
@@ -4386,9 +4536,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                                     $pdf2->SetDrawColor(194, 200, 200);
                                     $pdf2->SetLineWidth(.2);
                                     $pdf2->Cell(180, 1, "", "B", 0, 0);
+                                    $get_height = round($pdf2->GetY());
+                                    $old_x_pos+=5;
+                                    $pdf2->Image($pdf2->school_logo,6,$old_x_pos,15);
+                                    $pdf2->Image($pdf2->arm_of_gov,190,$old_x_pos,15);
+                                    $old_x_pos = $get_height;
+                                    $pdf2->Ln();
                                     if ($counter == 3) {
                                         $counter = 0;
                                         $pdf2->AddPage();
+                                        $old_x_pos = 6;
                                     }
                                     $counter++;
                                 }
@@ -4413,7 +4570,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                         // $data = $student_data;
                         $pdf2->set_document_title($tittle);
                         $pdf2->setHeaderPos(200);
-                        $pdf2->setSchoolLogo("../../" . schoolLogo($conn));
+                        $pdf2->setSchoolLogo("../" . schoolLogo($conn));
                         $pdf2->set_school_name($_SESSION['schname']);
                         $pdf2->set_school_po($_SESSION['po_boxs']);
                         $pdf2->set_school_box_code($_SESSION['box_codes']);
@@ -4477,6 +4634,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                         $pdf2->SetDrawColor(194, 200, 200);
                         $pdf2->SetLineWidth(.2);
                         $pdf2->Cell(180, 1, "", "B", 0, 0);
+                        $get_height = round($pdf2->GetY());
+                        $old_x_pos=6;
+                        $pdf2->Image($pdf2->school_logo,6,$old_x_pos,15);
+                        $pdf2->Image($pdf2->arm_of_gov,190,$old_x_pos,15);
+                        $old_x_pos = $get_height;
                         $pdf2->Output("I", str_replace(" ", "_", $pdf2->school_document_title) . ".pdf");
                     } else {
                         echo "<p style='color:red;'><b>Nore:</b><br> - Invalid Admission number!</p>";
@@ -4553,7 +4715,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                         $pdf2->set_document_title($tittle);
                         $pdf2->SetTopMargin(1);
                         $pdf2->setHeaderPos(190);
-                        $pdf2->setSchoolLogo("../../" . schoolLogo($conn));
+                        $pdf2->setSchoolLogo("../" . schoolLogo($conn));
                         $pdf2->set_school_name($_SESSION['schname']);
                         $pdf2->set_school_po($_SESSION['po_boxs']);
                         $pdf2->set_school_box_code($_SESSION['box_codes']);
@@ -4568,6 +4730,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                         } else {
                             $cuts = 2;
                         }
+                        $old_x_pos=6;
                         for ($ind = 0; $ind < $cuts; $ind++) {
                             $pdf2->Cell($pdf2->school_header_position, 5, "", 0, 0, 'C');
                             $pdf2->Ln();
@@ -4591,6 +4754,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                             $width = array(8, 35, 35, 35, 35, 35);
                             $pdf2->feesStructure($header, $data, $width);
                             $pdf2->Ln();
+                            $get_height = round($pdf2->GetY());
+                            $pdf2->Image($pdf2->school_logo,6,$old_x_pos,15);
+                            $pdf2->Image($pdf2->arm_of_gov,190,$old_x_pos,15);
+                            $old_x_pos = $get_height+5;
                             if (($ind + 1) % $cuts != 0) {
                                 $pdf2->SetLineWidth(0.1);
                                 $pdf2->SetDash(1, 1);
@@ -4609,7 +4776,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                             // Data loading
                             // $data = $pdf2->LoadData('countries.txt');
                             $pdf2->setHeaderPos(190);
-                            $pdf2->setSchoolLogo("../../" . schoolLogo($conn));
+                            $pdf2->setSchoolLogo("../" . schoolLogo($conn));
                             $pdf2->set_school_name($_SESSION['schname']);
                             $pdf2->set_school_po($_SESSION['po_boxs']);
                             $pdf2->set_school_box_code($_SESSION['box_codes']);
@@ -4626,6 +4793,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                                     $all_courses = isJson_report($rows['valued']) ? json_decode($rows['valued']) : [];
                                 }
                             }
+                            $old_x_pos = 6;
                             for ($in = 0; $in < count($school_classes); $in++) {
                                 // title
                                 $courses_name = "N/A";
@@ -4695,6 +4863,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                                     $width = array(8, 35, 35, 35, 35, 35);
                                     $pdf2->feesStructure($header, $data, $width);
                                     $pdf2->Ln();
+
+                                    // insert logos
+                                    $get_height = round($pdf2->GetY());
+                                    $pdf2->Image($pdf2->school_logo,6,$old_x_pos,15);
+                                    $pdf2->Image($pdf2->arm_of_gov,190,$old_x_pos,15);
+                                    $old_x_pos = $get_height+5;
                                     if (($ind + 1) % $cuts != 0) {
                                         $pdf2->SetLineWidth(0.1);
                                         $pdf2->SetDash(1, 1);
@@ -4704,6 +4878,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                                 }
                                 if ($in != count($school_classes) - 1) {
                                     $pdf2->AddPage();
+                                    $old_x_pos = 6;
                                 }
                             }
                             $pdf2->Output("I", str_replace(" ", "_", $pdf2->school_document_title) . ".pdf");
@@ -6893,6 +7068,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
             $website_name = $school_info['website_name'];
 
             $pdf->Image($school_profile_image, 5, 10, 20, 20);
+            $pdf->Image($pdf->arm_of_gov, 100, 15, 12, 12);
             $pdf->SetFont('Helvetica', 'B', 14);
             $pdf->SetFillColor(100, 100, 100);
             $pdf->SetTitle("Receipt for ".$students_names." Reg No. ".$student_admission_no.".");
@@ -7098,6 +7274,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
             // space between
             $y = $pdf->GetY();
             $pdf->Image($school_profile_image, 5, $y, 20, 20);
+            $pdf->Image($pdf->arm_of_gov, 100, $y+5, 12, 12);
             $pdf->SetFont('Helvetica', 'B', 14);
             $pdf->SetFillColor(100, 100, 100);
             $pdf->Cell(20, 10, "", 0, 0, "L", false);
@@ -8313,9 +8490,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
 
                 $pdf = new PDF2('P', 'mm', 'A4');
 
-                $tittle = "BLOCK TIMETABLE.";
+                $tittle = "Invoice";
                 $pdf->SetFont('Times', '', 11);
                 $pdf->setSchoolLogo("../../" . schoolLogo($conn));
+                $pdf->SetTitle($tittle);
                 $pdf->set_school_name($_SESSION['schname']);
                 $pdf->set_school_po($_SESSION['po_boxs']);
                 $pdf->set_school_box_code($_SESSION['box_codes']);
@@ -8326,23 +8504,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                 $term = getTermV2($conn2);
                 for ($index = 0; $index < count($stud_ids); $index++) {
                     $student_data = students_details($stud_ids[$index],$conn2);
+
                     // get the date of registration is in what term
-                    $date_of_reg = count($student_data) > 0 ? $student_data['D_O_A'] : date("Y-m-d");
-                    $select = "SELECT * FROM `academic_calendar` WHERE `start_time` <= ? AND `end_time` >= ?";
-                    $stmt = $conn2->prepare($select);
-                    $stmt->bind_param("ss",$date_of_reg,$date_of_reg);
-                    $stmt->execute();
-                    $result = $stmt->get_result();
                     $term_admitted = "TERM_1";
-                    if ($result) {
-                        if($row = $result->fetch_assoc()){
-                            $term_admitted = $row['term'];
+
+                    // get the students current term enrolled
+                    $current_term_enrolled = null;
+                    $course_progress = isJson_report($student_data['my_course_list']) ? json_decode($student_data['my_course_list']) : [];
+                    for($i = 0; $i < count($course_progress); $i++){
+                        if($course_progress[$i]->course_status == 1){
+                            $module_terms = $course_progress[$i]->module_terms;
+                            for($in = 0; $in < count($module_terms); $in++){
+                                if($module_terms[$in]->status == 1){
+                                    $current_term_enrolled = $module_terms[$in]->term_name;
+                                    break;
+                                }
+                            }
                         }
                     }
-
-
-                    // get the students information first
-                    $student_data = getStudDetail($conn2, $stud_ids[$index]);
 
                     $invoice_number = date("YmdHis") . "#" . $stud_ids[$index];
                     $student_name = $student_data['surname'] . " " . $student_data['first_name'] . " " . $student_data['second_name'];
@@ -8350,7 +8529,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                     $student_class = className_exam($student_data['stud_class']);
 
                     // get all fees to be paid in that particular class for that particular term
-                    $select = "SELECT * FROM `fees_structure` WHERE `classes` LIKE '%" . $student_data['stud_class'] . "%' AND `roles` = 'regular'";
+                    $select = "SELECT * FROM `fees_structure` WHERE `classes` = '" . $student_data['stud_class'] . "' AND `roles` = 'regular'";
                     $stmt = $conn2->prepare($select);
                     $stmt->execute();
                     $result = $stmt->get_result();
@@ -8364,68 +8543,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                     if ($result) {
                         while ($row = $result->fetch_assoc()) {
                             $skip = 0;
-
                             $total = 0;
-                            if ($term == "TERM_1") {
-                                if($row['TERM_1'] > 0){
-                                    if ($term_admitted == "TERM_1") {
-                                        $total += $row['TERM_1'];
-                                    }else{
-                                        $skip++;
-                                    }
-                                }else{
-                                    $skip++;
-                                }
-                            } elseif ($term == "TERM_2") {
-                                $bal_repo = getBalanceReports($admission_number, "TERM_1", $conn2);
-                                if($bal_repo > 0){
-                                    if ($term_admitted == "TERM_1") {
-                                        $total += ($row['TERM_1'] + $row['TERM_2']);
-                                    }elseif ($term_admitted == "TERM_2") {
-                                        $total += ($row['TERM_2']);
-                                    }else{
-                                        $skip++;
-                                    }
-                                }else{
-                                    if ($row['TERM_2'] > 0) {
-                                        if ($term_admitted == "TERM_1") {
-                                            $total += ($row['TERM_1'] + $row['TERM_2']);
-                                        }elseif ($term_admitted == "TERM_2") {
-                                            $total += ($row['TERM_2']);
-                                        }else{
-                                            $skip++;
-                                        }
-                                    }else{
-                                        $skip++;
-                                    }
-                                }
-                            } elseif ($term == "TERM_3") {
-                                $bal_repo = getBalanceReports($admission_number, "TERM_2", $conn2);
-                                if($bal_repo > 0){
-                                    if ($term_admitted == "TERM_1") {
-                                        $total += ($row['TERM_1'] + $row['TERM_2'] + $row['TERM_3']);
-                                    }elseif ($term_admitted == "TERM_2") {
-                                        $total += ($row['TERM_2'] + $row['TERM_3']);
-                                    }elseif ($term_admitted == "TERM_3") {
-                                        $total += ($row['TERM_3']);
-                                    }else{
-                                        $skip++;
-                                    }
-                                }else{
-                                    if ($row['TERM_3'] > 0) {
-                                        if ($term_admitted == "TERM_1") {
-                                            $total += ($row['TERM_1'] + $row['TERM_2'] + $row['TERM_3']);
-                                        }elseif ($term_admitted == "TERM_2") {
-                                            $total += ($row['TERM_2'] + $row['TERM_3']);
-                                        }elseif ($term_admitted == "TERM_3") {
-                                            $total += ($row['TERM_3']);
-                                        }else{
-                                            $skip++;
-                                        }
-                                    }else{
-                                        $skip++;
-                                    }
-                                }
+
+                            if($current_term_enrolled == "TERM_1"){
+                                $total += $row['TERM_1'];
+                            }
+                            if($current_term_enrolled == "TERM_2"){
+                                $total += $row['TERM_2'];
+                            }
+                            if($current_term_enrolled == "TERM_3"){
+                                $total += $row['TERM_3'];
                             }
 
                             $price_n_name = array($row['expenses'] => $total);
@@ -8434,54 +8561,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                             }
                         }
                     }
+                    $feespaidbystud = getFeespaidByStudent($admission_number,$conn2);
                     
                     // get the paid fees paid untill that time
                     // get the balance
-                    // echo json_encode($arrays);
-
-                    // check if he is in the transport section
-                    $get_routes = getRouteEnrolled($stud_ids[$index], $conn2);
-                    $transport_price = 0;
-                    if (count($get_routes) > 0) {
-                        $term_1 = 0;
-                        $term_2 = 0;
-                        $term_3 = 0;
-                        for($ind = 0; $ind < count($get_routes);$ind++){
-                            if($get_routes[$ind]->term == "TERM_1"){
-                                $term_1 = $get_routes[$ind]->route_price;
-                            }
-                            if($get_routes[$ind]->term == "TERM_2"){
-                                $term_2 = $get_routes[$ind]->route_price;
-                            }
-                            if($get_routes[$ind]->term == "TERM_3"){
-                                $term_3 = $get_routes[$ind]->route_price;
-                            }
-                        }
-                        // get routes
-                        if ($term == "TERM_1") {
-                            $transport_price = $term_1;
-                        } elseif ($term == "TERM_2") {
-                            $transport_price = $term_1+$term_2;
-                        } elseif ($term == "TERM_3") {
-                            $transport_price = $term_1+$term_2+$term_3;
-                        }
-                    }
-                    $border = isBoarding($admission_number, $conn2) ? getBoardingFees($conn2, $student_data['stud_class']) : 0;
-
-                    // if the transport is greater than 0 add it
-                    if ($transport_price > 0) {
-                        array_push($arrays, array("Transport Fees" => $transport_price));
-                    }
-                    // get if the student is a border
-                    if ($border > 0) {
-                        array_push($arrays, array("Boarding Fees" => $border));
-                    }
                     // get the student balance
                     // check if they have last year academic balance this means that the new fees structure will be added to their fees invoice description
                     $last_acad_yr = lastACADyrBal($admission_number, $conn2);
                     if ($last_acad_yr > 0) {
                         // add the last year academic balance to the array list
-                        $acad_balance = array("Last Year Academic Balance" => $last_acad_yr);
+                        $acad_balance = array("Last Active Term Balance" => $last_acad_yr);
                         array_push($arrays, $acad_balance);
                         // first get the balance and know what was paid for
                         $balanced = getBalanceReports($admission_number, $term, $conn2);
@@ -8524,7 +8613,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
 
 
                         $pdf->SetFont("Arial", "", 9);
-                        $pdf->Cell(50, 5, "Class : " . $student_class, 0, 0);
+                        $pdf->Cell(50, 5, "Course Level : " . $student_class, 0, 0);
                         $pdf->Cell(50, 5, "", 0, 0);
                         $pdf->Cell(50, 5, "Email us : " . $_SESSION['school_mail'] . "", 0, 1);
 
@@ -8561,7 +8650,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                         $pdf->SetFont("Arial", "B", 10);
                         $pdf->Cell(10, 8, "", "", 0);
                         $pdf->Cell(120, 8, "", "", 0);
-                        $pdf->Cell(30, 8, "Totals ", "B", 0);
+                        $pdf->Cell(30, 8, "Total Balance ", "B", 0);
                         // $pdf->Cell(30, 8, "Kes " . number_format($total_fees_to_pay), "B", 1);
                         $pdf->Cell(30, 8, "Kes " . number_format($balanced), "B", 1);
 
@@ -8582,66 +8671,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                         $pdf->Cell(190, 7, "----- Fees Once Paid are not refundable OR transferable -------", 0, 1, 'C');
                         $pdf->Cell(190, 7, "Page No " . $pdf->PageNo(), 0, 1, 'C');
                     } else {
-                        // break down the current prices and add
-                        // first get the balance and know what was paid for
+                        // echo json_encode($arrays);
+                        // echo json_encode($arrays);
                         $balanced = getBalanceReports($admission_number, $term, $conn2);
                         $student_balance = $balanced;
-
-                        // get when the term started by date then get the fees that has been paid during that period
-                        $select = "SELECT * FROM `academic_calendar` WHERE `term` = 'TERM_1'";
-                        $stmt = $conn2->prepare($select);
-                        $stmt->execute();
-                        $term_start = "";
-                        $result = $stmt->get_result();
-                        if ($result) {
-                            if ($row = $result->fetch_assoc()) {
-                                $term_start = $row['start_time'];
-                            }
-                        }
-
-                        // get all the payments done that academic year
-                        $select = "SELECT sum(`amount`) as 'Total', `payment_for` FROM `finance` WHERE `stud_admin` = ? AND `date_of_transaction` > ? GROUP BY `payment_for`";
-                        $stmt = $conn2->prepare($select);
-                        $stmt->bind_param("ss", $admission_number, $term_start);
-                        $stmt->execute();
-                        $result = $stmt->get_result();
-                        $payments = [];
-                        if ($result) {
-                            while ($row = $result->fetch_assoc()) {
-                                $details = array($row['payment_for'] => $row['Total']);
-                                array_push($payments, $details);
-                            }
-                        }
-                        // deduct the payments from the fees structure
-                        // echo $student_name."<br>";
-                        // echo json_encode($payments)."<br>".json_encode($arrays)."<br>Balance ".$balanced."<br> Fees to pay";
-                        // get the total fees to be paid
-                        $total_fees_to_pay = 0;
-                        foreach ($arrays as $key => $value) {
-                            // $total_fees_to_pay+= $value;
-                            foreach ($value as $key2 => $value2) {
-                                $total_fees_to_pay += ($value2 * 1);
-                            }
-                        }
-                        // echo $total_fees_to_pay."<br> Balance percentage = ";
-                        // get the percentage of the balance
-                        $percentage = round(($balanced / $total_fees_to_pay) * 100, 4);
-                        // echo $percentage."%<br>";
-                        // then deduct the percentage per payment
-
-                        // deduct the payments
-                        $my_index = 0;
-                        foreach ($arrays as $key => $value) {
-                            // $total_fees_to_pay+= $value;
-                            foreach ($value as $key2 => $value2) {
-                                $value2 = round(($value2 * $percentage) / 100);
-                                $value[$key2] = $value2;
-                                $arrays[$my_index][$key2] = $value2;
-                            }
-                            $my_index++;
-                        }
-                        // echo json_encode($arrays);
-                        // echo json_encode($arrays);
 
                         // echo "New balance : <br>";
                         // echo json_encode($arrays)."<br><br>";
@@ -8680,7 +8713,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
 
 
                         $pdf->SetFont("Arial", "", 9);
-                        $pdf->Cell(50, 5, "Class : " . $student_class, 0, 0);
+                        $pdf->Cell(50, 5, "Course Level : " . $student_class, 0, 0);
                         $pdf->Cell(50, 5, "", 0, 0);
                         $pdf->Cell(50, 5, "Email us : " . $_SESSION['school_mail'] . "", 0, 1);
 
@@ -8693,7 +8726,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                         $pdf->Cell(120, 5, "Description", "B", 0);
                         $pdf->Cell(30, 5, "Fee", "B", 0);
                         $pdf->Cell(30, 5, "Amount", "B", 1);
-
+                        
                         // change the text color
                         $pdf->SetFont("Helvetica", "", 9);
                         $pdf->SetTextColor(10, 10, 10);
@@ -8713,11 +8746,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                             $counted++;
                         }
 
+                        // add another row of amount paid
+                        $pdf->SetFont("Arial", "B", 10);
+                        $pdf->Cell(10, 8, "", "", 0);
+                        $pdf->Cell(120, 8, "", "", 0);
+                        $pdf->Cell(30, 8, "Fees Paid ", "B", 0);
+                        // $pdf->Cell(30, 8, "Kes " . number_format($total_fees_to_pay), "B", 1);
+                        $pdf->Cell(30, 8, "Kes " . number_format($feespaidbystud), "B", 1);
+
                         // total
                         $pdf->SetFont("Arial", "B", 10);
                         $pdf->Cell(10, 8, "", "", 0);
                         $pdf->Cell(120, 8, "", "", 0);
-                        $pdf->Cell(30, 8, "Totals ", "B", 0);
+                        $pdf->Cell(30, 8, "Total Balance ", "B", 0);
                         // $pdf->Cell(30, 8, "Kes " . number_format($total_fees_to_pay), "B", 1);
                         $pdf->Cell(30, 8, "Kes " . number_format($balanced), "B", 1);
 
@@ -8781,27 +8822,36 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                     // create the invoices to be attached in the emails// print invoices
                     $pdf = new PDF2('P', 'mm', 'A4');
 
-                    $tittle = "BLOCK TIMETABLE.";
+                    $tittle = "Invoice";
                     $pdf->SetFont('Times', '', 11);
+                    $pdf->SetTitle($tittle);
                     $pdf->setSchoolLogo("../../" . schoolLogo($conn));
                     $pdf->set_school_name($_SESSION['schname']);
                     $pdf->set_school_po($_SESSION['po_boxs']);
                     $pdf->set_school_box_code($_SESSION['box_codes']);
                     $pdf->set_school_contact($_SESSION['school_contact']);
-                    // CREATE AN A4 Every time you want
-                    // get the students information first
-                    $student_data = getStudDetail($conn2, $stud_ids[$index]);
+
+
+
+                    // loop through the student ids and get their details while you create the pdf
+                    $term = getTermV2($conn2);
+                    $student_data = students_details($stud_ids[$index],$conn2);
+
                     // get the date of registration is in what term
-                    $date_of_reg = count($student_data) > 0 ? $student_data['D_O_A'] : date("Y-m-d");
-                    $select = "SELECT * FROM `academic_calendar` WHERE `start_time` <= ? AND `end_time` >= ?";
-                    $stmt = $conn2->prepare($select);
-                    $stmt->bind_param("ss",$date_of_reg,$date_of_reg);
-                    $stmt->execute();
-                    $result = $stmt->get_result();
                     $term_admitted = "TERM_1";
-                    if ($result) {
-                        if($row = $result->fetch_assoc()){
-                            $term_admitted = $row['term'];
+
+                    // get the students current term enrolled
+                    $current_term_enrolled = null;
+                    $course_progress = isJson_report($student_data['my_course_list']) ? json_decode($student_data['my_course_list']) : [];
+                    for($i = 0; $i < count($course_progress); $i++){
+                        if($course_progress[$i]->course_status == 1){
+                            $module_terms = $course_progress[$i]->module_terms;
+                            for($in = 0; $in < count($module_terms); $in++){
+                                if($module_terms[$in]->status == 1){
+                                    $current_term_enrolled = $module_terms[$in]->term_name;
+                                    break;
+                                }
+                            }
                         }
                     }
 
@@ -8811,78 +8861,30 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                     $student_class = className_exam($student_data['stud_class']);
 
                     // get all fees to be paid in that particular class for that particular term
-                    $select = "SELECT * FROM `fees_structure` WHERE `classes` LIKE '%" . $student_data['stud_class'] . "%' AND `roles` = 'regular'";
+                    $select = "SELECT * FROM `fees_structure` WHERE `classes` = '" . $student_data['stud_class'] . "' AND `roles` = 'regular'";
                     $stmt = $conn2->prepare($select);
                     $stmt->execute();
                     $result = $stmt->get_result();
+
+                    // balance report
+                    $bal_repo = getBalanceReports($admission_number, "TERM_1", $conn2);
+                    // echo $bal_repo;
 
                     // get the term fees
                     $arrays = [];
                     if ($result) {
                         while ($row = $result->fetch_assoc()) {
                             $skip = 0;
-
                             $total = 0;
-                            if ($term == "TERM_1") {
-                                if($row['TERM_1'] > 0){
-                                    if ($term_admitted == "TERM_1") {
-                                        $total += $row['TERM_1'];
-                                    }else{
-                                        $skip++;
-                                    }
-                                }else{
-                                    $skip++;
-                                }
-                            } elseif ($term == "TERM_2") {
-                                $bal_repo = getBalanceReports($admission_number, "TERM_1", $conn2);
-                                if($bal_repo > 0){
-                                    if ($term_admitted == "TERM_1") {
-                                        $total += ($row['TERM_1'] + $row['TERM_2']);
-                                    }elseif ($term_admitted == "TERM_2") {
-                                        $total += ($row['TERM_2']);
-                                    }else{
-                                        $skip++;
-                                    }
-                                }else{
-                                    if ($row['TERM_2'] > 0) {
-                                        if ($term_admitted == "TERM_1") {
-                                            $total += ($row['TERM_1'] + $row['TERM_2']);
-                                        }elseif ($term_admitted == "TERM_2") {
-                                            $total += ($row['TERM_2']);
-                                        }else{
-                                            $skip++;
-                                        }
-                                    }else{
-                                        $skip++;
-                                    }
-                                }
-                            } elseif ($term == "TERM_3") {
-                                $bal_repo = getBalanceReports($admission_number, "TERM_2", $conn2);
-                                if($bal_repo > 0){
-                                    if ($term_admitted == "TERM_1") {
-                                        $total += ($row['TERM_1'] + $row['TERM_2'] + $row['TERM_3']);
-                                    }elseif ($term_admitted == "TERM_2") {
-                                        $total += ($row['TERM_2'] + $row['TERM_3']);
-                                    }elseif ($term_admitted == "TERM_3") {
-                                        $total += ($row['TERM_3']);
-                                    }else{
-                                        $skip++;
-                                    }
-                                }else{
-                                    if ($row['TERM_3'] > 0) {
-                                        if ($term_admitted == "TERM_1") {
-                                            $total += ($row['TERM_1'] + $row['TERM_2'] + $row['TERM_3']);
-                                        }elseif ($term_admitted == "TERM_2") {
-                                            $total += ($row['TERM_2'] + $row['TERM_3']);
-                                        }elseif ($term_admitted == "TERM_3") {
-                                            $total += ($row['TERM_3']);
-                                        }else{
-                                            $skip++;
-                                        }
-                                    }else{
-                                        $skip++;
-                                    }
-                                }
+
+                            if($current_term_enrolled == "TERM_1"){
+                                $total += $row['TERM_1'];
+                            }
+                            if($current_term_enrolled == "TERM_2"){
+                                $total += $row['TERM_2'];
+                            }
+                            if($current_term_enrolled == "TERM_3"){
+                                $total += $row['TERM_3'];
                             }
 
                             $price_n_name = array($row['expenses'] => $total);
@@ -8891,54 +8893,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                             }
                         }
                     }
-
-                    // get the paid fees paid untill that time
-                    // get the balance
-
-                    // check if he is in the transport section
-                    $get_routes = getRouteEnrolled($stud_ids[$index], $conn2);
-                    $transport_price = 0;
-                    if (count($get_routes) > 0) {
-                        $term_1 = 0;
-                        $term_2 = 0;
-                        $term_3 = 0;
-                        for($ind = 0; $ind < count($get_routes);$ind++){
-                            if($get_routes[$ind]->term == "TERM_1"){
-                                $term_1 = $get_routes[$ind]->route_price;
-                            }
-                            if($get_routes[$ind]->term == "TERM_2"){
-                                $term_2 = $get_routes[$ind]->route_price;
-                            }
-                            if($get_routes[$ind]->term == "TERM_3"){
-                                $term_3 = $get_routes[$ind]->route_price;
-                            }
-                        }
-                        // get routes
-                        if ($term == "TERM_1") {
-                            $transport_price = $term_1;
-                        } elseif ($term == "TERM_2") {
-                            $transport_price = $term_1+$term_2;
-                        } elseif ($term == "TERM_3") {
-                            $transport_price = $term_1+$term_2+$term_3;
-                        }
-                    }
-                    $border = isBoarding($admission_number, $conn2) ? getBoardingFees($conn2, $student_data['stud_class']) : 0;
-
-                    // if the transport is greater than 0 add it
-                    if ($transport_price > 0) {
-                        array_push($arrays, array("Transport Fees" => $transport_price));
-                    }
-                    // get if the student is a border
-                    if ($border > 0) {
-                        array_push($arrays, array("Boarding Fees" => $border));
-                    }
+                    $feespaidbystud = getFeespaidByStudent($admission_number,$conn2);
 
                     // get the student balance
                     // check if they have last year academic balance this means that the new fees structure will be added to their fees invoice description
                     $last_acad_yr = lastACADyrBal($admission_number, $conn2);
                     if ($last_acad_yr > 0) {
                         // add the last year academic balance to the array list
-                        $acad_balance = array("Last Year Academic Balance" => $last_acad_yr);
+                        $acad_balance = array("Last Active Term Balance" => $last_acad_yr);
                         array_push($arrays, $acad_balance);
                         // first get the balance and know what was paid for
                         $balanced = getBalanceReports($admission_number, $term, $conn2);
@@ -8981,7 +8943,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
 
 
                         $pdf->SetFont("Arial", "", 9);
-                        $pdf->Cell(50, 5, "Class : " . $student_class, 0, 0);
+                        $pdf->Cell(50, 5, "Course Level : " . $student_class, 0, 0);
                         $pdf->Cell(50, 5, "", 0, 0);
                         $pdf->Cell(50, 5, "Email us : " . $_SESSION['school_mail'] . "", 0, 1);
 
@@ -9018,7 +8980,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                         $pdf->SetFont("Arial", "B", 10);
                         $pdf->Cell(10, 8, "", "", 0);
                         $pdf->Cell(120, 8, "", "", 0);
-                        $pdf->Cell(30, 8, "Totals ", "B", 0);
+                        $pdf->Cell(30, 8, "Total Balance", "B", 0);
                         $pdf->Cell(30, 8, "Kes " . number_format($balanced), "B", 1);
 
                         // payment information
@@ -9042,60 +9004,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                         // first get the balance and know what was paid for
                         $balanced = getBalanceReports($admission_number, $term, $conn2);
                         $student_balance = $balanced;
-
-                        // get when the term started by date then get the fees that has been paid during that period
-                        $select = "SELECT * FROM `academic_calendar` WHERE `term` = 'TERM_1'";
-                        $stmt = $conn2->prepare($select);
-                        $stmt->execute();
-                        $term_start = "";
-                        $result = $stmt->get_result();
-                        if ($result) {
-                            if ($row = $result->fetch_assoc()) {
-                                $term_start = $row['start_time'];
-                            }
-                        }
-
-                        // get all the payments done that academic year
-                        $select = "SELECT sum(`amount`) as 'Total', `payment_for` FROM `finance` WHERE `stud_admin` = ? AND `date_of_transaction` > ? GROUP BY `payment_for`";
-                        $stmt = $conn2->prepare($select);
-                        $stmt->bind_param("ss", $admission_number, $term_start);
-                        $stmt->execute();
-                        $result = $stmt->get_result();
-                        $payments = [];
-                        if ($result) {
-                            while ($row = $result->fetch_assoc()) {
-                                $details = array($row['payment_for'] => $row['Total']);
-                                array_push($payments, $details);
-                            }
-                        }
-                        // deduct the payments from the fees structure
-                        // echo $student_name."<br>";
-                        // echo json_encode($payments)."<br>".json_encode($arrays)."<br>Balance ".$balanced."<br> Fees to pay";
-                        // get the total fees to be paid
-                        $total_fees_to_pay = 0;
-                        foreach ($arrays as $key => $value) {
-                            // $total_fees_to_pay+= $value;
-                            foreach ($value as $key2 => $value2) {
-                                $total_fees_to_pay += ($value2 * 1);
-                            }
-                        }
-                        // echo $total_fees_to_pay."<br> Balance percentage = ";
-                        // get the percentage of the balance
-                        $percentage = round(($balanced / $total_fees_to_pay) * 100, 4);
-                        // echo $percentage."%<br>";
-                        // then deduct the percentage per payment
-
-                        // deduct the payments
-                        $my_index = 0;
-                        foreach ($arrays as $key => $value) {
-                            // $total_fees_to_pay+= $value;
-                            foreach ($value as $key2 => $value2) {
-                                $value2 = round(($value2 * $percentage) / 100);
-                                $value[$key2] = $value2;
-                                $arrays[$my_index][$key2] = $value2;
-                            }
-                            $my_index++;
-                        }
 
                         // echo "New balance : <br>";
                         // echo json_encode($arrays)."<br><br>";
@@ -9134,7 +9042,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
 
 
                         $pdf->SetFont("Arial", "", 9);
-                        $pdf->Cell(50, 5, "Class : " . $student_class, 0, 0);
+                        $pdf->Cell(50, 5, "Course Level : " . $student_class, 0, 0);
                         $pdf->Cell(50, 5, "", 0, 0);
                         $pdf->Cell(50, 5, "Email us : " . $_SESSION['school_mail'] . "", 0, 1);
 
@@ -9167,11 +9075,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                             $counted++;
                         }
 
+                        // add another row of amount paid
+                        $pdf->SetFont("Arial", "B", 10);
+                        $pdf->Cell(10, 8, "", "", 0);
+                        $pdf->Cell(120, 8, "", "", 0);
+                        $pdf->Cell(30, 8, "Fees Paid ", "B", 0);
+                        // $pdf->Cell(30, 8, "Kes " . number_format($total_fees_to_pay), "B", 1);
+                        $pdf->Cell(30, 8, "Kes " . number_format($feespaidbystud), "B", 1);
+
                         // total
                         $pdf->SetFont("Arial", "B", 10);
                         $pdf->Cell(10, 8, "", "", 0);
                         $pdf->Cell(120, 8, "", "", 0);
-                        $pdf->Cell(30, 8, "Totals ", "B", 0);
+                        $pdf->Cell(30, 8, "Total Balance ", "B", 0);
                         $pdf->Cell(30, 8, "Kes " . number_format($balanced), "B", 1);
 
                         // payment information
@@ -11232,6 +11148,178 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
             }
             echo "<p style='color:green;font-size:12px;'>$email_sent_counter enails have been sent successfully!, You can check the emails you have sent on the <b>Email & SMS section on the email tables section.</b></p>";
         }
+    }elseif(isset($_POST['generate_income_statement'])){
+        include_once("../connections/conn1.php");
+        include_once("../connections/conn2.php");
+        // echo json_encode($student_data);
+        $pdf = new PDF('L', 'mm', 'A4');
+        $tittle = "Income Statement";
+        $pdf->set_document_title($tittle);
+        $pdf->setSchoolLogo("../../" . schoolLogo($conn));
+        $pdf->set_school_name($_SESSION['schname']);
+        $pdf->set_school_po($_SESSION['po_boxs']);
+        $pdf->set_school_box_code($_SESSION['box_codes']);
+        $pdf->set_school_contact($_SESSION['school_contact']);
+        $pdf->AddPage();
+        $pdf->SetFont('Helvetica', '', 10);
+        $pdf->Cell(275, 10, "Date Generated : ".date("l dS M Y"), 0, 0, 'L', false);
+        $pdf->ln();
+        // $pdf->SetFont('Helvetica', 'B', 10);
+        $pdf->Cell(40, 10, "", 0, 0, 'C', false);
+        $pdf->SetFont('Helvetica', 'B', 10);
+        $pdf->Cell(75, 7, "TERM 1", 1, 0, 'C', false);
+        $pdf->Cell(75, 7, "TERM 2", 1, 0, 'C', false);
+        $pdf->Cell(75, 7, "TERM 3", 1, 0, 'C', false);
+
+        // SET THE PRIMARY INCOME
+        $pdf->ln();
+        $pdf->SetFont('Helvetica', 'BU', 10);
+        $pdf->Cell(40, 10, "Primary Income", 0, 0, 'C', false);
+        $pdf->ln();
+
+        // get the operating revenue
+        // get the term incomes
+        $revenue = getOtherRevenue_report($conn2);
+        //get the time periods between terms
+        $term_arrays = getTermPeriods_report($conn2);
+        //get the income based on the period above
+        $term_income = getTermIncome_report($term_arrays,$conn2);
+        //get the expenses per term
+        $term_expense = getExpenses_report($term_arrays,$conn2);
+        //get all the expenses names
+        $all_expenses = getAllExpenseNames_report($term_expense);
+        //get taxes
+        $all_taxes = getTaxes_report($term_arrays,$conn2);
+        //term periods 
+        $term_per = getTermPeriod_report($conn2);
+        //get the current term period
+        $years = date("Y");
+
+        // operating revenue
+        $pdf->SetFont('Helvetica', '', 10);
+        $pdf->Cell(40, 7, "Operating Revenue", 0, 0, 'L', false);
+        for ($indes=0; $indes < count($term_income); $indes++) {
+            $pdf->Cell(75, 7, "Kes ".number_format($term_income[$indes]), 1, 0, 'C', false);
+        }
+        $pdf->ln();
+        $pdf->Cell(40, 7, "Other Income", 0, 0, 'L', false);
+        $pdf->Cell(75, 7, "Kes ".number_format($revenue[0]), 1, 0, 'C', false);
+        $pdf->Cell(75, 7, "Kes ".number_format($revenue[1]), 1, 0, 'C', false);
+        $pdf->Cell(75, 7, "Kes ".number_format($revenue[2]), 1, 0, 'C', false);
+        $pdf->ln();
+        $pdf->SetFont('Helvetica', 'B', 10);
+        $pdf->Cell(40, 7, "Total Income", 0, 0, 'L', false);
+        for ($indes=0; $indes < count($term_income); $indes++) {
+            $term_income[$indes] += $revenue[$indes];
+            $pdf->Cell(75, 7, "Kes ".number_format($term_income[$indes]), 1, 0, 'C', false);
+        }
+
+        //create an array with all the expense array list
+        $expenses_val = [];
+        for ($index=0; $index <= count($all_expenses); $index++) { 
+            if ($index == count($all_expenses)) {
+                $expenses_val["Salaries"] = [];
+                break;
+            }else {
+                $expenses_val[$all_expenses[$index]] = [];
+            }
+        }
+        
+        //get values per the period given
+        $totalExpenses = [];
+        for ($index=0; $index < count($term_expense); $index++) {
+            //echo "term ".($index+1)." Size is ".count($term_expense[$index])."<br>";
+            $total = 0;
+            for ($index1=0; $index1 < count($all_expenses); $index1++) {
+                if (checkPresent_report($term_expense[$index],$all_expenses[$index1])) {
+                    $my_val = getValues_report($term_expense[$index],$all_expenses[$index1]);
+                    //echo "- ".$all_expenses[$index1]." = ".$my_val."<br>";
+                    array_push($expenses_val[$all_expenses[$index1]],$my_val);
+                    $total+=($my_val*1);
+                }else {
+                    //echo "- ".$all_expenses[$index1]." = 0<br>";
+                    array_push($expenses_val[$all_expenses[$index1]],0);
+                }
+            }
+            array_push($totalExpenses,$total);
+        }
+        
+        //add a category called salaries and this includes all the salaries the institution distributes
+        $salaries = getSalaryExp_report($conn2,$term_arrays);
+        //ADD THE SALARIES ARRAY TO THE GROUP
+        array_push($all_expenses,"Salaries");
+        array_push($expenses_val["Salaries"],$salaries[0],$salaries[1],$salaries[2]);
+        //add the salaries value to the total value
+        for ($intex=0; $intex < count($totalExpenses); $intex++) { 
+            $totalExpenses[$intex]+=$salaries[$intex];
+        }
+
+        $pdf->ln();
+        $pdf->ln();
+        $pdf->SetFont('Helvetica', 'BU', 10);
+        $pdf->Cell(40, 7, "Expenses", 0, 0, 'C', false);
+        $pdf->SetFont('Helvetica', '', 10);
+        $pdf->ln();
+
+        for ($indexes=0; $indexes < count($all_expenses); $indexes++) {
+            $pdf->Cell(40, 7, "".$all_expenses[$indexes]."", 0, 0, 'L', false);
+            $pdf->Cell(75, 7, "Kes ".number_format($expenses_val[$all_expenses[$indexes]][0]), 1, 0, 'C', false);
+            $pdf->Cell(75, 7, "Kes ".number_format($expenses_val[$all_expenses[$indexes]][1]), 1, 0, 'C', false);
+            $pdf->Cell(75, 7, "Kes ".number_format($expenses_val[$all_expenses[$indexes]][2]), 1, 0, 'C', false);
+            $pdf->ln();
+        }
+
+        $pdf->SetFont('Helvetica', 'B', 10);
+        $pdf->Cell(40, 7, "Total Expense", 0, 0, 'L', false);
+        $pdf->Cell(75, 7, "Kes ".number_format($totalExpenses[0]), 1, 0, 'C', false);
+        $pdf->Cell(75, 7, "Kes ".number_format($totalExpenses[1]), 1, 0, 'C', false);
+        $pdf->Cell(75, 7, "Kes ".number_format($totalExpenses[2]), 1, 0, 'C', false);
+        $pdf->ln();
+        
+            //deduct term expenses from term income
+        $before_taxes = [];
+        for ($index=0; $index < count($term_income); $index++) {
+            // add other revenue
+            $term_income[$index] += $revenue[$index];
+
+            // add before tx
+            $befo_taxes = $term_income[$index] - $totalExpenses[$index];
+            array_push($before_taxes,$befo_taxes);
+        }
+        $pdf->ln();
+        $pdf->Cell(40, 7, "Earning Before Tax", 0, 0, 'L', false);
+        $pdf->Cell(75, 7, "Kes ".number_format($before_taxes[0]), 1, 0, 'C', false);
+        $pdf->Cell(75, 7, "Kes ".number_format($before_taxes[1]), 1, 0, 'C', false);
+        $pdf->Cell(75, 7, "Kes ".number_format($before_taxes[2]), 1, 0, 'C', false);
+        $pdf->Ln();
+        $pdf->SetFont('Helvetica', '', 10);
+        $pdf->Ln();
+        $pdf->SetFont('Helvetica', 'BU', 10);
+
+        $pdf->Cell(40, 7, "Taxes", 0, 0, 'L', false);
+        $pdf->ln();
+        $pdf->SetFont('Helvetica', '', 10);
+        $pdf->Cell(40, 7, "Taxes", 0, 0, 'L', false);
+        $pdf->Cell(75, 7, "Kes ".number_format($all_taxes[0]), 1, 0, 'C', false);
+        $pdf->Cell(75, 7, "Kes ".number_format($all_taxes[1]), 1, 0, 'C', false);
+        $pdf->Cell(75, 7, "Kes ".number_format($all_taxes[2]), 1, 0, 'C', false);
+        $pdf->Ln();
+
+        //net income = income before tax - taxes
+        $net_income = [];
+        for ($index=0; $index < count($all_taxes); $index++) { 
+            $netincome = $before_taxes[$index] - $all_taxes[$index];
+            // add other revenues
+            array_push($net_income,$netincome);
+        }
+        $pdf->SetFont('Helvetica', 'BU', 10);
+        $pdf->Cell(40, 7, "Net Income", 0, 0, 'L', false);
+        $pdf->SetFont('Helvetica', 'B', 10);
+        $pdf->Cell(75, 7, "Kes ".number_format($net_income[0]), 1, 0, 'C', false);
+        $pdf->Cell(75, 7, "Kes ".number_format($net_income[1]), 1, 0, 'C', false);
+        $pdf->Cell(75, 7, "Kes ".number_format($net_income[2]), 1, 0, 'C', false);
+        $pdf->Ln();
+        $pdf->Output("I", str_replace(" ", "_", $pdf->school_document_title) . ".pdf");
     }
 } elseif ($_SERVER['REQUEST_METHOD'] == 'GET' && isset($_SESSION['schname'])) {
     include("../connections/conn1.php");
@@ -12020,6 +12108,319 @@ function getSalaryEarningsDetails($conn2, $staff_id, $number, $selected_date = n
         }
     }
     return $earnings;
+}
+function getTermIncome_report($arrayPeriod,$conn2){
+    $term_pay = [];
+    $select = "SELECT sum(`amount`)  AS 'Total' FROM `finance` WHERE `date_of_transaction` BETWEEN ? AND ?";
+    $stmt = $conn2->prepare($select);
+    $stmt ->bind_param("ss",$arrayPeriod[0],$arrayPeriod[1]);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $err = 0;
+    if ($result) {
+        if ($row = $result->fetch_assoc()) {
+            $total = $row['Total'];
+            if ($total >= 0 || $total != null) {
+                array_push($term_pay,$row['Total']);
+            }else {
+                $err++;
+                array_push($term_pay,0);
+            }
+        }else {
+            array_push($term_pay,"0");
+        }
+    }else {
+        array_push($term_pay,"0");
+    }
+    $stmt ->bind_param("ss",$arrayPeriod[2],$arrayPeriod[3]);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($result) {
+        if ($row = $result->fetch_assoc()) {
+            $total = $row['Total'];
+            if ($total >= 0 || $total != null) {
+                array_push($term_pay,$row['Total']);
+            }else {
+                array_push($term_pay,0);
+                $err++;
+            }
+        }else {
+            array_push($term_pay,"0");
+        }
+    }else {
+        array_push($term_pay,"0");
+    }
+    $stmt ->bind_param("ss",$arrayPeriod[4],$arrayPeriod[5]);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($result) {
+        if ($row = $result->fetch_assoc()) {
+            $total = $row['Total'];
+            if ($total >= 0 || $total != null) {
+                array_push($term_pay,$row['Total']);
+            }else {
+                $err++;
+                array_push($term_pay,0);
+            }
+        }else {
+            array_push($term_pay,"0");
+        }
+    }else {
+        array_push($term_pay,"0");
+    }
+    if ($err == 3) {
+        echo "<p class='red_notice'>Edit your school academic calender first before generating your financial statement</p>";
+    }
+    return $term_pay;
+}
+function checkPresent_report($array,$string){
+    if (count($array) > 0) {
+        for ($index=0; $index < count($array); $index++) { 
+            $my_str = $array[$index];
+            if (strlen($my_str) > 0) {
+                $my_str_split = explode(":",$my_str);
+                if ($my_str_split[0] == $string) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+function getValues_report($array,$string){
+    if (count($array) > 0) {
+        for ($index=0; $index < count($array); $index++) { 
+            $my_str = $array[$index];
+            if (strlen($my_str) > 0) {
+                $my_str_split = explode(":",$my_str);
+                if ($my_str_split[0] == $string) {
+                    return $my_str_split[1];
+                }
+            }
+        }
+    }
+    return "0";
+}
+function getSalaryExp_report($conn2,$term_period){
+    $select = "SELECT SUM(`amount_paid`) AS 'Total' FROM `salary_payment` WHERE `date_paid` BETWEEN ? AND ?;";
+    $stmt = $conn2->prepare($select);
+    $stmt->bind_param("ss",$term_period[0],$term_period[1]);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $salaries = [];
+    if ($result) {
+        if ($row = $result->fetch_assoc()) {
+            if (isset($row['Total'])) {
+                array_push($salaries,$row['Total']);
+            }else {
+                array_push($salaries,"0");
+            }
+        }
+    }
+    $stmt->bind_param("ss",$term_period[2],$term_period[3]);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($result) {
+        if ($row = $result->fetch_assoc()) {
+            if (isset($row['Total'])) {
+                array_push($salaries,$row['Total']);
+            }else {
+                array_push($salaries,"0");
+            }
+        }
+    }
+    $stmt->bind_param("ss",$term_period[4],$term_period[5]);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($result) {
+        if ($row = $result->fetch_assoc()) {
+            if (isset($row['Total'])) {
+                array_push($salaries,$row['Total']);
+            }else {
+                array_push($salaries,"0");
+            }
+        }
+    }
+    return $salaries;
+}
+function getTermPeriod_report($conn2){
+    // $select = "SELECT `start_time`,`end_time` FROM `academic_calendar` WHERE 
+    //             (YEAR(`end_time`) >= ? AND `term` = 'TERM_1') 
+    //             OR (YEAR(`end_time`) >= ? AND `term` = 'TERM_2') 
+    //             OR (YEAR(`end_time`) >= ? AND `term` = 'TERM_3');";
+    $select = "SELECT `start_time`,`end_time` FROM `academic_calendar` WHERE 
+                (`term` = 'TERM_1') 
+                OR (`term` = 'TERM_2') 
+                OR (`term` = 'TERM_3');";
+    $stmt = $conn2->prepare($select);
+    $date = date("Y");
+    // $stmt->bind_param("sss",$date,$date,$date);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $dates = [];
+    if ($result) {
+        while($row = $result->fetch_assoc()){
+            array_push($dates,$row['start_time'],$row['end_time']);
+        }
+    }
+    //echo count($dates);
+    return $dates;
+}
+function getTaxes_report($arrayPeriod,$conn2){
+    $select = "SELECT `exp_category` as 'Expense', sum(`exp_amount`) AS 'Total' FROM `expenses` WHERE `expense_date` BETWEEN ? and ?   AND `exp_category` = 'taxes'  GROUP BY `Expense`";
+    $stmt = $conn2->prepare($select);
+    $stmt->bind_param("ss",$arrayPeriod[0],$arrayPeriod[1]);
+    $stmt->execute();
+    $termExp = [];
+    $result = $stmt->get_result();
+    $taxes = 0;
+    if ($result) {
+        if ($row = $result->fetch_assoc()) {
+            $taxes = $row['Total'];
+        }
+    }
+    array_push($termExp,$taxes);
+    //second term
+    $taxes = 0;
+    $stmt->bind_param("ss",$arrayPeriod[2],$arrayPeriod[3]);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($result) {
+        if ($row = $result->fetch_assoc()) {
+            $taxes = $row['Total'];
+        }
+    }
+    array_push($termExp,$taxes);
+    //third term
+    $taxes = 0;
+    $stmt->bind_param("ss",$arrayPeriod[4],$arrayPeriod[5]);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($result) {
+        if ($row = $result->fetch_assoc()) {
+            $taxes = $row['Total'];
+        }
+    }
+    array_push($termExp,$taxes);
+    //echo $arrayPeriod[4]." - ".$arrayPeriod[5];
+
+    return $termExp;
+}
+function isPresent_report($array,$string){
+    if (count($array) > 0 ) {
+        for ($indexes=0; $indexes <count($array) ; $indexes++) { 
+            if ($string == $array[$indexes]) {
+                return true;
+                break;
+            }
+        }
+    }
+    return false;
+}
+function getAllExpenseNames_report($term_expense){
+    //its a multilevel array
+    $allitems = [];
+    for ($index1=0; $index1 < count($term_expense); $index1++) { 
+        for ($index2=0; $index2 < count($term_expense[$index1]); $index2++) { 
+            $object = $term_expense[$index1][$index2];
+            //array_push($allitems,$object);
+            //split the text
+            if (strlen($object) > 0) {
+                $stringExp = explode(":",$object);
+                if (!isPresent_report($allitems,$stringExp[0])) {
+                    array_push($allitems,$stringExp[0]);
+                }
+            }
+        }
+    }
+    return $allitems;
+}
+function getExpenses_report($arrayPeriod,$conn2){
+    $select = "SELECT `exp_category` as 'Expense', sum(`exp_amount`) AS 'Total' FROM `expenses` WHERE `expense_date` BETWEEN ? and ?   AND `exp_category` != 'taxes'  GROUP BY `Expense`";
+    $termExp = [];
+    $stmt = $conn2->prepare($select);
+    $stmt->bind_param("ss",$arrayPeriod[0],$arrayPeriod[1]);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($result) {
+        $termPexp1 = [];
+        while ($row = $result->fetch_assoc()) {
+            array_push($termPexp1,$row['Expense'].":".$row['Total']);
+        }
+        array_push($termExp,$termPexp1);
+    }
+    //second term
+    $stmt->bind_param("ss",$arrayPeriod[2],$arrayPeriod[3]);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($result) {
+        $termPexp1 = [];
+        while ($row = $result->fetch_assoc()) {
+            array_push($termPexp1,$row['Expense'].":".$row['Total']);
+        }
+        array_push($termExp,$termPexp1);
+    }
+    //third term
+    $stmt->bind_param("ss",$arrayPeriod[4],$arrayPeriod[5]);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($result) {
+        $termPexp1 = [];
+        while ($row = $result->fetch_assoc()) {
+            array_push($termPexp1,$row['Expense'].":".$row['Total']);
+        }
+        array_push($termExp,$termPexp1);
+    }
+    return $termExp;
+}
+function getTermPeriods_report($conn2){
+    $date = date("Y");
+    // $select = "SELECT  `term`,`start_time`,`end_time`,`closing_date` FROM `academic_calendar` WHERE 
+    // (YEAR(`end_time`) >= ? AND `term` = 'TERM_1') 
+    // OR (YEAR(`end_time`) >= ? AND `term` = 'TERM_2') 
+    // OR (YEAR(`end_time`) >= ? AND `term` = 'TERM_3');";
+    $select = "SELECT  `term`,`start_time`,`end_time`,`closing_date` FROM `academic_calendar` WHERE 
+    (`term` = 'TERM_1') 
+    OR (`term` = 'TERM_2') 
+    OR (`term` = 'TERM_3');";
+    $stmt = $conn2->prepare($select);
+    // $stmt->bind_param("sss",$date,$date,$date);
+    $stmt->execute();
+    $period = [];
+    $result = $stmt->get_result();
+    if ($result) {
+        while($row = $result->fetch_assoc()){
+            array_push($period,$row['start_time'],$row['end_time']);
+        }
+    }
+    return $period;
+}
+function getOtherRevenue_report($conn2){
+    $get_term_period = getTermPeriods_report($conn2);
+    $select = "SELECT SUM(`amount`) AS 'Total' FROM `school_revenue` WHERE `date_recorded` BETWEEN ? AND ?";
+    $school_revenue = [];
+    for ($index=0; $index < count($get_term_period)/2; $index++) {
+        $time_period = $index == 0 ? [$get_term_period[0],$get_term_period[1]] : ($index == 1 ? [$get_term_period[2],$get_term_period[3]] : [$get_term_period[4],$get_term_period[5]]);
+        $term_start = date("Ymd",strtotime($time_period[0]));
+        $term_end = date("Ymd",strtotime($time_period[1]));
+
+        // prepare select
+        $revenue = 0;
+        $stmt = $conn2->prepare($select);
+        $stmt->bind_param("ss",$term_start,$term_end);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if($result){
+            if($row = $result->fetch_assoc()){
+                $revenue = $row['Total']*1;
+            }
+        }
+
+        // array push
+        array_push($school_revenue,$revenue);
+    }
+    // $stmt->bind_param("ss",)
+    return $school_revenue;
 }
 function getNHIFContribution_reports($gross_salary)
 {

@@ -14,7 +14,7 @@
             </div>
         </div>
         <div class="middle1">
-            <div class="row">
+            <div class="row mt-2">
                 <div class="notice1 col-md-8">
                     <div class="notify">
                         <p><strong>Important:</strong></p>
@@ -42,6 +42,7 @@
                 </div>
                 <div class="col-md-4">
                     <button type='button' id='assign_fees_credit_notes' >Assign Fees Credit Notes</button>
+                    <button type='button' id='record_school_income' >Manage Revenue</button>
                 </div>
             </div>
             <div class="paywindow">

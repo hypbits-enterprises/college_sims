@@ -39,7 +39,284 @@ cObj("showfeesstructure").onclick = function () {
     }
 }
 
+cObj("back_to_fees_payment").onclick = function () {
+    cObj("payfeess").click();
+}
+cObj("back_to_fees_payment_2").onclick = function () {
+    cObj("payfeess").click();
+}
 
+cObj("return_to_revenue_list").onclick = function () {
+    cObj("show_revenue_list").classList.remove("hide");
+    cObj("add_revenues").classList.add("hide");
+    getRevenue();
+
+}
+
+cObj("save_revenue").onclick = function () {
+    var err = 0;
+    err += checkBlank("revenue_name");
+    err += checkBlank("revenue_amount");
+    err += checkBlank("revenue_date");
+    err += checkBlank("customer_name");
+
+    if (err == 0) {
+        cObj("error_handler_revenue_collection").innerHTML = "<p class='text-danger'></p>";
+        let datapass = "add_revenue=true&revenue_name="+valObj("revenue_name")+"&revenue_amount="+valObj("revenue_amount")+"&revenue_date="+valObj("revenue_date")+"&customer_name="+valObj("customer_name")+"&customer_contacts_revenue="+valObj("customer_contacts_revenue")+"&contact_person="+valObj("contact_person")+"&revenue_description="+valObj("revenue_description")
+        sendDataPost("POST","ajax/finance/financial.php",datapass,cObj("error_handler_revenue_collection"),cObj("save_revenue_loader"));
+        setTimeout(() => {
+            var ids = setInterval(() => {
+                // remove the values from the input fields
+                if (cObj("save_revenue_loader").classList.contains("hide")) {
+                    cObj("revenue_name").value = "";
+                    cObj("revenue_amount").value = "";
+                    cObj("customer_name").value = "";
+                    cObj("customer_contacts_revenue").value = "";
+                    cObj("contact_person").value = "";
+                    cObj("revenue_description").value = "";
+                    stopInterval(ids);
+                }
+            }, 100);
+        }, 100);
+    }else{
+        // tell users to check for the errors
+        cObj("error_handler_revenue_collection").innerHTML = "<p class='text-danger'>Check for errors from fields having red borders!</p>";
+    }
+}
+
+function getRevenue(page = 1) {
+    var datapass = "get_revenue=true&page_req="+page;
+    sendDataPost("POST","ajax/finance/financial.php",datapass,cObj("show_revenue_values"),cObj("show_revenue_loader"));
+    setTimeout(() => {
+        var ids = setInterval(() => {
+            // remove the values from the input fields
+            if (cObj("show_revenue_loader").classList.contains("hide")) {
+                // convert the string to jsosn
+                var show_revenue_values = cObj("show_revenue_values").innerText;
+                if (hasJsonStructure(show_revenue_values)) {
+                    // conver to json
+                    show_revenue_values = JSON.parse(show_revenue_values);
+                    
+                    // set the navigator
+                    cObj("page_number").innerText = "Page "+show_revenue_values.current_page+" of "+show_revenue_values.total_pages;
+                    cObj("page_value_income").value = show_revenue_values.current_page;
+                    cObj("maximum_page_income").value = show_revenue_values.total_pages;
+                    
+                    // if the total number of pages is more than one activate the nex button
+                    if (show_revenue_values.total_pages > 1 && show_revenue_values.current_page < show_revenue_values.total_pages) {
+                        cObj("next_income_data").classList.remove("disabled");
+                    }
+                    // display the table
+                    display_revenue(show_revenue_values.data,show_revenue_values.start_from);
+                }else{
+                    // no data to display
+                }
+                stopInterval(ids);
+            }
+        }, 100);
+    }, 100);
+}
+
+function display_revenue(data,start_from) {
+    var data_to_display = "<br><h4 class='text-center'><u>Revenue List</u></h4><table class='table'><thead><tr><th>No.</th><th>Name</th><th>Amount</th><th>Date Recorded.</th><th>Customer Name</th><th>Customer Contact</th><th>Contact Person</th><th>Action</th></tr></thead><tbody id='revenue_lists_all_display'>";
+    for (let index = 0; index < data.length; index++) {
+        const element = data[index];
+        data_to_display+="<tr><td><input hidden value='"+JSON.stringify(element)+"' id='revenue_values_"+element.id+"'>"+(start_from+index+1)+"</td><td>"+element.name+"</td><td>Kes "+comma3(element.amount)+"</td><td>"+formatDate_1(element.date_recorded+"000000")+"</td><td>"+element.customer_name+"</td><td>"+element.customer_contact+"</td><td>"+element.contact_person+"</td><td><span style='font-size:12px;' class='link edit_revenue_window' id='edit_revenue_window_"+element.id+"'><i class='fa fa-pen-fancy'></i> Edit </span> <span style='font-size:12px;' class='link delete_revenue_window' id='delete_revenue_window_"+element.id+"'><i class='fa fa-trash'></i> Delete</span></td></tr>";
+    }
+    data_to_display+="</tbody></table>";
+
+    // inner html
+    cObj("revenue_data").innerHTML = data_to_display;
+
+    // set the listeners
+    var edit_revenue_window = document.getElementsByClassName("edit_revenue_window");
+    for (let index = 0; index < edit_revenue_window.length; index++) {
+        const element = edit_revenue_window[index];
+        element.addEventListener("click",edit_revenues);
+    }
+
+    var delete_revenue_window = document.getElementsByClassName("delete_revenue_window");
+    for (let index = 0; index < delete_revenue_window.length; index++) {
+        const element = delete_revenue_window[index];
+        element.addEventListener("click",delete_revenue);
+    }
+}
+
+cObj("search_school_revenue").onkeyup = function () {
+    if (this.value.length > 0) {
+        var revenue_lists_all_display = cObj("revenue_lists_all_display").children;
+        for (let index = 0; index < revenue_lists_all_display.length; index++) {
+            const element = revenue_lists_all_display[index];
+            // check if the children except the last one if they have the value of the keyword
+            let present = 0;
+            for (let ind = 0; ind < (element.children.length-1); ind++) {
+                const elem = element.children[ind];
+                if (elem.innerText.toLowerCase().includes(this.value.toLowerCase())) {
+                    present++;
+                }
+            }
+
+            // check if its present
+            if (present > 0) {
+                element.classList.remove("hide");
+            }else{
+                element.classList.add("hide");
+            }
+        }
+    }else{
+        var revenue_lists_all_display = cObj("revenue_lists_all_display").children;
+        for (let index = 0; index < revenue_lists_all_display.length; index++) {
+            const element = revenue_lists_all_display[index];
+            // check if the children except the last one if they have the value of the keyword
+            element.classList.remove("hide");
+        }
+    }
+}
+
+function delete_revenue() {
+    // get the row valued
+    var row_id = this.id.substr(22);
+    var row_value = valObj("revenue_values_"+row_id);
+    
+    // get the row value
+    row_value = JSON.parse(row_value);
+
+    cObj("revenue_name_holder").innerText = row_value.name;
+    cObj("revenue_date_of_recording").innerText = formatDate_1(row_value.date_recorded+"000000");
+    cObj("revenue_amount_recorded").innerText = "Kes "+comma3(row_value.amount);
+    cObj("revenue_id_delete").value = row_value.id;
+
+    // display the delete confirmation window
+    cObj("confirm_revenue_delete").classList.remove("hide");
+}
+
+cObj("confirm_delete_revenue").onclick = function () {
+    var revenue_id_delete = valObj("revenue_id_delete");
+    let datapass = "delete_revenue=true&revenue_id="+revenue_id_delete;
+    sendDataPost("POST","ajax/finance/financial.php",datapass,cObj("error_handler_general_revenue"),cObj("load_delete_revenue"));
+    setTimeout(() => {
+        var ids = setInterval(() => {
+            // remove the values from the input fields
+            if (cObj("load_delete_revenue").classList.contains("hide")) {
+                cObj("confirm_Delete_revenue_no").click();
+                getRevenue();
+                setTimeout(() => {
+                    cObj("error_handler_general_revenue").innerHTML = "";
+                }, 3000);
+                stopInterval(ids);
+            }
+        }, 100);
+    }, 100);
+}
+
+cObj("next_income_data").onclick = function () {
+    let current_page = valObj("page_value_income");
+    current_page*=1;
+    current_page+=1;
+    let total_page = valObj("maximum_page_income");
+    total_page*=1;
+
+    // disanle
+    if (current_page === total_page) {
+        console.log(total_page===current_page);
+        cObj("next_income_data").classList.add("disabled");
+        cObj("next_income_data").classList.add("disabled");
+    }
+
+    // get the revenue
+    getRevenue(current_page);
+
+    // activate the previous button
+    cObj("previous_income_data").classList.remove("disabled");
+}
+
+cObj("previous_income_data").onclick = function () {
+    let current_page = valObj("page_value_income");
+    current_page*=1;
+    let total_page = valObj("maximum_page_income");
+    total_page*=1;
+    if (current_page == total_page) {
+        cObj("next_income_data").classList.remove("disabled");
+    }
+    current_page-=1;
+
+    // get the revenue
+    getRevenue(current_page);
+
+    // activate the previous button
+    if (current_page == 1) {
+        cObj("previous_income_data").classList.add("disabled");
+    }
+}
+
+function edit_revenues() {
+    // get the row valued
+    var row_id = this.id.substr(20);
+    var row_value = valObj("revenue_values_"+row_id);
+    // console.log(row_value);
+
+    // get the row value
+    row_value = JSON.parse(row_value);
+    // fill all fields with the row data
+    cObj("revenue_name_edit").value = row_value.name;
+    cObj("revenue_amount_edit").value = row_value.amount;
+    cObj("revenue_date_edit").value = row_value.date_recorded;
+    cObj("customer_name_edit").value = row_value.customer_name;
+    cObj("customer_contacts_revenue_edit").value = row_value.customer_contact;
+    cObj("contact_person_edit").value = row_value.contact_person;
+    cObj("revenue_description_edit").value = row_value.revenue_description;
+    cObj("revenue_ids").value = row_value.id;
+
+    // set the values to the listeners and open the editor window
+    cObj("edit_revenues").classList.remove("hide");
+    cObj("show_revenue_list").classList.add("hide");
+}
+
+// update the revenue details
+cObj("save_revenue_edit").onclick = function () {
+    var err = 0;
+    err += checkBlank("revenue_name_edit");
+    err += checkBlank("revenue_amount_edit");
+    err += checkBlank("revenue_date_edit");
+    err += checkBlank("customer_name_edit");
+    err += checkBlank("customer_contacts_revenue_edit");
+    err += checkBlank("contact_person_edit");
+    err += checkBlank("revenue_description_edit");
+
+    if (err == 0) {
+        cObj("error_handler_revenue_collection_edit").innerHTML = "<p class='text-danger'></p>";
+        let datapass = "update_revenue=true&revenue_name="+valObj("revenue_name_edit")+"&revenue_amount="+valObj("revenue_amount_edit")+"&revenue_date="+valObj("revenue_date_edit")+"&customer_name="+valObj("customer_name_edit")+"&customer_contacts_revenue="+valObj("customer_contacts_revenue_edit")+"&contact_person="+valObj("contact_person_edit")+"&revenue_description="+valObj("revenue_description_edit")+"&revenue_id="+valObj("revenue_ids");
+        sendDataPost("POST","ajax/finance/financial.php",datapass,cObj("error_handler_revenue_collection_edit"),cObj("update_revenue_loader"));
+        setTimeout(() => {
+            var ids = setInterval(() => {
+                // remove the values from the input fields
+                if (cObj("update_revenue_loader").classList.contains("hide")) {
+                    stopInterval(ids);
+                }
+            }, 100);
+        }, 100);
+    }else{
+        // tell users to check for the errors
+        cObj("error_handler_revenue_collection_edit").innerHTML = "<p class='text-danger'>Check for errors from fields having red borders!</p>";
+    }
+}
+
+cObj("return_to_revenue_list_edit").onclick = function () {
+    cObj("edit_revenues").classList.add("hide");
+    cObj("show_revenue_list").classList.remove("hide");
+    getRevenue();
+    cObj("error_handler_revenue_collection_edit").innerHTML = "";
+}
+
+cObj("confirm_Delete_revenue_no").onclick = function () {
+    // remove the revenue DELETE CONFIRMATION WINDOW
+    cObj("confirm_revenue_delete").classList.add("hide");
+}
+
+cObj("add-revenue-btn").onclick = function () {
+    cObj("show_revenue_list").classList.add("hide");
+    cObj("add_revenues").classList.remove("hide");
+}
 
 function editFees() {
     //get the values from the table

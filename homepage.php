@@ -400,7 +400,7 @@ function checkPresnt($array, $string){
                 <button class="navButs htbtn">Finance<span class="arrow rotate_right"></button>
                 <div class="contsd">
                     <div class="contsc hide">
-                        <button type='button' class="sidebtns <?php echo allowed("payfeess"); ?> htbtn" id='payfeess'><span><img class="icons" src="images/pay.png"></span>Pay Fees</button>
+                        <button type='button' class="sidebtns <?php echo allowed("payfeess"); ?> htbtn" id='payfeess'><span><img class="icons" src="images/pay.png"></span>Collect Fees & Revenue</button>
                         <button type='button' class="sidebtns <?php echo allowed("findtrans"); ?> htbtn" id='findtrans'><span><img class="icons" src="images/manage3.png"></span>Manage transaction</button>
                         <button type='button' class="sidebtns <?php echo allowed("mpesaTrans"); ?> htbtn" id='mpesaTrans'><span><img class="icons" src="images/manage3.png"></span>MPESA transactions</button>
                         <button type='button' class="sidebtns <?php echo allowed("feestruct"); ?> htbtn" id='feestruct'><span><img class="icons" src="images/feestructure.png"></span>Fees structure</button>
@@ -520,6 +520,7 @@ function checkPresnt($array, $string){
             include("administration/leaves.php");
             include("financepages/payfees.php");
             include("financepages/credit_note.php");
+            include("financepages/record_school_income.php");
             include("financepages/mpesa_transaction.php");
             include("financepages/findpayment.php");
             include("financepages/feesstructure.php");
@@ -725,6 +726,18 @@ function checkPresnt($array, $string){
                 <div class="btns">
                     <button type='button' id='confirm_delete_trans_yes'>Yes</button>
                     <button type='button' id='confirm_delete_trans_no'>No</button>
+                </div>
+            </div>
+        </div>
+        <div class="confirmpaymentwindow hide" id='confirm_revenue_delete'>
+            <div class="confirmpayment animate">
+                <h6 class='text-center'>Delete Revenue <img class="hide" src="images/ajax_clock_small.gif" id="load_delete_revenue"></h6>
+                <p>Are you sure you want to delete <b><span id="revenue_name_holder"></span></b>`s record of <b id="revenue_date_of_recording"></b>, Amount: <b id="revenue_amount_recorded"></b> ?</p>
+                <input type="hidden" id="revenue_id_delete">
+                <p id="delete_pay_err_handlers"></p>
+                <div class="btns">
+                    <button type='button' id='confirm_delete_revenue'>Yes</button>
+                    <button type='button' id='confirm_Delete_revenue_no'>No</button>
                 </div>
             </div>
         </div>

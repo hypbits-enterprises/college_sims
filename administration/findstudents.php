@@ -311,7 +311,7 @@
                                     <input class="form-control w-100" type="text" autocomplete="off" id="addressed" placeholder="Area of residence">
                                 </div>
                                 <div class="col-md-4">
-                                    <label for="intake_month_edit" class="form-control-label">Intake Month</label>
+                                    <label for="intake_month_edit" class="form-control-label"><b>Intake Month</b></label>
                                     <select name="intake_month_edit" id="intake_month_edit" class="form-control">
                                         <option value="" hidden>Select an Option</option>
                                         <option value="JAN">JAN</option>
@@ -320,7 +320,7 @@
                                     </select>
                                 </div>
                                 <div class="col-md-4">
-                                    <label for="intake_year_edit" class="form-control-label">Intake Year</label>
+                                    <label for="intake_year_edit" class="form-control-label"><b>Intake Year</b></label>
                                     <select name="intake_year_edit" id="intake_year_edit" class="form-control">
                                         <option value="" hidden>Select an Option</option>
                                         <?php for($index = date("Y"); $index > 2017; $index--):?>

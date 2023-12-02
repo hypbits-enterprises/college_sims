@@ -43,7 +43,7 @@
                         <label for="select_report_class" class="form-label">Select Course Level<img src="images/ajax_clock_small.gif" id="class_load_report" class="hide"></label>
                         <span id="reports_classes"></span>
                     </div>
-                    <div class="col-md-6 student hide" id="specific_course_2">
+                    <div class="col-md-4 student hide" id="specific_course_2">
                         <label for="course_list_report_1" class="form-label">Select Course<img src="images/ajax_clock_small.gif" id="select_course_loader" class="hide"></label>
                         <div  id="display_courses_here"><span class="text-secondary"> Course list will appear here if a course level is selected!</span></div>
                     </div>
@@ -71,6 +71,25 @@
                         <label for="select_date_staff" class="form-label">Select date</label>
                         <input type="date" value="<?php echo date("Y-m-d");?>" name="select_date_staff" id="select_date_staff" class="form-control" max="<?php echo date("Y-m-d") ?>">
                     </div>
+                    <div class="col-md-4 intake hide">
+                        <label for="intake_months_reports" class="form-control-label">Intake Month</label>
+                        <select name="intake_months_reports" id="intake_months_reports" class="form-control">
+                            <option value="" hidden>Select Month</option>
+                            <option value="JAN">JAN</option>
+                            <option value="MAY">MAY</option>
+                            <option value="SEP">SEP</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 intake hide">
+                        <label for="intake_year_reports" class="form-control-label">Intake Year</label>
+                        <select name="intake_year_reports" id="intake_year_reports" class="form-control">
+                            <option value="" hidden>Select Year</option>
+                            <?php for($index = date("Y");$index > 2017; $index --):?>
+                                <option value="<?=$index;?>"><?=$index;?></option>
+                            <?php endfor?>
+                        </select>
+                    </div>
+                    <div class="col-md-4"></div>
                     <div>
                         <button class="block_btn" type="submit" name="pdf"  id="generate_button"><i class="fas fa-file-pdf"></i> PDF</button>
                         <button class="block_btn" type="submit" name="xslx"  id="generate_button_xslx"><i class="fas fa-file-excel"></i> Excel</button>

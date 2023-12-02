@@ -739,6 +739,14 @@ cObj("payfeess").onclick = function () {
     removesidebar();
     getStudentNameAdmno();
 }
+// record school income
+cObj("record_school_income").onclick = function () {
+    hideWindow();
+    unselectbtns();
+    cObj("record_other_schools_income").classList.remove("hide");
+    removesidebar();
+    getRevenue();
+}
 cObj("assign_fees_credit_notes").onclick = function () {
     hideWindow();
     unselectbtns();

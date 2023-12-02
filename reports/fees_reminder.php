@@ -9,6 +9,7 @@ class PDF2 extends FPDF
     public $school_contact = "0743551250";
     public $school_document_title = "Students List";
     public $school_header_position = 300;
+    public $arm_of_gov = "../assets/img/arm_of_gov.png";
 
     // set school_logo
     function setSchoolLogo($logo)

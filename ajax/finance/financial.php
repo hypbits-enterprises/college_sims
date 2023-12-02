@@ -372,7 +372,7 @@
                     // deduct whats left and update the remeaining
                     $select = "SELECT * FROM `finance` WHERE `stud_admin` = ? AND `date_of_transaction` < ? ORDER BY `transaction_id` DESC LIMIT 1;";
                     $stmt = $conn2->prepare($select);
-                    $beginyear = getAcademicStart($conn2);
+                    $beginyear = getTermStart($conn2,$term);
                     $stmt->bind_param("ss",$studadmin,$beginyear);
                     $stmt->execute();
                     $result = $stmt->get_result();
@@ -380,9 +380,9 @@
                         if ($row = $result->fetch_assoc()) {
                             if (isset($row['balance'])) {
                                 $transaction_id = $row['transaction_id'];
-                                // $update = "UPDATE `finance` SET `balance` = '$new_bal' WHERE `transaction_id` = '$transaction_id'";
-                                // $stmt = $conn2->prepare($update);
-                                // $stmt->execute();
+                                $update = "UPDATE `finance` SET `balance` = '$new_bal' WHERE `transaction_id` = '$transaction_id'";
+                                $stmt = $conn2->prepare($update);
+                                $stmt->execute();
                             }
                         }
                     }
@@ -391,7 +391,7 @@
                     $new_bal = $last_academic_balance - $amount;
                     $select = "SELECT * FROM `finance` WHERE `stud_admin` = ? AND `date_of_transaction` < ? ORDER BY `transaction_id` DESC LIMIT 1;";
                     $stmt = $conn2->prepare($select);
-                    $beginyear = getAcademicStart($conn2);
+                    $beginyear = getTermStart($conn2,$term);
                     $stmt->bind_param("ss",$studadmin,$beginyear);
                     $stmt->execute();
                     $result = $stmt->get_result();
@@ -399,9 +399,9 @@
                         if ($row = $result->fetch_assoc()) {
                             if (isset($row['balance'])) {
                                 $transaction_id = $row['transaction_id'];
-                                // $update = "UPDATE `finance` SET `balance` = '$new_bal' WHERE `transaction_id` = '$transaction_id'";
-                                // $stmt = $conn2->prepare($update);
-                                // $stmt->execute();
+                                $update = "UPDATE `finance` SET `balance` = '$new_bal' WHERE `transaction_id` = '$transaction_id'";
+                                $stmt = $conn2->prepare($update);
+                                $stmt->execute();
                             }
                         }
                     }
@@ -845,7 +845,7 @@
                 $tablein4.="<tr><td style='border:none;'></td><td style='border:none;'></td><td><b>Total</b></td><td style='color:green; font-size:13px;' ><b>Ksh ".comma($total)."</b></td><td style='color:rgb(71,0, 26); font-size:13px;' ><b>Ksh ".comma($totbal)."</b></td><td style='border:none;'></td></tr></table></div>";
                 $tablein4.="<hr><div class='conts'> <br><h4 class='text-center'>Invoicing</h4><br><p>At this window you will be able to print invoices or send invoices to parents via email.<br>- Start by selecting the students you want to send the email to their parents.</p>";
                 $tablein4.="<div class='container'>
-                    <form action='/sims/reports/reports.php' target='_blank' class='form-group my-1 border border-dark bg-white p-2 rounded-lg' method='POST'>
+                    <form action='reports/reports.php' target='_blank' class='form-group my-1 border border-dark bg-white p-2 rounded-lg' method='POST'>
                         <h6 id='image_omens' class='text-center'>Send Invoices</h6>
                         <label class='form-control-label text-bold'> Select an option</label>
                         <select id='email_selections' name='email_selections' class='form-control w-50'>
@@ -1679,6 +1679,8 @@
             }
             echo "<p class='text-success'>Data has been updated successfully!</p>";
         }elseif (isset($_GET['incomestatement'])) {
+            // get the term incomes
+            $revenue = getOtherRevenue($conn2);
             //get the time periods between terms
             $term_arrays = getTermPeriods($conn2);
             //get the income based on the period above
@@ -1693,12 +1695,22 @@
             $term_per = getTermPeriod($conn2);
             //get the current term period
             $years = date("Y");
-            $month_periods  = getPeriods($years,$conn2);
             //create the table now
             //1. start with the table header
             $data_to_display = "<div class='financial_statements'>
-                                <div class='finace_headers'>
-                                    <div class='conts'><p style='text-align:left;'>Date Generated: ".date("l dS M Y")."</p></div>
+                                <h3 class='text-center my-2'><u>Income Statement</u></h3>
+                                <div class='row'>
+                                    <div class='col-md-9'>
+                                    </div>
+                                    <div class='col-md-3'>
+                                        <form target='_blank' action='reports/reports.php' method='post'>
+                                            <input type='hidden' name='generate_income_statement' value='true'>
+                                            <button type='submit'><i class='fa fa-print'></i> Print</button>
+                                        </form>
+                                    </div>
+                                </div>
+                                <div class='finace_headers p-2'>
+                                    <div class='conts'><p style='text-align:left;'>Date Generated: ".date("l dS M Y")."</p></div><hr>
                                     ".
                                     // <div class='financial_year'><h6>Financial Year <select name='fin_year' id='fin_year'>
                                     //     <option value='2021'>2021</option>
@@ -1719,9 +1731,9 @@
                                         </div>
                                     </div>
                                 </div>";
-            $data_to_display.="<div class='finance_header'>
+            $data_to_display.="<div class='finance_header '>
                 <div class='conts'>
-                    <h2 class='title_statements fs-16px bg-cadet'>Income Statement</h2>
+                    <h2 class='title_statements fs-16px bg-cadet px-2'>Income Statement</h2>
                 </div>
             </div>";
             //the income statement start by displaying the primary Income
@@ -1740,19 +1752,20 @@
             $data_to_display.="<div class='finance_body'>
                                 <p class='name_title'>Other Income</p>
                                 <div class='t1'>
-                                    <p>Ksh 0</p>
+                                    <p>Ksh ".number_format($revenue[0])."</p>
                                 </div>
                                 <div class='t2'>
-                                    <p>Ksh 0</p>
+                                    <p>Ksh ".number_format($revenue[1])."</p>
                                 </div>
                                 <div class='t3'>
-                                    <p>Ksh 0</p>
+                                    <p>Ksh ".number_format($revenue[2])."</p>
                                 </div>
                             </div>";
             //total the income
             $data_to_display.="<div class='finance_body_total'>
                                     <p class='name_title'>Total Income</p>";
             for ($indes=0; $indes < count($term_income); $indes++) {
+                $term_income[$indes] += $revenue[$indes];
                 $data_to_display.="<div class='t1'>
                                     <p>Ksh ".comma($term_income[$indes])."</p>
                                 </div>";
@@ -1835,7 +1848,11 @@
             //CALCULATE EARNINGS BEFORE TAXES
             //deduct term expenses from term income
             $before_taxes = [];
-            for ($index=0; $index < count($term_income); $index++) { 
+            for ($index=0; $index < count($term_income); $index++) {
+                // add other revenue
+                $term_income[$index] += $revenue[$index];
+
+                // add before tx
                 $befo_taxes = $term_income[$index] - $totalExpenses[$index];
                 array_push($before_taxes,$befo_taxes);
             }
@@ -1875,6 +1892,7 @@
             $net_income = [];
             for ($index=0; $index < count($all_taxes); $index++) { 
                 $netincome = $before_taxes[$index] - $all_taxes[$index];
+                // add other revenues
                 array_push($net_income,$netincome);
             }
             $data_to_display.="<div class='finance_body_total'>
@@ -3295,6 +3313,8 @@
         // }
     }elseif($_SERVER['REQUEST_METHOD'] == 'POST'){
         if(isset($_POST['student_admission'])){
+            include("../../connections/conn1.php");
+            include("../../connections/conn2.php");
             $targetDirectory = "../../FinanceSupportingDocuments/".$_SESSION['dbname']."/".$_POST['student_admission']."/"; // Directory to store uploaded files
             $file = $_FILES["file"];
             $customFileName = isset($_POST['file_name']) ? replaceSpacesAndSpecialChars($_POST['file_name'])."_".date("YmdHis") : date("YmdHis")."_".$_POST["student_admission"];
@@ -3324,6 +3344,102 @@
             } else {
                 echo "Error uploading the file.";
             }
+        }elseif (isset($_POST['add_revenue'])) {
+            include("../../connections/conn1.php");
+            include("../../connections/conn2.php");
+            // REVENUE NAME
+            $revenue_name = $_POST['revenue_name'];
+            $revenue_amount = $_POST['revenue_amount'];
+            $revenue_date = date("Ymd",strtotime($_POST['revenue_date']));
+            $customer_name = $_POST['customer_name'];
+            $customer_contacts_revenue = $_POST['customer_contacts_revenue'];
+            $contact_person = $_POST['contact_person'];
+            $revenue_description = $_POST['revenue_description'];
+
+            // SAVE THE DATA TO THE DATABASE
+            $insert = "INSERT INTO `school_revenue` (`name`,`amount`,`date_recorded`,`customer_name`,`customer_contact`,`contact_person`,`revenue_description`) VALUES (?,?,?,?,?,?,?)";
+            $stmt = $conn2->prepare($insert);
+            $stmt->bind_param("sssssss",$revenue_name,$revenue_amount,$revenue_date,$customer_name,$customer_contacts_revenue,$contact_person,$revenue_description);
+            $stmt->execute();
+
+            echo "<p class='text-success'>Revenue has been successfully recorded!</p>";
+        }elseif(isset($_POST['get_revenue'])){
+            include("../../connections/conn1.php");
+            include("../../connections/conn2.php");
+            // get the page limit
+            $page_req = $_POST['page_req'];
+            $limit_1 = $_POST['page_req'] * 1 > 1 ? (($_POST['page_req']*1) - 1) * 50 : 0;
+            $limit_2 = $_POST['page_req'] * 1 > 1 ? (($_POST['page_req']*1)) * 50 : 50;
+
+            // get the page numbers and current page
+            $select = "SELECT COUNT(*) AS 'Total' FROM `school_revenue`";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $count = 0;
+            if($result){
+                if($row = $result->fetch_assoc()){
+                    $count = $row['Total'];
+                }
+            }
+
+            $total_pages = round($count/50);
+            $total_pages += $count%50 == 0 ? 0 : 1;
+
+            // select
+            $select = "SELECT * FROM `school_revenue` ORDER BY `id` DESC LIMIT $limit_1,$limit_2";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $revenue = [];
+            if($result){
+                while($row = $result->fetch_assoc()){
+                    $row['date_recorded'] = date("Y-m-d",strtotime($row['date_recorded']));
+                    array_push($revenue,$row);
+                }
+            }
+
+            // store in assoc array
+            $revenue_data = new stdClass();
+            $revenue_data->total_pages = $total_pages;
+            $revenue_data->current_page = $page_req;
+            $revenue_data->data = $revenue;
+            $revenue_data->total_record = $count;
+            $revenue_data->start_from = $limit_1;
+
+            // return the json encoded string to the front end
+            echo json_encode($revenue_data);
+
+        }elseif(isset($_POST['update_revenue'])){
+            include("../../connections/conn1.php");
+            include("../../connections/conn2.php");
+            $revenue_id = $_POST['revenue_id'];
+            $revenue_name = $_POST['revenue_name'];
+            $revenue_amount = $_POST['revenue_amount'];
+            $revenue_date = date("Ymd",strtotime($_POST['revenue_date']));
+            $customer_name = $_POST['customer_name'];
+            $customer_contacts_revenue = $_POST['customer_contacts_revenue'];
+            $contact_person = $_POST['contact_person'];
+            $revenue_description = $_POST['revenue_description'];
+
+            // UPDATE THE DATABASES ACCORDINGLY
+            $update = "UPDATE `school_revenue` SET `name` = ?, `amount` = ?, `date_recorded` = ?, `customer_name` = ?, `customer_contact` = ?, `contact_person` = ?, `revenue_description` = ? WHERE `id` = ?";
+            $stmt = $conn2->prepare($update);
+            $stmt->bind_param("ssssssss",$revenue_name,$revenue_amount,$revenue_date,$customer_name,$customer_contacts_revenue,$contact_person,$revenue_description,$revenue_id);
+            $stmt->execute();
+
+            // echo results
+            echo "<p class='text-success'>Revenue records updated successfully!</p>";
+        }elseif(isset($_POST['delete_revenue'])){
+            include("../../connections/conn1.php");
+            include("../../connections/conn2.php");
+            $revenue_id = $_POST['revenue_id'];
+            $delete = "DELETE FROM `school_revenue` WHERE `id` = ?";
+            $stmt = $conn2->prepare($delete);
+            $stmt->bind_param("s",$revenue_id);
+            $stmt->execute();
+
+            echo "<p class='text-success'>Revenue record has been successfully deleted!</p>";
         }
     }
 
@@ -3948,6 +4064,35 @@
         }
         return $termExp;
     }
+
+    function getOtherRevenue($conn2){
+        $get_term_period = getTermPeriods($conn2);
+        $select = "SELECT SUM(`amount`) AS 'Total' FROM `school_revenue` WHERE `date_recorded` BETWEEN ? AND ?";
+        $school_revenue = [];
+        for ($index=0; $index < count($get_term_period)/2; $index++) {
+            $time_period = $index == 0 ? [$get_term_period[0],$get_term_period[1]] : ($index == 1 ? [$get_term_period[2],$get_term_period[3]] : [$get_term_period[4],$get_term_period[5]]);
+            $term_start = date("Ymd",strtotime($time_period[0]));
+            $term_end = date("Ymd",strtotime($time_period[1]));
+
+            // prepare select
+            $revenue = 0;
+            $stmt = $conn2->prepare($select);
+            $stmt->bind_param("ss",$term_start,$term_end);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            if($result){
+                if($row = $result->fetch_assoc()){
+                    $revenue = $row['Total']*1;
+                }
+            }
+
+            // array push
+            array_push($school_revenue,$revenue);
+        }
+        // $stmt->bind_param("ss",)
+        return $school_revenue;
+    }
+
     function getTermIncome($arrayPeriod,$conn2){
         $term_pay = [];
         $select = "SELECT sum(`amount`)  AS 'Total' FROM `finance` WHERE `date_of_transaction` BETWEEN ? AND ?";

@@ -13,7 +13,7 @@ function getMyReportclasses() {
             if (cObj("class_load_report").classList.contains("hide")) {
                 // set the change listener to the class change
                 if (cObj("select_report_class") != undefined) {
-                    cObj("select_report_class").addEventListener("change",showCoursesStudent)
+                    cObj("select_report_class").addEventListener("change",showCoursesStudent);
                 }
                 stopInterval(ids);
             }
@@ -58,6 +58,15 @@ cObj("select_entity").onchange = function () {
             const element = admin[index];
             element.classList.add("hide");
         }
+
+        if (cObj("select_student_option").value == "all_students") {
+            // show intake
+            var intake = document.getElementsByClassName("intake");
+            for (let index = 0; index < intake.length; index++) {
+                const element = intake[index];
+                element.classList.remove("hide");
+            }
+        }
     }else{
         var student = document.getElementsByClassName("student");
         for (let index = 0; index < student.length; index++) {
@@ -65,6 +74,13 @@ cObj("select_entity").onchange = function () {
             element.classList.add("hide");
         }
         cObj("staff_options_two").classList.remove("hide");
+
+        // show intake
+        var intake = document.getElementsByClassName("intake");
+        for (let index = 0; index < intake.length; index++) {
+            const element = intake[index];
+            element.classList.add("hide");
+        }
     }
 }
 
@@ -87,6 +103,13 @@ cObj("select_student_option").onchange = function () {
         }
         cObj("class_select_report").classList.remove("hide");
         cObj("specific_course_2").classList.remove("hide");
+
+        // show intake
+        var intake = document.getElementsByClassName("intake");
+        for (let index = 0; index < intake.length; index++) {
+            const element = intake[index];
+            element.classList.remove("hide");
+        }
     }else if (stud_option == "students_admitted") {
         var ctrl = document.getElementsByClassName("ctrl");
         for (let index = 0; index < ctrl.length; index++) {
@@ -97,6 +120,13 @@ cObj("select_student_option").onchange = function () {
         cObj("date_select_report").classList.remove("hide");
         cObj("class_select_report").classList.remove("hide");
         cObj("specific_course_2").classList.remove("hide");
+
+        // show intake
+        var intake = document.getElementsByClassName("intake");
+        for (let index = 0; index < intake.length; index++) {
+            const element = intake[index];
+            element.classList.add("hide");
+        }
     }else if (stud_option == "school_in_attendance") {
         var ctrl = document.getElementsByClassName("ctrl");
         for (let index = 0; index < ctrl.length; index++) {
@@ -107,10 +137,25 @@ cObj("select_student_option").onchange = function () {
         cObj("date_select_report").classList.remove("hide");
         cObj("class_select_report").classList.remove("hide");
         cObj("specific_course_2").classList.remove("hide");
+
+        // show intake
+        var intake = document.getElementsByClassName("intake");
+        for (let index = 0; index < intake.length; index++) {
+            const element = intake[index];
+            element.classList.add("hide");
+        }
     }else if (stud_option == "show_alumni") {
         var ctrl = document.getElementsByClassName("ctrl");
         for (let index = 0; index < ctrl.length; index++) {
             const element = ctrl[index];
+            element.classList.add("hide");
+        }
+        cObj("specific_course_2").classList.add("hide");
+
+        // show intake
+        var intake = document.getElementsByClassName("intake");
+        for (let index = 0; index < intake.length; index++) {
+            const element = intake[index];
             element.classList.add("hide");
         }
     }

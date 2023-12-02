@@ -21,6 +21,7 @@
                         <li> First search for students by their name or admission no, then assign them the amount that has been credited.</li>
                         <li> Ensure that the student assigned the amount is the correct one.</li>
                     </ul>
+                    <button type='button' id='back_to_fees_payment' ><i class="fa fa-arrow-left"></i> Back to Fees Payment</button>
                 </div>
             </div>
             <div class="container">

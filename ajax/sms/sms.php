@@ -75,6 +75,8 @@
                     }
                 //send sms
                 echo sendSmsToClient($phone_number,$message,$api_key,$partnerID,$shortcodes);
+
+                // save sms
             }else {
                 echo "<p class='red_notice'>Activate your sms account!</p>";
             }
@@ -90,7 +92,7 @@
             }
         }elseif (isset($_GET['sms_val'])) {
             //$select = "INSERT INTO `sms_table` (`message_count`,`message_sent_succesfully`,`message_undelivered`,`message_type`,`message_description`,`sender_no`,`message`) VALUES (?,?,?,?,?,?,?)";
-            $select = "INSERT INTO `sms_table` (`message_count`,`date_sent`,`message_undelivered`,`message_sent_succesfully`,`message_type`,`sender_no`,`message_description`,`message`) VALUES (?,?,?,?,?,?,?,?)";
+            $select = "INSERT INTO `sms_table` (`message_count`,`date_sent`,`message_undelivered`,`message_sent_succesfully`,`message_type`,`sender_no`,`message_description`,`message`,`number_collection`) VALUES (?,?,?,?,?,?,?,?,?)";
             $message_type = $_GET['message_type'];
             $message_count = $_GET['message_count'];
             $recipient_no = $_GET['recipient_no'];
@@ -98,7 +100,8 @@
             $message_desc = substr($_GET['text_message'],0,45)."...";
             $stmt = $conn2->prepare($select);
             $date = date("Y-m-d", strtotime("3 hour"));
-            $stmt->bind_param("ssssssss",$message_count,$date,$message_count,$message_count,$message_type,$recipient_no,$message_desc,$text_message);
+            $number_collection = json_encode([$recipient_no]);
+            $stmt->bind_param("sssssssss",$message_count,$date,$message_count,$message_count,$message_type,$recipient_no,$message_desc,$text_message,$number_collection);
             $stmt->execute();
         }elseif (isset($_GET['mystaff_list'])) {
             $select = "SELECT `fullname`,`phone_number`,`user_id` FROM `user_tbl` WHERE `school_code` = ?";
@@ -156,7 +159,7 @@
             }
         }elseif (isset($_GET['get_parents_list'])) {
             $get_parents_list = $_GET['get_parents_list'];
-            $select = "SELECT `first_name` , `second_name`, `adm_no` FROM `student_data` WHERE `stud_class` = '$get_parents_list'";
+            $select = "SELECT * FROM `student_data` WHERE `stud_class` = '$get_parents_list'";
             if ($get_parents_list == "others") {
                 // get the whole class list
                 $select = "SELECT * FROM `settings` WHERE `sett` = 'class';";
@@ -164,7 +167,7 @@
                 $stmt->execute();
                 $result = $stmt->get_result();
                 $where_clause = "`stud_class` != '-1' AND `stud_class` != '-2'";
-                $select = "SELECT `first_name` , `second_name`, `adm_no` FROM `student_data` WHERE ";
+                $select = "SELECT * FROM `student_data` WHERE ";
                 if ($result) {
                     if ($row = $result->fetch_assoc()) {
                         $valued = $row['valued'];
@@ -176,6 +179,8 @@
                 }
                 $select.=$where_clause;
             }
+            // include financial.php
+            include("../../ajax/finance/financial.php");
 
             // prepared statement
             $stmt = $conn2->prepare($select);
@@ -183,11 +188,17 @@
             $result = $stmt->get_result();
             if ($result) {
                 $data_to_display = 
-                "<div class='w-50 my-2'>
+                "<div class='w-75 my-2'>
                 <hr>
                 <h6 class='text-primary text-center'><u>Student to exempt in ".majinaDarasa($get_parents_list)."</u></h6>
                 <div class='row'>
-                    <div class='col-md-6'>
+                    <div class='col-md-3'>
+                        <label for='active_students_check'>Active</label>
+                        <input type='checkbox' id='active_students_check'>
+                    </div>
+                    <div class='col-md-3'>
+                        <label for='in_active_students_check'>In-Active</label>
+                        <input type='checkbox' id='in_active_students_check'>
                     </div>
                     <div class='col-md-6'>
                         <input type='text' class='form-control w-100' placeholder='Search here...' id='search_student_sms'>
@@ -199,12 +210,38 @@
                 <input type='checkbox' name='staff123s' id='staff123s'>
                 </div>";
                 $xs = 0;
+                $term = getTerm($conn2);
+                $term_start = getTermStart_sms($conn2,$term);
                 while ($row = $result->fetch_assoc()) {
                     $xs++;
+                    // get the students that are active
+                    $my_course_list = isJson_report($row['my_course_list']) ? json_decode($row['my_course_list']) : [];
+                    $active = false;
+                    for ($index=0; $index < count($my_course_list); $index++) { 
+                        $courses_list = $my_course_list[$index];
+                        if($courses_list->course_status == 1){
+                            // get if they are active
+                            $module_terms = $courses_list->module_terms;
+                            for ($in=0; $in < count($module_terms); $in++) {
+                                // if the active status is showing this terms period
+                                if ($module_terms[$in]->status == 1) {
+                                    // start time and end time
+                                    $start_date = date("Y-m-d",strtotime($module_terms[$in]->start_date));
+                                    $end_date = date("Y-m-d",strtotime($module_terms[$in]->end_date));
+                                    
+                                    if (date("Y-m-d",strtotime($term_start[0])) == $start_date && $end_date == date("Y-m-d",strtotime($term_start[1]))) {
+                                        $active = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // data to display
                     $data_to_display.="<div class='staff_dets hide_students' id='hide_students".$row['adm_no']."'>
                                         <label style='font-size:12px;'>".$xs.".</label>
-                                        <label class='text-left students_sms_names' style='font-size:14px;' id='imr".$row['adm_no']."' for='adm".$row['adm_no']."'>".ucwords(strtolower($row['first_name']." ".$row['second_name']))." <small style='color:red;'>(".$row['adm_no'].")</small></label>
-                                        <input type='checkbox' class='student-class-par' name='adm".$row['adm_no']."' id='adm".$row['adm_no']."'>
+                                        <label class='text-left students_sms_names text-left' style='font-size:14px;' id='imr".$row['adm_no']."' for='adm".$row['adm_no']."'>".($active ? "<small id='active_banner_".$row['adm_no']."' class='banner active_banner'>Active</small>" : "")." ".ucwords(strtolower($row['first_name']." ".$row['second_name']))." <small style='color:red;'>(".$row['adm_no'].")</small></label>
+                                        <input type='checkbox' class='student-class-par ".($active ? "activated_banner" : "")."' name='adm".$row['adm_no']."' id='adm".$row['adm_no']."'>
                                     </div>";
                 }
                 $data_to_display.="</div><hr class='w-50'>";
@@ -427,7 +464,7 @@
                 if ($balance == 0) {
                     echo "<p class='green_notice'>Messages sent successfully is ".$count." out of ".count($teachers_no)." "."!</p>";
                     //send the information to the database
-                    $insert = "INSERT INTO `sms_table` (`message_count`,`date_sent`,`message_sent_succesfully`,`message_undelivered`,`message_type`,`message_description`,`sender_no`,`message`) VALUES (?,?,?,?,?,?,?,?)";
+                    $insert = "INSERT INTO `sms_table` (`message_count`,`date_sent`,`message_sent_succesfully`,`message_undelivered`,`message_type`,`message_description`,`sender_no`,`message`,`number_collection`) VALUES (?,?,?,?,?,?,?,?,?)";
                     $stmt = $conn2->prepare($insert);
                     $message_count = count($teachers_no);
                     $message_undelivered = $message_count - $count;
@@ -437,7 +474,8 @@
                         $message_desc = substr($message,0,45)."...";
                     }
                     $date = date("Y-m-d", strtotime("3 hour"));
-                    $stmt->bind_param("ssssssss",$message_count,$date,$count,$message_undelivered,$message_type,$message_desc,$message_count,$message);
+                    $number_collection = json_encode($teachers_no);
+                    $stmt->bind_param("sssssssss",$message_count,$date,$count,$message_undelivered,$message_type,$message_desc,$message_count,$message,$number_collection);
                     if($stmt->execute()){
                         echo "<p class='green_notice'>Done!</p>";
                     }else {
@@ -451,17 +489,18 @@
                     echo "<p class='green_notice'>Messages sent successfully is ".$count." out of ".$out_of."!<br>".$balance." not sent due to low credit</p>";
                     //send the information to the database
                     if ($count>0) {
-                        $insert = "INSERT INTO `sms_table` (`message_count`,`date_sent`,`message_sent_succesfully`,`message_undelivered`,`message_type`,`message_description`,`sender_no`,`message`) VALUES (?,?,?,?,?,?,?,?)";
+                        $insert = "INSERT INTO `sms_table` (`message_count`,`date_sent`,`message_sent_succesfully`,`message_undelivered`,`message_type`,`message_description`,`sender_no`,`message`,`number_collection`) VALUES (?,?,?,?,?,?,?,?,?)";
                         $stmt = $conn2->prepare($insert);
                         $message_count = $out_of;
                         $message_undelivered = $message_count - $count;
                         $message_type = "Broadcast";
                         $message_desc = $message."...";
+                        $number_collection = json_encode($teachers_no);
                         if (strlen($message) > 43) {
                             $message_desc = substr($message,0,45)."...";
                         }
                         $date = date("Y-m-d");
-                        $stmt->bind_param("ssssssss",$message_count,$date,$count,$message_undelivered,$message_type,$message_desc,$message_count,$message);
+                        $stmt->bind_param("sssssssss",$message_count,$date,$count,$message_undelivered,$message_type,$message_desc,$message_count,$message,$number_collection);
                         if($stmt->execute()){
                             echo "<p class='green_notice'>Done!</p>";
                         }else {
@@ -754,19 +793,23 @@
                 // send my sms
                 include("../../sms_apis/sms.php");
                 include("../finance/financial.php");
-                for ($index=0; $index < count($student_data); $index++) { 
+                for ($index=0; $index < count($student_data); $index++) {
                     $primary_parent = $student_data[$index]['parentContacts'];
                     $secondary_parent = $student_data[$index]['parent_contact2'];
-                    $phone_number = $primary_parent;
+                    $phone_number = null;
                     $message_count = 0;
+                    $number_collection = [];
                     if ($which_parent == "both") {
                         $phone_number = $primary_parent.",".$secondary_parent;
                         $message_count = 2;
+                        array_push($number_collection,$primary_parent,$secondary_parent);
                     }elseif ($which_parent == "primary") {
                         $phone_number = $primary_parent;
+                        array_push($number_collection,$primary_parent);
                         $message_count = 1;
                     }elseif ($which_parent == "secondary") {
                         $phone_number = $secondary_parent;
+                        array_push($number_collection,$secondary_parent);
                         $message_count = 1;
                     }else {
                         $phone_number = $primary_parent;
@@ -896,7 +939,7 @@
                                 } */
                             }
                             // save the data in the database
-                            $insert = "INSERT INTO `sms_table` (`message_count`,`date_sent`,`message_sent_succesfully`,`message_undelivered`,`message_type`,`message_description`,`sender_no`,`message`) VALUES (?,?,?,?,?,?,?,?)";
+                            $insert = "INSERT INTO `sms_table` (`message_count`,`date_sent`,`message_sent_succesfully`,`message_undelivered`,`message_type`,`message_description`,`sender_no`,`message`,`number_collection`) VALUES (?,?,?,?,?,?,?,?,?)";
                             $stmt = $conn2->prepare($insert);
                             $message_undelivered = 0;
                             $message_type = "Broadcast";
@@ -905,7 +948,8 @@
                                 $message_desc = substr($message,0,45)."...";
                             }
                             $date = date("Y-m-d", strtotime("3 hour"));
-                            $stmt->bind_param("ssssssss",$message_count,$date,$message_count,$message_undelivered,$message_type,$message_desc,$message_count,$message);
+                            $number_collection = json_encode($number_collection);
+                            $stmt->bind_param("sssssssss",$message_count,$date,$message_count,$message_undelivered,$message_type,$message_desc,$message_count,$message,$number_collection);
                             if($stmt->execute()){
                                 // echo "<p class='green_notice'>Messages sent successfully!</p>";
                                 // $count +=$message_count;
@@ -1363,6 +1407,18 @@
             }
         }
         return $final_message;
+    }
+    function getTermStart_sms($conn2,$term){
+        $select = "SELECT * FROM `academic_calendar` WHERE `term` = '".$term."';";
+        $stmt =$conn2->prepare($select);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result) {
+            if ($row = $result->fetch_assoc()) {
+                return [$row['start_time'],$row['end_time']];
+            }
+        }
+        return [date('Y')."-01-01",date("Y")."-01-01"];
     }
     function isJson_report($string)
     {

@@ -599,36 +599,61 @@
                 createStudentn4($conn2,$result,$searh);
             }elseif (isset($_GET['classes'])) {
                 $classenroled = $_GET['classes'];
-                $course_chosen = $_GET['course_chosen'];
-                $select = strlen(trim($course_chosen)) == 0 ? "SELECT * from `student_data` WHERE  `stud_class` = ? and `deleted` = 0 and activated =1" : "SELECT * from `student_data` WHERE `course_done` = '".$course_chosen."' AND `stud_class` = ? AND `deleted` = 0 AND activated =1";
-                $stmt=$conn2->prepare($select);
-                $stmt->bind_param("s",$classenroled);
-                $stmt->execute();
-                $result=$stmt->get_result();
-
-                // get the course names
-                $course_name = "N/A";
-                $select = "SELECT * FROM `settings` WHERE `sett` = 'courses';";
-                $statement = $conn2->prepare($select);
-                $statement->execute();
-                $res = $statement->get_result();
-                if($res){
-                    if($row = $res->fetch_assoc()){
-                        $course_list = isJson_report($row['valued']) ? json_decode($row['valued']) : [];
-
-                        // loop to get the course name
-                        for($index = 0; $index < count($course_list); $index++){
-                            if($course_chosen == $course_list[$index]->id){
-                                $course_name = $course_list[$index]->course_name;
+                if($classenroled != "others"){
+                    $course_chosen = $_GET['course_chosen'];
+                    $select = strlen(trim($course_chosen)) == 0 ? "SELECT * from `student_data` WHERE  `stud_class` = ? and `deleted` = 0 and activated =1" : "SELECT * from `student_data` WHERE `course_done` = '".$course_chosen."' AND `stud_class` = ? AND `deleted` = 0 AND activated =1";
+                    $stmt=$conn2->prepare($select);
+                    $stmt->bind_param("s",$classenroled);
+                    $stmt->execute();
+                    $result=$stmt->get_result();
+    
+                    // get the course names
+                    $course_name = "N/A";
+                    $select = "SELECT * FROM `settings` WHERE `sett` = 'courses';";
+                    $statement = $conn2->prepare($select);
+                    $statement->execute();
+                    $res = $statement->get_result();
+                    if($res){
+                        if($row = $res->fetch_assoc()){
+                            $course_list = isJson_report($row['valued']) ? json_decode($row['valued']) : [];
+    
+                            // loop to get the course name
+                            for($index = 0; $index < count($course_list); $index++){
+                                if($course_chosen == $course_list[$index]->id){
+                                    $course_name = $course_list[$index]->course_name;
+                                }
                             }
                         }
                     }
+                    $searh = strlen(trim($course_chosen)) == 0 ? "<span style='color:brown;'>\"".classNameAdms($_GET['classes'])."\"</span>" : "<span style='color:brown;'>\"".classNameAdms($_GET['classes'])."\" in \"".ucwords(strtolower($course_name))."\"</span>";
+                    if($_GET['classes'] == "-1"){
+                        $searh = "<span style='color:brown;'>\"Alumni\"</span>";
+                    }
+                    createStudentn4($conn2,$result,$searh);//creates table
+                }else{
+                    // get the whole class list
+                    $select = "SELECT * FROM `settings` WHERE `sett` = 'class';";
+                    $stmt = $conn2->prepare($select);
+                    $stmt->execute();
+                    $result = $stmt->get_result();
+                    $where_clause = "`stud_class` != '-1' AND `stud_class` != '-2'";
+                    $select = "SELECT * FROM `student_data` WHERE ";
+                    if ($result) {
+                        if ($row = $result->fetch_assoc()) {
+                            $valued = $row['valued'];
+                            $valued = isJson_report($valued) ? json_decode($valued) : [];
+                            for ($index=0; $index < count($valued); $index++) { 
+                                $where_clause.=" AND `stud_class` != '".$valued[$index]->classes."'";
+                            }
+                        }
+                    }
+                    $select.=$where_clause;
+                    $stmt=$conn2->prepare($select);
+                    $stmt->execute();
+                    $result=$stmt->get_result();
+                    $searh = "<span style='color:brown;'>\"Students with Un-Assigned Class\"</span>";
+                    createStudentn4($conn2,$result,$searh);//creates table
                 }
-                $searh = strlen(trim($course_chosen)) == 0 ? "<span style='color:brown;'>\"".classNameAdms($_GET['classes'])."\"</span>" : "<span style='color:brown;'>\"".classNameAdms($_GET['classes'])."\" in \"".ucwords(strtolower($course_name))."\"</span>";
-                if($_GET['classes'] == "-1"){
-                    $searh = "<span style='color:brown;'>\"Alumni\"</span>";
-                }
-                createStudentn4($conn2,$result,$searh);//creates table
             }elseif (isset($_GET['allstudents'])) {
                 $select = "SELECT * from `student_data`";
                 $stmt = $conn2->prepare($select);
@@ -2078,11 +2103,16 @@
 
                     $counter = 0;
                     $string_to_display = "<select class='form-control ' name='".$select_class_id."' id='".$select_class_id."'> <option value='' hidden>Select..</option>";
+
+                    if($select_class_id == "selclass"){
+                        $string_to_display.="<option value='others'>Other Students</option>";
+                    }
                     
                     if($select_class_id != "daros"){
                         $string_to_display.="<option  id='".$value_prefix."-2' value='-2'>Transfered</option>";
                         $string_to_display.="<option  id='".$value_prefix."-1' value='-1'>Alumni</option>";
                     }
+
                     for ($xs=count($class_explode)-1; $xs >= 0; $xs--) { 
                         $counter++;
                         if (strlen($value_prefix) > 0) {
@@ -6853,7 +6883,8 @@ function isJson_report($string) {
             $data.="<th>Adm no.</th>";
             //$data.="<th>BC no.</th>";
             $data.="<th>Gender</th>";
-            $data.="<th>Fees Balance</th>";
+            // $data.="<th>Fees Balance</th>";
+            $data.="<th>Intake</th>";
             // $data.="<th>Department</th>";
             $data.="<th>Course Level</th>";
             $data.="<th>Courses</th>";
@@ -6893,10 +6924,11 @@ function isJson_report($string) {
                 //$data.="<td>".$row['BCNo']."</td>";
                 $data.="<td class='search_this' id='f_r".($xs)."' >".$row['gender']."</td>";
                 $classes = classNameAdms($row['stud_class']);
-                $fees_paid = getFeespaidByStudentAdm($row['adm_no']);
-                $balance = getBalanceAdm($row['adm_no'],getTerm(),$conn2);
+                // $fees_paid = getFeespaidByStudentAdm($row['adm_no']);
+                // $balance = getBalanceAdm($row['adm_no'],getTerm(),$conn2);
                 // $data.="<td>Kes ".number_format($fees_paid)."</td>";
-                $data.="<td>Kes ".number_format($balance)."</td>";
+                // $data.="<td>Kes ".number_format($balance)."</td>";
+                $data.="<td>".$row['intake_month']." ".$row['intake_year']."</td>";
                 // $data.="<td class='search_this' id='thr".($xs)."'>".ucwords(strtolower(getSportHouses($conn2,$row['clubs_id'])))."</td>";
                 $data.="<td class='search_this' id='lvl".($xs)."'>".$classes."</td>";
                 $data.="<td class='search_this' id='cse".($xs)."' >".$course_name."</td>";

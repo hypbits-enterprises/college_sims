@@ -315,12 +315,50 @@ function getParentsList() {
                     if (cObj("search_student_sms") != null) {
                         cObj("search_student_sms").addEventListener("keyup", getStudentsSms);
                     }
+
+                    // set listener for active students
+                    if(cObj("active_students_check") != undefined){
+                        cObj("active_students_check").addEventListener("change",checkActiveStudents);
+                    }
+                    if (cObj("in_active_students_check") != undefined) {
+                        cObj("in_active_students_check").addEventListener("change",checkInActiveStudents);
+                    }
                     stopInterval(id23w);
                 }
             }, 100);
         }, 200);
     }
 }
+
+function checkActiveStudents() {
+    // check all active students and add their details in the list
+    var  active_banner = document.getElementsByClassName("active_banner");
+    for (let index = 0; index < active_banner.length; index++) {
+        const element = active_banner[index];
+        var elem_id = "adm"+element.id.substring(14);
+        cObj(elem_id).checked = this.checked;
+        triggerEvent(cObj(elem_id),"change");
+    }
+}
+
+function checkInActiveStudents() {
+    // check all active students and add their details in the list
+    var  student_class_par = document.getElementsByClassName("student-class-par");
+    for (let index = 0; index < student_class_par.length; index++) {
+        const element = student_class_par[index];
+        var elem_id = element.id;
+        element.checked = !element.classList.contains("activated_banner") ? this.checked : false;
+        triggerEvent(cObj(elem_id),"change");
+    }
+}
+function triggerEvent(element, eventName) {
+    // Create a new event
+    const event = new Event(eventName);
+  
+    // Dispatch the event on the specified element
+    element.dispatchEvent(event);
+}
+
 function selectAll() {
     if (this.checked == true) {
         var selects = document.getElementsByClassName("student-class-par");
