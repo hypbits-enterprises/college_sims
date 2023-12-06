@@ -99,7 +99,7 @@
             $text_message = $_GET['text_message'];
             $message_desc = substr($_GET['text_message'],0,45)."...";
             $stmt = $conn2->prepare($select);
-            $date = date("Y-m-d", strtotime("3 hour"));
+            $date = date("YmdHis");
             $number_collection = json_encode([$recipient_no]);
             $stmt->bind_param("sssssssss",$message_count,$date,$message_count,$message_count,$message_type,$recipient_no,$message_desc,$text_message,$number_collection);
             $stmt->execute();
@@ -473,7 +473,7 @@
                     if (strlen($message) > 43) {
                         $message_desc = substr($message,0,45)."...";
                     }
-                    $date = date("Y-m-d", strtotime("3 hour"));
+                    $date = date("YmdHis");
                     $number_collection = json_encode($teachers_no);
                     $stmt->bind_param("sssssssss",$message_count,$date,$count,$message_undelivered,$message_type,$message_desc,$message_count,$message,$number_collection);
                     if($stmt->execute()){
@@ -849,23 +849,6 @@
                                     break;
                                 } */
                             }
-                            // save the data in the database
-                            $insert = "INSERT INTO `sms_table` (`message_count`,`date_sent`,`message_sent_succesfully`,`message_undelivered`,`message_type`,`message_description`,`sender_no`,`message`) VALUES (?,?,?,?,?,?,?,?)";
-                            $stmt = $conn2->prepare($insert);
-                            $message_undelivered = 0;
-                            $message_type = "Broadcast";
-                            $message_desc = $message."...";
-                            if (strlen($message) > 43) {
-                                $message_desc = substr($message,0,45)."...";
-                            }
-                            $date = date("Y-m-d", strtotime("3 hour"));
-                            $stmt->bind_param("ssssssss",$message_count,$date,$message_count,$message_undelivered,$message_type,$message_desc,$message_count,$message1);
-                            if($stmt->execute()){
-                                // echo "<p class='green_notice'>Messages sent successfully!</p>";
-                                $count +=$message_count;
-                            }else {
-                                // echo "<p class='red_notice'>Error!</p>";
-                            }
 
                             // SEND MESSAGE TO THE SECOND PARENT
                             //send message to the numbers
@@ -893,7 +876,7 @@
                                 } */
                             }
                             // save the data in the database
-                            $insert = "INSERT INTO `sms_table` (`message_count`,`date_sent`,`message_sent_succesfully`,`message_undelivered`,`message_type`,`message_description`,`sender_no`,`message`) VALUES (?,?,?,?,?,?,?,?)";
+                            $insert = "INSERT INTO `sms_table` (`message_count`,`date_sent`,`message_sent_succesfully`,`message_undelivered`,`message_type`,`message_description`,`sender_no`,`message`,`number_collection`) VALUES (?,?,?,?,?,?,?,?,?)";
                             $stmt = $conn2->prepare($insert);
                             $message_undelivered = 0;
                             $message_type = "Broadcast";
@@ -901,14 +884,10 @@
                             if (strlen($message) > 43) {
                                 $message_desc = substr($message,0,45)."...";
                             }
-                            $date = date("Y-m-d", strtotime("3 hour"));
-                            $stmt->bind_param("ssssssss",$message_count,$date,$message_count,$message_undelivered,$message_type,$message_desc,$message_count,$message2);
-                            if($stmt->execute()){
-                                // echo "<p class='green_notice'>Messages sent successfully!</p>";
-                                // $count +=$message_count;
-                            }else {
-                                // echo "<p class='red_notice'>Error!</p>";
-                            }
+                            $date = date("YmdHis");
+                            $number_collection = json_encode($number_collection);
+                            $stmt->bind_param("sssssssss",$message_count,$date,$message_count,$message_undelivered,$message_type,$message_desc,$message_count,$message2,$number_collection);
+                            $stmt->execute();
                             // break;
                         }else {
                             $message = process_sms($student_data,$message,$student_data[$index]['adm_no'],$conn2,$which_parent);
@@ -947,7 +926,7 @@
                             if (strlen($message) > 43) {
                                 $message_desc = substr($message,0,45)."...";
                             }
-                            $date = date("Y-m-d", strtotime("3 hour"));
+                            $date = date("YmdHis");
                             $number_collection = json_encode($number_collection);
                             $stmt->bind_param("sssssssss",$message_count,$date,$message_count,$message_undelivered,$message_type,$message_desc,$message_count,$message,$number_collection);
                             if($stmt->execute()){
@@ -1042,9 +1021,9 @@
             // $to_date = strlen(isset($_GET['to'])) > 0 ? $_GET['to'] : "";
             $to_date = isset($_GET['to']) ? $_GET['to'] : null;
             // echo $to_date." pine";
-            $select = "SELECT `send_id`,`message_count`,`message_sent_succesfully`,`message_undelivered`,`message_type`,`date_sent`,`sender_no`,`message_description`,`message`,`charged` FROM `sms_table` ORDER BY `send_id` DESC";
+            $select = "SELECT * FROM `sms_table` ORDER BY `send_id` DESC";
             if (isset($from_date) && isset($to_date)) {
-                $select = "SELECT `send_id`,`message_count`,`message_sent_succesfully`,`message_undelivered`,`message_type`,`date_sent`,`sender_no`,`message_description`,`message`,`charged` FROM `sms_table` WHERE date_sent BETWEEN '$from_date' AND '$to_date'  ORDER BY `send_id` DESC";
+                $select = "SELECT * FROM `sms_table` WHERE date_sent BETWEEN '$from_date' AND '$to_date'  ORDER BY `send_id` DESC";
             }
             $stmt = $conn2->prepare($select);
             $stmt->execute();
@@ -1071,8 +1050,10 @@
                     if ($row['charged'] == 1){
                         $deduct_charge+=1;
                     }
-                    $date = date("dS M Y",strtotime($row['date_sent']));
+                    $date = date("dS M Y @ H:i:sA",strtotime($row['date_sent']));
                     $row = array_merge($row,array("date_sent2"=> $date));
+                    $sms_recipients = arr_to_string(isJson_report($row['number_collection']) ? json_decode($row['number_collection']) : []);
+                    $row = array_merge($row,array("recipients" => $sms_recipients));
                     array_push($sms_data,$row);
                     $totalMessages+= ($row['message_count']*1);
                     $message_delivered+=($row['message_sent_succesfully']*1);
@@ -1286,6 +1267,21 @@
             }
         }
         return 0;
+    }
+    function arr_to_string($array){
+        if(count($array) == 0){
+            return "No Recipients";
+        }
+        $data_to_display = "";
+        for ($i=0; $i < count($array); $i++) {
+            if ((count($array) - 1) == $i) {
+                $data_to_display.=$array[$i];
+            }else{
+                $data_to_display.=$array[$i].", ";
+            }
+        }
+        // echo $data_to_display;
+        return $data_to_display;
     }
     function getShortCodeSms($conn){
         $select = "SELECT `short_code` FROM `sms_api`";

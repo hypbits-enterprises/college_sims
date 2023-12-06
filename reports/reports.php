@@ -3721,7 +3721,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
         $student_admno_in = $_POST['student_admno_in'];
         $student_class_fin = $_POST['student_class_fin'];
         $reminder_message = $_POST['reminder_message'];
-        $course_name = $_POST['course_name'];
+        $course_name = isset($_POST['course_name']) ? $_POST['course_name'] : null;
         $expense_category = isset($_POST['expense_category']) ? $_POST['expense_category'] : "All";
 
         if ($finance_entity == "fees_collection") {

@@ -82,11 +82,11 @@
                     <div class="col-md-12 my-2"><h4 class="text-center"><u>Add Revenue</u></h4></div>
                     <div class="col-md-4 form-group">
                         <label for="revenue_name" class="form-label"><b>Name</b></label>
-                        <input type="text" name="revenue_name" value="SWIMMING POOL HIRED" id="revenue_name" class="form-control w-100" placeholder="Revenue Name e.g, Swimming Pool Hire">
+                        <input type="text" name="revenue_name" id="revenue_name" class="form-control w-100" placeholder="Revenue Name e.g, Swimming Pool Hire">
                     </div>
                     <div class="col-md-4 form-group">
                         <label for="revenue_amount" class="form-label"><b>Amount</b></label>
-                        <input type="number" name="revenue_amount" value="1000" id="revenue_amount" class="form-control w-100" placeholder="e.g, 1000">
+                        <input type="number" name="revenue_amount" id="revenue_amount" class="form-control w-100" placeholder="e.g, 1000">
                     </div>
                     <div class="col-md-4 form-group">
                         <label for="revenue_date" class="form-label"><b>Date</b></label>
@@ -94,7 +94,7 @@
                     </div>
                     <div class="col-md-4 form-group">
                         <label for="customer_name" class="form-label"><b>Customer Name</b></label>
-                        <input type="text" name="customer_name" value="Hillary Ngige" id="customer_name" class="form-control w-100" placeholder="Customer Name">
+                        <input type="text" name="customer_name"  id="customer_name" class="form-control w-100" placeholder="Customer Name">
                     </div>
                     <div class="col-md-4 form-group">
                         <label for="customer_contacts_revenue" class="form-label"><b>Customer Contacts</b></label>

@@ -766,6 +766,8 @@ function create_smsdata_table(student_data) {
             col.push(element['sender_no']);
             col.push(index + 1);
             col.push(element['date_sent2']);
+            col.push(element['number_collection']);
+            col.push(element['recipients']);
             // var col = element.split(":");
             rowsColStudents_sms.push(col);
         }
@@ -774,6 +776,7 @@ function create_smsdata_table(student_data) {
         //create the display table
         //get the number of pages
         cObj("transDataReciever_sms").innerHTML = displayRecord_sms(0, 50, rowsColStudents_sms);
+        view_and_edit_listeners();
 
         //show the number of pages for each record
         var counted = rows.length / 50;
@@ -785,12 +788,49 @@ function create_smsdata_table(student_data) {
     }
 }
 
+function view_and_edit_listeners() {
+    var view_sms_details = document.getElementsByClassName("view_sms_details");
+    for (let index = 0; index < view_sms_details.length; index++) {
+        const element = view_sms_details[index];
+        element.addEventListener("click",viewPhoneNumbers);
+    }
+}
+
+function viewPhoneNumbers() {
+    var this_id = "numbers_value_"+this.id.substr(17);
+    var phone_numbers = hasJsonStructure(valObj(this_id)) ? JSON.parse(valObj(this_id)) : [];
+    // fill in the message details
+    cObj("message_recipients").innerText = phone_numbers.length > 0 ?  displayRecipients(hasJsonStructure(phone_numbers[12]) ? JSON.parse(phone_numbers[12]) : []) : "Not-Set";
+    cObj("message_contents_view").innerText = phone_numbers.length > 0 ?  phone_numbers[2] : "Not-Set";
+    cObj("date_sent_view").innerText = phone_numbers.length > 0 ?  phone_numbers[11] : "Not-Set";
+
+    // display the window
+    cObj("message_details_window").classList.remove("hide");
+}
+
+function displayRecipients(arrays) {
+    if (arrays.length == 0) {
+        return "No Recipient";
+    }
+
+    let data_to_display = "";
+    for (let index = 0; index < arrays.length; index++) {
+        const element = arrays[index];
+        data_to_display+=element+", ";
+    }
+    return data_to_display.substring(0,data_to_display.length-2);
+}
+
+cObj("close_message_details").onclick = function () {
+    cObj("message_details_window").classList.add("hide");
+}
+
 function displayRecord_sms(start, finish, arrays) {
     var total = arrays.length;
     //the finish value
     var fins = 0;
     //this is the table header to the start of the tbody
-    var tableData = "<table class='table'><thead><tr><th title='Sort all descending' id='sortall_sms_th'># <span id='sortall_sms'><i class='fas fa-caret-down'></i></span></th><th id='sort_message_type_th' >Message Type <span id='sort_message_type'><i class='fas fa-caret-down'></i></span></th><th id = 'sort_content_th'>Message Content <span id='sort_content'><i class='fas fa-caret-down'></i></span></th><th  title='Sort by date descending'>Date Sent <span id='sortdate_sms'><i class='fas fa-caret-down'></i></span></th></tr></thead><tbody>";
+    var tableData = "<table class='table'><thead><tr><th title='Sort all descending' id='sortall_sms_th'># <span id='sortall_sms'><i class='fas fa-caret-down'></i></span></th><th id='sort_message_type_th' >Recipients <span id='sort_message_type'><i class='fas fa-caret-down'></i></span></th><th id = 'sort_content_th'>Message Content <span id='sort_content'><i class='fas fa-caret-down'></i></span></th><th  title='Sort by date descending'>Date Sent <span id='sortdate_sms'><i class='fas fa-caret-down'></i></span></th><th>Action</th></tr></thead><tbody>";
     if (finish < total) {
         fins = finish;
         //create a table of the 50 records
@@ -800,7 +840,7 @@ function displayRecord_sms(start, finish, arrays) {
             if (arrays[index][0] == 0) {
                 charged = "<span class='text-secondary' title='Charged'><i class='fas fa-coins'></i></span>";
             }
-            tableData += "<tr title =''><td>" + (index + 1) + "  " + charged + "</td><td>" + arrays[index][6] + " (" + arrays[index][5] + "/" + arrays[index][3] + ")</td><td>" + arrays[index][2] + "</td><td>" + arrays[index][11] + "</td></tr>";
+            tableData += "<tr title =''><td><input hidden value='"+JSON.stringify(arrays[index])+"' id='numbers_value_"+arrays[index][8]+"'>" + (index + 1) + "  " + charged + "</td><td>" + arrays[index][13]+ "</td><td>" + arrays[index][2] + "</td><td>" + arrays[index][11] + "</td><td><span style='font-size:12px;' class='link view_sms_details' id='view_sms_details_"+arrays[index][8]+"'><i class='fa fa-eye'></i> View </span></td></tr>";
             counter++;
         }
     } else {
@@ -811,7 +851,7 @@ function displayRecord_sms(start, finish, arrays) {
             if (arrays[index][0] == 0) {
                 charged = "<span class='text-secondary' title='Charged'><i class='fas fa-coins'></i></span>";
             }
-            tableData += "<tr title =''><td>" + (index + 1) + "  " + charged + "</td><td>" + arrays[index][6] + " (" + arrays[index][5] + "/" + arrays[index][3] + ")</td><td>" + arrays[index][2] + "</td><td>" + arrays[index][11] + "</td></tr>";
+            tableData += "<tr title =''><td><input hidden value='"+JSON.stringify(arrays[index])+"' id='numbers_value_"+arrays[index][8]+"'>" + (index + 1) + "  " + charged + "</td><td>" + arrays[index][13]+ "</td><td>" + arrays[index][2] + "</td><td>" + arrays[index][11] + "</td><td><span style='font-size:12px;' class='link view_sms_details' id='view_sms_details_"+arrays[index][8]+"'><i class='fa fa-eye'></i> View </span></td></tr>";
             counter++;
         }
         fins = total;
@@ -845,6 +885,7 @@ cObj("tonextNav_sms").onclick = function () {
         pagecounttrans++;
         var endpage = startpage_sms + 50;
         cObj("transDataReciever_sms").innerHTML = displayRecord_sms(startpage_sms, endpage, rowsColStudents_sms);
+        view_and_edit_listeners();
     } else {
         pagecounttrans = pagecountTransaction;
     }
@@ -856,6 +897,7 @@ cObj("toprevNac_sms").onclick = function () {
         startpage_sms -= 50;
         var endpage = startpage_sms + 50;
         cObj("transDataReciever_sms").innerHTML = displayRecord_sms(startpage_sms, endpage, rowsColStudents_sms);
+        view_and_edit_listeners();
     }
 }
 cObj("tofirstNav_sms").onclick = function () {
@@ -864,6 +906,7 @@ cObj("tofirstNav_sms").onclick = function () {
         startpage_sms = 0;
         var endpage = startpage_sms + 50;
         cObj("transDataReciever_sms").innerHTML = displayRecord_sms(startpage_sms, endpage, rowsColStudents_sms);
+        view_and_edit_listeners();
     }
 }
 cObj("tolastNav_sms").onclick = function () {
@@ -872,6 +915,7 @@ cObj("tolastNav_sms").onclick = function () {
         startpage_sms = (pagecounttrans * 50) - 50;
         var endpage = startpage_sms + 50;
         cObj("transDataReciever_sms").innerHTML = displayRecord_sms(startpage_sms, endpage, rowsColStudents_sms);
+        view_and_edit_listeners();
     }
 }
 
@@ -939,6 +983,7 @@ function searchMySms(keyword) {
         var counted = rowsNcol2.length / 50;
         pagecountTransaction = Math.ceil(counted);
         cObj("transDataReciever_sms").innerHTML = displayRecord_sms(0, 50, rowsNcol2);
+        view_and_edit_listeners();
         cObj("tot_records_sms").innerText = rowsNcol2.length;
     } else {
         cObj("transDataReciever_sms").innerHTML = "<div class='displaydata'><img class='' src='images/error.png'></div><p class='sm-text text-danger text-bold text-center'><br>Ooops! your search for \"" + keyword + "\" was not found</p>";
@@ -967,6 +1012,7 @@ function sortTable_sms() {
             pagecountTransaction = Math.ceil(counted);
             // console.log(rowsColStudents_sms);
             cObj("transDataReciever_sms").innerHTML = displayRecord_sms(0, 50, rowsColStudents_sms);
+            view_and_edit_listeners();
             cObj("tot_records_sms").innerText = rowsColStudents_sms.length;
             cObj("sortall_sms").innerHTML = "- <i class='fas fa-caret-down'></i>";
         } else {
@@ -979,6 +1025,7 @@ function sortTable_sms() {
             // console.log(rowsColStudents_sms);
             pagecountTransaction = Math.ceil(counted);
             cObj("transDataReciever_sms").innerHTML = displayRecord_sms(0, 50, rowsColStudents_sms);
+            view_and_edit_listeners();
             cObj("tot_records_sms").innerText = rowsColStudents_sms.length;
             cObj("sortall_sms").innerHTML = "- <i class='fas fa-caret-up'></i>";
         }
@@ -996,6 +1043,7 @@ function sortTable_sms() {
             pagecountTransaction = Math.ceil(counted);
             // console.log(rowsColStudents_sms);
             cObj("transDataReciever_sms").innerHTML = displayRecord_sms(0, 50, rowsColStudents_sms);
+            view_and_edit_listeners();
             cObj("tot_records_sms").innerText = rowsColStudents_sms.length;
             cObj("sort_message_type").innerHTML = "- <i class='fas fa-caret-down'></i>";
         } else {
@@ -1008,6 +1056,7 @@ function sortTable_sms() {
             // console.log(rowsColStudents_sms);
             pagecountTransaction = Math.ceil(counted);
             cObj("transDataReciever_sms").innerHTML = displayRecord_sms(0, 50, rowsColStudents_sms);
+            view_and_edit_listeners();
             cObj("tot_records_sms").innerText = rowsColStudents_sms.length;
             cObj("sort_message_type").innerHTML = "- <i class='fas fa-caret-up'></i>";
         }
@@ -1025,6 +1074,7 @@ function sortTable_sms() {
             pagecountTransaction = Math.ceil(counted);
             // console.log(rowsColStudents_sms);
             cObj("transDataReciever_sms").innerHTML = displayRecord_sms(0, 50, rowsColStudents_sms);
+            view_and_edit_listeners();
             cObj("tot_records_sms").innerText = rowsColStudents_sms.length;
             cObj("sort_content").innerHTML = "- <i class='fas fa-caret-down'></i>";
         } else {
@@ -1037,6 +1087,7 @@ function sortTable_sms() {
             // console.log(rowsColStudents_sms);
             pagecountTransaction = Math.ceil(counted);
             cObj("transDataReciever_sms").innerHTML = displayRecord_sms(0, 50, rowsColStudents_sms);
+            view_and_edit_listeners();
             cObj("tot_records_sms").innerText = rowsColStudents_sms.length;
             cObj("sort_content").innerHTML = "- <i class='fas fa-caret-up'></i>";
         }
@@ -1627,4 +1678,7 @@ cObj("rather_view_email_history").onclick = function () {
 cObj("rather_view_sms_history").onclick = function () {
     cObj("show_sms_windows").classList.remove("hide");
     cObj("show_email_windows").classList.add("hide");
+
+    // getRecentMessage()
+    getRecentMessage();
 }

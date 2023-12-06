@@ -22,7 +22,7 @@
                             <option value="" hidden>Select option..</option>
                             <option value="name">Name</option>
                             <option value="AdmNo">Admission No</option>
-                            <option value="class">Class</option>
+                            <option value="class">Course Level</option>
                             <option value="bcno">BC number</option>
                             <option value="allstuds" id ='alstuds'>All students</option>
                             <option value="regtoday" id='regtodays'>Registered today</option>

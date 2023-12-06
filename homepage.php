@@ -717,6 +717,21 @@ function checkPresnt($array, $string){
                 </div>
             </div>
         </div>
+        <div class="confirmpaymentwindow hide" id='message_details_window'>
+            <div class="confirmpayment w-50 animate" style="overflow: auto;">
+                <h6 id="switch_confirmation" class='text-center'><u>Message Details</u></h6>
+                <table class="table">
+                    <tr><th><b>Description:</b></th><th><span>Value</span></th></tr>
+                    <tr><td><b>Recipients:</b></td><td><span id="message_recipients">Value</span></td></tr>
+                    <tr><td><b>Message Content:</b></td><td><span id="message_contents_view">Value</span></td></tr>
+                    <tr><td><b>Date Sent:</b></td><td><span id="date_sent_view">Value</span></td></tr>
+                </table>
+                <hr>
+                <div class="btns">
+                    <button type='button' id='close_message_details'>Close</button>
+                </div>
+            </div>
+        </div>
         <div class="confirmpaymentwindow hide" id='confirm_transaction_delete'>
             <div class="confirmpayment animate">
                 <h6 class='text-center'>Delete Payment <img class="hide" src="images/ajax_clock_small.gif" id="load_delete_payments"></h6>

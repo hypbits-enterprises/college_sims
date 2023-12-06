@@ -1289,7 +1289,7 @@ window.onload = function () {
 
     // get if the reports button is set
     var datapass = "set_report_button=true";
-    sendDataPost("POST", "/sims/ajax/administration/admissions.php", datapass, cObj("set_reports"), cObj("set_reports2"));
+    sendDataPost("POST", "ajax/administration/admissions.php", datapass, cObj("set_reports"), cObj("set_reports2"));
     // get the student list
 
     // allow editing of school logo
@@ -1747,7 +1747,8 @@ cObj("change_admissions_prefix").onclick = function () {
 }
 
 cObj("confirm_set_admission_number").onclick = function () {
-    var err = checkBlank("admission_number_prefix");
+    // var err = checkBlank("admission_number_prefix");
+    var err = 0;
     if (err == 0) {
         err = valObj("admission_number_prefix") == "Not-Set" ? 1 : 0;
         if (err == 0) {
@@ -3061,7 +3062,7 @@ cObj("delete_student").onclick = function () {
     var admno = cObj("adminnos").value;
     // get the student id to delete
     var datapass = "delete_student=" + admno;
-    sendDataPost("POST", "/sims/ajax/administration/admissions.php", datapass, cObj("boarding_status_changer"), cObj("delete_student_load"));
+    sendDataPost("POST", "ajax/administration/admissions.php", datapass, cObj("boarding_status_changer"), cObj("delete_student_load"));
     setTimeout(() => {
         var timeout = 0;
         var ids = setInterval(() => {
