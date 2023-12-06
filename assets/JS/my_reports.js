@@ -68,6 +68,7 @@ cObj("select_entity").onchange = function () {
             }
         }
     }else{
+        cObj("student_status_selector").classList.add("hide");
         var student = document.getElementsByClassName("student");
         for (let index = 0; index < student.length; index++) {
             const element = student[index];
@@ -96,6 +97,7 @@ cObj("select_student_option").onchange = function () {
     var stud_option = this.value;
     // console.log(stud_option);
     if (stud_option == "all_students") {
+        cObj("student_status_selector").classList.remove("hide");
         var ctrl = document.getElementsByClassName("ctrl");
         for (let index = 0; index < ctrl.length; index++) {
             const element = ctrl[index];
@@ -111,6 +113,7 @@ cObj("select_student_option").onchange = function () {
             element.classList.remove("hide");
         }
     }else if (stud_option == "students_admitted") {
+        cObj("student_status_selector").classList.add("hide");
         var ctrl = document.getElementsByClassName("ctrl");
         for (let index = 0; index < ctrl.length; index++) {
             const element = ctrl[index];
@@ -128,6 +131,7 @@ cObj("select_student_option").onchange = function () {
             element.classList.add("hide");
         }
     }else if (stud_option == "school_in_attendance") {
+        cObj("student_status_selector").classList.add("hide");
         var ctrl = document.getElementsByClassName("ctrl");
         for (let index = 0; index < ctrl.length; index++) {
             const element = ctrl[index];
@@ -145,6 +149,7 @@ cObj("select_student_option").onchange = function () {
             element.classList.add("hide");
         }
     }else if (stud_option == "show_alumni") {
+        cObj("student_status_selector").classList.add("hide");
         var ctrl = document.getElementsByClassName("ctrl");
         for (let index = 0; index < ctrl.length; index++) {
             const element = ctrl[index];

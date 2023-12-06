@@ -971,6 +971,9 @@ function searchMySms(keyword) {
         if (element[11].toString().toLowerCase().includes(keylower) || element[11].toString().toUpperCase().includes(keyUpper)) {
             present++;
         }
+        if (element[13].toString().toLowerCase().includes(keylower) || element[13].toString().toUpperCase().includes(keyUpper)) {
+            present++;
+        }
         //here you can add any other columns to be searched for
         // console.log(element[6]==keyword);
         if (present > 0) {

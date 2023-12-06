@@ -162,7 +162,9 @@ class PDF extends FPDF
             $this->Cell($w[7], 6, ($row[7]), 1, 0, 'L', $fill);
             $this->Cell($w[8], 6, ($row[8]), 1, 0, 'R', $fill);
             $this->Cell($w[9], 6, ($row[9]), 1, 0, 'L', $fill);
-            // $this->Cell($w[10], 6, ($row[10]), 1, 0, 'R', $fill);
+            if(count($w) > 10){
+                $this->Cell($w[10], 6, ($row[10]), 1, 0, 'R', $fill);
+            }
             $this->Ln();
             $fill = !$fill;
         }
@@ -1263,6 +1265,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
         $select_date_staff = $_POST['select_date_staff'];
         $intake_months_reports = $_POST['intake_months_reports'];
         $intake_year_reports = $_POST['intake_year_reports'];
+        $student_status = $_POST['student_status'];
         
         if ($select_entity == "student") {
             $course_names = $_POST['course_name'];
@@ -1317,18 +1320,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                                 $all_department = isJson_report($rows['valued']) ? json_decode($rows['valued']) : [];
                             }
                         }
+                        // financial.php
+                        include_once("../ajax/finance/financial.php");
                         // echo json_encode($all_department);
                         while ($row = $result->fetch_assoc()) {
-                            $student_name = ucwords(strtolower($row['surname'] . " " . $row['first_name'] . " " . $row['second_name']));
+                            $student_name = ucwords(strtolower($row['first_name'] . " " . $row['second_name']));
                             $adm_no = $row['adm_no'];
                             $gender = $row['gender'];
-                            if ($gender == "Male") {
-                                $boys++;
-                                $gender = "M";
-                            } else {
-                                $girls++;
-                                $gender = "F";
-                            }
                             $level_name = classNameReport($row['stud_class']);
                             $dob = $row['D_O_B'];
                             $date1 = date_create($dob);
@@ -1364,16 +1362,59 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                                     break;
                                 }
                             }
+                            // echo count(json_decode($row['my_course_list']))."-<br>";
 
-                            // course level
-                            $each_stud = array($number, $student_name, $adm_no, $gender, $course_name, $level_name, $department_name, $dob, $doa, $address);
-                            array_push($student_data, $each_stud);
-                            $number++;
+                            // get their course progress details
+                            $course_progress = (isset($row['my_course_list']) && isJson_report($row['my_course_list'])) ? json_decode($row['my_course_list']) : [];
+                            $status = "In-Active";
+
+                            // get the course status
+                            for($in = 0; $in < count($course_progress); $in++){
+                                $course_status = $course_progress[$in]->course_status;
+                                if($course_status == 1){
+                                    $module_terms = $course_progress[$in]->module_terms;
+                                    for($ind = 0; $ind < count($module_terms); $ind++){
+                                        if($module_terms[$ind]->status == 1){
+                                            // end date
+                                            $status = "Active";
+                                        }
+                                    }
+                                }
+                            }
+
+                            // student data
+                            // array_push($student_data[$index],$status);
+
+                            $push = false;
+
+                            if($status == "Active" && $student_status == 1){
+                                $push = true;
+                            }
+                            if($status == "In-Active" && $student_status == 0){
+                                $push = true;
+                            }
+                            if($student_status == 2){
+                                $push = true;
+                            }
+                            // echo json_encode($student_data);
+
+                            if($push){
+                                if ($gender == "Male") {
+                                    $boys++;
+                                    $gender = "M";
+                                } else {
+                                    $girls++;
+                                    $gender = "F";
+                                }
+                                // course level
+                                $each_stud = array($number, $student_name, $adm_no, $gender, $course_name, $level_name, $department_name, $dob, $doa, $address,$status);
+                                array_push($student_data, $each_stud);
+                                $number++;
+                            }
                         }
-                        // echo json_encode($student_data);
                         $pdf = new PDF('L', 'mm', 'A4');
                         // Column headings
-                        $header = array('No', 'Student Name', 'Reg no', 'Sex', 'Course', 'Level', 'Department', 'D.O.B', 'D.O.A', 'Address');
+                        $header = array('No', 'Student Name', 'Reg no', 'Sex', 'Course', 'Level', 'Department', 'D.O.B', 'D.O.A', 'Address',"Status");
                         // Data loading
                         // $data = $pdf->LoadData('countries.txt');
 
@@ -1392,6 +1433,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                         // end of the title editing
                         $intake_title = (strlen($intake_year_reports) > 0 && strlen($intake_months_reports) > 0) ? " : Intake ".$intake_months_reports." ".$intake_year_reports."" : "";
                         $tittle.=$intake_title;
+                        $STATUS_TITLE = $student_status == 1 ? " : Active" : ($student_status == 2 ? " :In-Actve" : "");
+                        $tittle.=$STATUS_TITLE;
 
                         $data = $student_data;
                         $pdf->set_document_title($tittle);
@@ -1415,7 +1458,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                         $pdf->Ln();
                         $pdf->Ln();
                         $pdf->SetFont('Helvetica', 'B', 8);
-                        $width = array(7, 45, 17, 10, 45, 25, 45, 25, 20, 45);
+                        $width = array(7, 30, 17, 10, 45, 25, 45, 25, 20, 45,15);
                         $pdf->FancyTable($header, $data, $width);
                         $pdf->Output("I", str_replace(" ", "_", $pdf->school_document_title) . ".pdf");
                     } else {
@@ -1449,6 +1492,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                             $tittle = $select_report_class != "all" ? "List for " . classNameReport($select_report_class) . "" : "Student List for Whole School";
                             $intake_title = (strlen($intake_year_reports) > 0 && strlen($intake_months_reports) > 0) ? " : Intake ".$intake_months_reports." ".$intake_year_reports."" : "";
                             $tittle.=$intake_title;
+                            $STATUS_TITLE = $student_status == 1 ? " : Active" : ($student_status == 2 ? " :In-Actve" : "");
+                            $tittle.=$STATUS_TITLE;
                             $pdf->set_document_title($tittle);
                             $pdf->setSchoolLogo("../../" . schoolLogo($conn));
                             $pdf->set_school_name($_SESSION['schname']);
@@ -1512,10 +1557,53 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                                         }
                                     }
 
-                                    // course level
-                                    $each_stud = array($number, $student_name, $adm_no, $gender, $course_name, $level_name, $department_name, $dob, $doa, $address);
-                                    array_push($student_data, $each_stud);
-                                    $number++;
+                                    // get their course progress details
+                                    $course_progress = (isset($row['my_course_list']) && isJson_report($row['my_course_list'])) ? json_decode($row['my_course_list']) : [];
+                                    $status = "In-Active";
+        
+                                    // get the course status
+                                    for($in = 0; $in < count($course_progress); $in++){
+                                        $course_status = $course_progress[$in]->course_status;
+                                        if($course_status == 1){
+                                            $module_terms = $course_progress[$in]->module_terms;
+                                            for($ind = 0; $ind < count($module_terms); $ind++){
+                                                if($module_terms[$ind]->status == 1){
+                                                    // end date
+                                                    $status = "Active";
+                                                }
+                                            }
+                                        }
+                                    }
+        
+                                    // student data
+                                    // array_push($student_data[$index],$status);
+        
+                                    $push = false;
+        
+                                    if($status == "Active" && $student_status == 1){
+                                        $push = true;
+                                    }
+                                    if($status == "In-Active" && $student_status == 0){
+                                        $push = true;
+                                    }
+                                    if($student_status == 2){
+                                        $push = true;
+                                    }
+                                    // echo json_encode($student_data);
+        
+                                    if($push){
+                                        if ($gender == "Male") {
+                                            $boys++;
+                                            $gender = "M";
+                                        } else {
+                                            $girls++;
+                                            $gender = "F";
+                                        }
+                                        // course level
+                                        $each_stud = array($number, $student_name, $adm_no, $gender, $course_name, $level_name, $department_name, $dob, $doa, $address,$status);
+                                        array_push($student_data, $each_stud);
+                                        $number++;
+                                    }
                                 }
 
                                 // Column headings
@@ -1541,7 +1629,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                                 $pdf->Cell(50, 10, classNameReport($school_classes[$index]), 0, 0, 'L', false);
                                 $pdf->Ln();
                                 $pdf->SetFont('Helvetica', 'B', 8);
-                                $width = array(7, 45, 17, 10, 45, 25, 45, 25, 20, 45);
+                                $width = array(7, 30, 17, 10, 45, 25, 45, 25, 20, 45,15);
                                 $pdf->FancyTable($header, $data, $width);
                             }
                             $pdf->Output("I", str_replace(" ", "_", $pdf->school_document_title) . ".pdf");
@@ -12395,6 +12483,26 @@ function getTermPeriods_report($conn2){
     }
     return $period;
 }
+
+function getTermPeriods_report_sms($conn2,$term = "TERM_1"){
+    $date = date("Y");
+    // $select = "SELECT  `term`,`start_time`,`end_time`,`closing_date` FROM `academic_calendar` WHERE 
+    // (YEAR(`end_time`) >= ? AND `term` = 'TERM_1') 
+    // OR (YEAR(`end_time`) >= ? AND `term` = 'TERM_2') 
+    // OR (YEAR(`end_time`) >= ? AND `term` = 'TERM_3');";
+    $select = "SELECT  `term`,`start_time`,`end_time`,`closing_date` FROM `academic_calendar` WHERE (`term` = '$term')";
+    $stmt = $conn2->prepare($select);
+    // $stmt->bind_param("sss",$date,$date,$date);
+    $stmt->execute();
+    $period = [];
+    $result = $stmt->get_result();
+    if ($result) {
+        while($row = $result->fetch_assoc()){
+            array_push($period,$row['start_time'],$row['end_time']);
+        }
+    }
+    return $period;
+}
 function getOtherRevenue_report($conn2){
     $get_term_period = getTermPeriods_report($conn2);
     $select = "SELECT SUM(`amount`) AS 'Total' FROM `school_revenue` WHERE `date_recorded` BETWEEN ? AND ?";
@@ -13305,6 +13413,28 @@ class NUmbers{
         }
         return $result;
     }
+}
+function getTermAdmin(){
+    $date = date("Y-m-d");
+    $select = "SELECT `term` FROM `academic_calendar` WHERE `end_time` >= ? AND `start_time` <= ?";
+    include("../../connections/conn2.php");
+    $stmt= $conn2->prepare($select);
+    $stmt->bind_param("ss",$date,$date);
+    $stmt->execute();
+    $results = $stmt->get_result();
+    if($results){
+        if ($rowed = $results->fetch_assoc()) {
+          $term = $rowed['term'];
+          return $term;
+        }else {
+          return "TERM_1";
+        }
+    }else {
+        return "TERM_1";
+      }
+    
+    $stmt->close();
+    $conn2->close();
 }
 
 function receiptNo($no){

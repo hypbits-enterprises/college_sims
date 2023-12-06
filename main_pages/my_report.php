@@ -18,7 +18,7 @@
                 <h5 class="text-center">Administration Section Reports</h5>
                 <form method="POST" action="reports/reports.php" target="_blank" class="form-group row">
                     <div class="col-md-4">
-                        <label for="select_entity" class="form-label">Select Entity</label>
+                        <label for="select_entity" class="form-label"><b>Select Entity</b></label>
                         <select name="select_entity" id="select_entity" class="form-control" required>
                             <option value="" hidden>Select an Entity</option>
                             <option value="student">Students</option>
@@ -26,7 +26,7 @@
                         </select>
                     </div>
                     <div class="col-md-4 student my-2 hide" id="entity_option">
-                        <label for="select_student_option" class="form-label">Select an option</label>
+                        <label for="select_student_option" class="form-label"><b>Select an option</b></label>
                         <select name="select_student_option" id="select_student_option" class="form-control">
                             <option value="" hidden>Select an option</option>
                             <option value="all_students">Student Information</option>
@@ -35,31 +35,40 @@
                             <option value="show_alumni">Alumni</option>
                         </select>
                     </div>
+                    <div class="col-md-4 my-2 hide" id="student_status_selector">
+                        <label for="student_status" class="form-label"><b>Select Student Status</b></label>
+                        <select name="student_status" id="student_status" class="form-control">
+                            <option value="" hidden>Select an option</option>
+                            <option selected value="1">Active</option>
+                            <option value="0">In-Active</option>
+                            <option value="2">All</option>
+                        </select>
+                    </div>
                     <div class="col-md-4 student ctrl my-2 hide" id="date_select_report">
-                        <label for="select_date" class="form-label">Select date</label>
+                        <label for="select_date" class="form-label"><b>Select date</b></label>
                         <input type="date" value="<?php echo date("Y-m-d");?>" name="select_date" id="select_date" class="form-control" max="<?php echo date("Y-m-d") ?>">
                     </div>
                     <div class="col-md-4 student ctrl my-2 hide" id="class_select_report">
-                        <label for="select_report_class" class="form-label">Select Course Level<img src="images/ajax_clock_small.gif" id="class_load_report" class="hide"></label>
+                        <label for="select_report_class" class="form-label"><b>Select Course Level</b><img src="images/ajax_clock_small.gif" id="class_load_report" class="hide"></label>
                         <span id="reports_classes"></span>
                     </div>
                     <div class="col-md-4 student hide" id="specific_course_2">
-                        <label for="course_list_report_1" class="form-label">Select Course<img src="images/ajax_clock_small.gif" id="select_course_loader" class="hide"></label>
+                        <label for="course_list_report_1" class="form-label"><b>Select Course</b><img src="images/ajax_clock_small.gif" id="select_course_loader" class="hide"></label>
                         <div  id="display_courses_here"><span class="text-secondary"> Course list will appear here if a course level is selected!</span></div>
                     </div>
                     <div class="col-md-8 student ctrl my-2 row hide" id="between_dates">
                         <div class="col-md-6">
-                            <label for="from_date_report" class="form-label" id="">From:</label>
+                            <label for="from_date_report" class="form-label" id=""><b>From:</b></label>
                             <input type="date" value="<?php echo date("Y-m-d", strtotime("-7 days"));?>" name="from_date_report" id="from_date_report" class="form-control" max="<?php echo date("Y-m-d") ?>">
                         </div>
                         <div class="col-md-6">
-                            <label for="to_date_report" class="form-label" id="">To:</label>
+                            <label for="to_date_report" class="form-label" id=""><b>To:</b></label>
                             <input type="date" value="<?php echo date("Y-m-d");?>" name="to_date_report" id="to_date_report" class="form-control" max="<?php echo date("Y-m-d") ?>">
                         </div>
                     </div>
                     <!-- admin name -->
                     <div class="col-md-4 admin hide" id="staff_options_two">
-                        <label for="staff_options" class="form-label">Staff Options</label>
+                        <label for="staff_options" class="form-label"><b>Staff Options</b></label>
                         <select name="staff_options" id="staff_options" class="form-control">
                             <option value="" hidden>Select an option</option>
                             <option value="staff_details">My Staff Details</option>
@@ -68,11 +77,11 @@
                         </select>
                     </div>
                     <div class="col-md-4 admin ctrl my-2 hide" id="date_select_staff">
-                        <label for="select_date_staff" class="form-label">Select date</label>
+                        <label for="select_date_staff" class="form-label"><b>Select date</b></label>
                         <input type="date" value="<?php echo date("Y-m-d");?>" name="select_date_staff" id="select_date_staff" class="form-control" max="<?php echo date("Y-m-d") ?>">
                     </div>
                     <div class="col-md-4 intake hide">
-                        <label for="intake_months_reports" class="form-control-label">Intake Month</label>
+                        <label for="intake_months_reports" class="form-control-label"><b>Intake Month</b></label>
                         <select name="intake_months_reports" id="intake_months_reports" class="form-control">
                             <option value="" hidden>Select Month</option>
                             <option value="JAN">JAN</option>
@@ -81,7 +90,7 @@
                         </select>
                     </div>
                     <div class="col-md-4 intake hide">
-                        <label for="intake_year_reports" class="form-control-label">Intake Year</label>
+                        <label for="intake_year_reports" class="form-control-label"><b>Intake Year</b></label>
                         <select name="intake_year_reports" id="intake_year_reports" class="form-control">
                             <option value="" hidden>Select Year</option>
                             <?php for($index = date("Y");$index > 2017; $index --):?>
@@ -141,7 +150,7 @@
                 </div>
                 <form method="POST" action="reports/reports.php" target="_blank"  class="form-group row my-2">
                     <div class="col-md-4">
-                        <label for="finance_entity" class="form-label">Select an option</label>
+                        <label for="finance_entity" class="form-label"><b>Select an option</b></label>
                         <select name="finance_entity" id="finance_entity" class="form-control">
                             <option value="" hidden>Select an option</option>
                             <option value="fees_collection">Fees Collection</option>
@@ -153,11 +162,11 @@
                         </select>
                     </div>
                     <div class="col-md-4 hide" id="expense_cats_windows">
-                        <label for="expense_categorized" class="form-label">Expense Categories<img src="images/ajax_clock_small.gif" id="expense_cats_loaders" class="hide"></label>
+                        <label for="expense_categorized" class="form-label"><b>Expense Categories</b><img src="images/ajax_clock_small.gif" id="expense_cats_loaders" class="hide"></label>
                         <p id="exp_cat_select_holder"></p>
                     </div>
                     <div class="col-md-4 student_opt hide">
-                        <label for="period_selection" class="form-label">Select period</label>
+                        <label for="period_selection" class="form-label"><b>Select period</b></label>
                         <select name="period_selection" id="period_selection" class="form-control w-100">
                             <option value="" hidden>Select period</option>
                             <option value="specific_date">Specific Date</option>
@@ -166,21 +175,21 @@
                     </div>
                     <div class="col-md-8 row stud_fin hide" id="time_period">
                         <div class="col-md-6">
-                            <label for="from_date_finance" class="form-label">From</label>
+                            <label for="from_date_finance" class="form-label"><b>From</b></label>
                             <input type="date" value="<?php echo date("Y-m-d", strtotime("-7 days"));?>" name="from_date_finance" id="from_date_finance" class="form-control" max="<?php echo date("Y-m-d");?>">
                         </div>
                         <div class="col-md-6">
-                            <label for="to_date_finance" class="form-label">To</label>
+                            <label for="to_date_finance" class="form-label"><b>To</b></label>
                             <input type="date" value="<?php echo date("Y-m-d");?>" name="to_date_finance" id="to_date_finance" class="form-control" max="<?php echo date("Y-m-d");?>">
                         </div>
                     </div>
                     <div class="col-md-4 stud_fin hide" id="specific_date">
-                        <label for="specific_date_finance" class="form-label">Select Date</label>
+                        <label for="specific_date_finance" class="form-label"><b>Select Date</b></label>
                         <input type="date" value="<?php echo date("Y-m-d");?>" name="specific_date_finance" id="specific_date_finance" class="form-control" max="<?php echo date("Y-m-d");?>">
                     </div>
                     <div class="col-md-12 row stud_fin hide" id="stud_opt_fin">
                         <div class="col-md-4">
-                            <label for="student_options" class="form-label">Select student options</label>
+                            <label for="student_options" class="form-label"><b>Select student options</b></label>
                             <select name="student_options" id="student_options" class="form-control">
                                 <option value="" hidden>Select student options</option>
                                 <option value="byClass">By Class</option>
@@ -189,26 +198,26 @@
                             </select>
                         </div>
                         <div class="col-md-4 hide" id="specific_stud_admno">
-                            <label for="student_admno_in" class="form-label">Student Admission Number</label>
+                            <label for="student_admno_in" class="form-label"><b>Student Admission Number</b></label>
                             <div class="autocomplete">
                                 <input type="text" name="student_admno_in" id="student_admno_in" class="form-control" placeholder="Enter Admission No">
                             </div>
                         </div>
                         <div class="col-md-4 hide" id="specific_class">
-                            <label for="student_class_fin" class="form-label">Select Course Level<img src="images/ajax_clock_small.gif" id="class_fin_in_load" class="hide"></label>
+                            <label for="student_class_fin" class="form-label"><b>Select Course Level</b><img src="images/ajax_clock_small.gif" id="class_fin_in_load" class="hide"></label>
                             <span id="class_fin_in"></span>
                         </div>
                         <div class="col-md-4 hide" id="specific_course_1">
-                            <label for="course_list_report_2" class="form-label">Select Course<img src="images/ajax_clock_small.gif" id="select_course_loader_2" class="hide"></label>
+                            <label for="course_list_report_2" class="form-label"><b>Select Course</b><img src="images/ajax_clock_small.gif" id="select_course_loader_2" class="hide"></label>
                             <div  id="display_courses_here_2"><span class="text-secondary"> Course list will appear here if a course level is selected!</span></div>
                         </div>
                     </div>
                     <div class="col-md-6 hide" id="compose_reminder_message">
-                        <label for="reminder_message" class="form-label" >Reminder Message</label>
+                        <label for="reminder_message" class="form-label" ><b>Reminder Message</b></label>
                         <textarea name="reminder_message" id="reminder_message" maxlength="300" class="form-control" cols="30" rows="5" placeholder="Reminder Message">Praise God, You are kindly reminded to clear [student_name]`s Fees balance of [student_arrears] by Thu 16th Jun 2022. This Term you have paid [student_fees_paid]</textarea>
                     </div>
                     <div class="col-md-6 hide" id="staff_list_windoweds">
-                        <label for="mystaff_lists_select" class="form-label" >Staff List<img src="images/ajax_clock_small.gif" id="staff_list_windoweds_load" class="hide"></label>
+                        <label for="mystaff_lists_select" class="form-label" ><b>Staff List</b><img src="images/ajax_clock_small.gif" id="staff_list_windoweds_load" class="hide"></label>
                         <p id="mystaff_lists"></p>
                     </div>
                     <div class="col-md-12">
