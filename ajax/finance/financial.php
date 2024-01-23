@@ -1678,6 +1678,272 @@
                 }
             }
             echo "<p class='text-success'>Data has been updated successfully!</p>";
+        }elseif(isset($_GET['income_statement_quaterly'])){
+            // annual quater array
+            $annual_quaters = [];
+            $q1a = date("Y-m-d",strtotime(date("Y")."0101"));
+            $q1b = date("Y-m-d",strtotime(date("Y")."0331"));
+            array_push($annual_quaters,[$q1a,$q1b]);
+            $q2a = date("Y-m-d",strtotime(date("Y")."0401"));
+            $q2b = date("Y-m-d",strtotime(date("Y")."0630"));
+            array_push($annual_quaters,[$q2a,$q2b]);
+            $q3a = date("Y-m-d",strtotime(date("Y")."0701"));
+            $q3b = date("Y-m-d",strtotime(date("Y")."0930"));
+            array_push($annual_quaters,[$q3a,$q3b]);
+            $q4a = date("Y-m-d",strtotime(date("Y")."1001"));
+            $q4b = date("Y-m-d",strtotime(date("Y")."1231"));
+            array_push($annual_quaters,[$q4a,$q4b]);
+
+            // get the term incomes
+            $revenue = getOtherRevenueQuaterly($conn2);
+            
+            // get the term income
+            $term_income = getTermIncomeQuaterly($annual_quaters,$conn2);
+            
+            // get the expenses per term
+            $term_expense = getExpensesQuaterly($annual_quaters,$conn2);
+            
+            //get all the expenses names
+            $all_expenses = getAllExpenseNames($term_expense);
+            
+            //get taxes
+            $all_taxes = getTaxesQuaterly($annual_quaters,$conn2);
+            
+            //1. start with the table header
+            $data_to_display = "<div class='financial_statements'>
+                                <h3 class='text-center my-2'><u>Income Statement Quaterly</u></h3>
+                                <div class='row'>
+                                    <div class='col-md-9'>
+                                    </div>
+                                    <div class='col-md-3'>
+                                        <form target='_blank' action='reports/reports.php' method='post'>
+                                            <input type='hidden' name='generate_income_statement' value='true'>
+                                            <button type='submit'><i class='fa fa-print'></i> Print</button>
+                                        </form>
+                                    </div>
+                                </div>
+                                <div class='finace_headers p-2'>
+                                    <div class='conts'><p style='text-align:left;'>Date Generated: ".date("l dS M Y")."</p></div><hr>
+                                    ".
+                                    // <div class='financial_year'><h6>Financial Year <select name='fin_year' id='fin_year'>
+                                    //     <option value='2021'>2021</option>
+                                    //     <option value='2020'>2020</option>
+                                    //     <option value='2019'>2019</option>
+                                    //     <option value='2018'>2018</option>
+                                    // </select></h6></div>
+                                    "<div class='titles '>
+                                        <h2 class='fs-16px'>Financial Statements</h2>
+                                        <div class='t1'>
+                                            <h6 class='fs-12px'><b>Q1 (<small>".date("M-d-Y",strtotime($annual_quaters[0][0]))." - ".date("M-d-Y",strtotime($annual_quaters[0][1]))."</small>)</b></h6>
+                                        </div>
+                                        <div class='t2'>
+                                            <h6 class='fs-12px'><b>Q2 (<small>".date("M-d-Y",strtotime($annual_quaters[1][0]))." - ".date("M-d-Y",strtotime($annual_quaters[1][1]))."</small>)</b></h6>
+                                        </div>
+                                        <div class='t3'>
+                                            <h6 class='fs-12px'><b>Q3 (<small>".date("M-d-Y",strtotime($annual_quaters[2][0]))." - ".date("M-d-Y",strtotime($annual_quaters[2][1]))."</small>)</b></h6>
+                                        </div>
+                                        <div class='t3'>
+                                            <h6 class='fs-12px'><b>Q4 (<small>".date("M-d-Y",strtotime($annual_quaters[3][0]))." - ".date("M-d-Y",strtotime($annual_quaters[3][1]))."</small>)</b></h6>
+                                        </div>
+                                    </div>
+                                </div>";
+            $data_to_display.="<div class='finance_header '>
+                <div class='conts'>
+                    <h2 class='title_statements fs-16px bg-cadet px-2'>Income Statement Quaterly</h2>
+                </div>
+            </div>";
+
+            //the income statement start by displaying the primary Income
+            $data_to_display.="<div class='finance_header'>
+                                    <p class='title_name'>Primary Income</p>
+                                </div>";
+            $data_to_display.="<div class='finance_body'>
+                                    <p class='name_title'>Operating revenue</p>";
+            for ($indes=0; $indes < count($term_income); $indes++) {
+                $data_to_display.="<div class='t1'>
+                                    <p>Ksh ".comma($term_income[$indes])."</p>
+                                </div>";
+            }
+            $data_to_display.="</div>";
+            //end of primary income and start of secondary income even though there is nothing at the moment
+            $data_to_display.="<div class='finance_body'>
+                                <p class='name_title'>Other Income</p>
+                                <div class='t1'>
+                                    <p>Ksh ".number_format($revenue[0])."</p>
+                                </div>
+                                <div class='t1'>
+                                    <p>Ksh ".number_format($revenue[1])."</p>
+                                </div>
+                                <div class='t1'>
+                                    <p>Ksh ".number_format($revenue[2])."</p>
+                                </div>
+                                <div class='t1'>
+                                    <p>Ksh ".number_format($revenue[3])."</p>
+                                </div>
+                            </div>";
+            //total the income
+            $data_to_display.="<div class='finance_body_total'>
+                                    <p class='name_title'>Total Income</p>";
+            for ($indes=0; $indes < count($term_income); $indes++) {
+                $term_income[$indes] += $revenue[$indes];
+                $data_to_display.="<div class='t1'>
+                                    <p>Ksh ".comma($term_income[$indes])."</p>
+                                </div>";
+            }
+            $data_to_display.= "</div>";
+
+            //ENTER THE EXPENSES SECTION
+            $data_to_display.="<div class='finance_header'>
+                                <p class='title_name'>Expenses</p>
+                            </div>";
+            //create an array with all the expense array list
+            $expenses_val = [];
+            for ($index=0; $index <= count($all_expenses); $index++) { 
+                if ($index == count($all_expenses)) {
+                    $expenses_val["Salaries"] = [];
+                    break;
+                }else {
+                    $expenses_val[$all_expenses[$index]] = [];
+                }
+            }
+
+            //get values per the period given
+            $totalExpenses = [];
+            for ($index=0; $index < count($term_expense); $index++) {
+                //echo "term ".($index+1)." Size is ".count($term_expense[$index])."<br>";
+                $total = 0;
+                for ($index1=0; $index1 < count($all_expenses); $index1++) {
+                    if (checkPresent($term_expense[$index],$all_expenses[$index1])) {
+                        $my_val = getValues($term_expense[$index],$all_expenses[$index1]);
+                        //echo "- ".$all_expenses[$index1]." = ".$my_val."<br>";
+                        array_push($expenses_val[$all_expenses[$index1]],$my_val);
+                        $total+=($my_val*1);
+                    }else {
+                        //echo "- ".$all_expenses[$index1]." = 0<br>";
+                        array_push($expenses_val[$all_expenses[$index1]],0);
+                    }
+                }
+                array_push($totalExpenses,$total);
+            }
+            
+
+            //add a category called salaries and this includes all the salaries the institution distributes
+            $salaries = getSalaryExpQuaterly($conn2,$annual_quaters);
+            //ADD THE SALARIES ARRAY TO THE GROUP
+            array_push($all_expenses,"Salaries");
+            array_push($expenses_val["Salaries"],$salaries[0],$salaries[1],$salaries[2],$salaries[3]);
+            //add the salaries value to the total value
+            for ($intex=0; $intex < count($totalExpenses); $intex++) { 
+                $totalExpenses[$intex]+=$salaries[$intex];
+            }
+
+            for ($indexes=0; $indexes < count($all_expenses); $indexes++) { 
+                $data_to_display.="<div class='finance_body'>
+                                        <p class='name_title'>".$all_expenses[$indexes]."</p>
+                                        <div class='t1'>
+                                            <p>Ksh ".comma($expenses_val[$all_expenses[$indexes]][0])."</p>
+                                        </div>
+                                        <div class='t1'>
+                                            <p>Ksh ".comma($expenses_val[$all_expenses[$indexes]][1])."</p>
+                                        </div>
+                                        <div class='t1'>
+                                            <p>Ksh ".comma($expenses_val[$all_expenses[$indexes]][2])."</p>
+                                        </div>
+                                        <div class='t1'>
+                                            <p>Ksh ".comma($expenses_val[$all_expenses[$indexes]][3])."</p>
+                                        </div>
+                                    </div>";
+            }
+            //TOTAL ALL THE EXPENSES
+            $data_to_display.="<div class='finance_body_total'>
+                                    <p class='name_title'>Total Expenses</p>
+                                    <div class='t1'>
+                                        <p>Ksh ".comma($totalExpenses[0])."</p>
+                                    </div>
+                                    <div class='t1'>
+                                        <p>Ksh ".comma($totalExpenses[1])."</p>
+                                    </div>
+                                    <div class='t1'>
+                                        <p>Ksh ".comma($totalExpenses[2])."</p>
+                                    </div>
+                                    <div class='t1'>
+                                        <p>Ksh ".comma($totalExpenses[3])."</p>
+                                    </div>
+                                </div>";
+            //CALCULATE EARNINGS BEFORE TAXES
+            //deduct term expenses from term income
+            $before_taxes = [];
+            for ($index=0; $index < count($term_income); $index++) {
+                // add other revenue
+                $term_income[$index] += $revenue[$index];
+
+                // add before tx
+                $befo_taxes = $term_income[$index] - $totalExpenses[$index];
+                array_push($before_taxes,$befo_taxes);
+            }
+            $data_to_display.= "<div class='finance_body'>
+                                    <p class='name_title'>Earning before Tax</p>
+                                    <div class='t1'>
+                                        <p>Ksh ".comma($before_taxes[0])."</p>
+                                    </div>
+                                    <div class='t1'>
+                                        <p>Ksh ".comma($before_taxes[1])."</p>
+                                    </div>
+                                    <div class='t1'>
+                                        <p>Ksh ".comma($before_taxes[2])."</p>
+                                    </div>
+                                    <div class='t1'>
+                                        <p>Ksh ".comma($before_taxes[3])."</p>
+                                    </div>
+                                </div>";
+            
+            
+            //GET THE TAXES
+            $data_to_display.="<div class='finance_header'>
+                                <p class='title_name'>Taxes</p>
+                            </div>";
+
+            $data_to_display.="<div class='finance_body'>
+                                <p class='name_title'>Taxes</p>
+                                <div class='t1'>
+                                    <p>Ksh ".comma($all_taxes[0])."</p>
+                                </div>
+                                <div class='t1'>
+                                    <p>Ksh ".comma($all_taxes[1])."</p>
+                                </div>
+                                <div class='t1'>
+                                    <p>Ksh ".comma($all_taxes[2])."</p>
+                                </div>
+                                <div class='t1'>
+                                    <p>Ksh ".comma($all_taxes[3])."</p>
+                                </div>
+                            </div>";
+            //GET THE NET INCOME
+            //net income = income before tax - taxes
+            $net_income = [];
+            for ($index=0; $index < count($all_taxes); $index++) { 
+                $netincome = $before_taxes[$index] - $all_taxes[$index];
+                // add other revenues
+                array_push($net_income,$netincome);
+            }
+            $data_to_display.="<div class='finance_body_total'>
+                                    <p class='name_title'>Net Income</p>
+                                    <div class='t1'>
+                                        <p>Ksh ".comma($net_income[0])."</p>
+                                    </div>
+                                    <div class='t1'>
+                                        <p>Ksh ".comma($net_income[1])."</p>
+                                    </div>
+                                    <div class='t1'>
+                                        <p>Ksh ".comma($net_income[2])."</p>
+                                    </div>
+                                    <div class='t1'>
+                                        <p>Ksh ".comma($net_income[3])."</p>
+                                    </div>
+                                </div>";
+            $data_to_display.= "</div>";
+            echo $data_to_display;
+
         }elseif (isset($_GET['incomestatement'])) {
             // get the term incomes
             $revenue = getOtherRevenue($conn2);
@@ -1688,7 +1954,7 @@
             //get the expenses per term
             $term_expense = getExpenses($term_arrays,$conn2);
             //get all the expenses names
-            $all_expenses = getALlExpenseNames($term_expense);
+            $all_expenses = getAllExpenseNames($term_expense);
             //get taxes
             $all_taxes = getTaxes($term_arrays,$conn2);
             //term periods 
@@ -1698,7 +1964,7 @@
             //create the table now
             //1. start with the table header
             $data_to_display = "<div class='financial_statements'>
-                                <h3 class='text-center my-2'><u>Income Statement</u></h3>
+                                <h3 class='text-center my-2'><u>Income Statement Termly</u></h3>
                                 <div class='row'>
                                     <div class='col-md-9'>
                                     </div>
@@ -3355,11 +3621,12 @@
             $customer_contacts_revenue = $_POST['customer_contacts_revenue'];
             $contact_person = $_POST['contact_person'];
             $revenue_description = $_POST['revenue_description'];
+            $revenue_categories = $_POST['revenue_categories'];
 
             // SAVE THE DATA TO THE DATABASE
-            $insert = "INSERT INTO `school_revenue` (`name`,`amount`,`date_recorded`,`customer_name`,`customer_contact`,`contact_person`,`revenue_description`) VALUES (?,?,?,?,?,?,?)";
+            $insert = "INSERT INTO `school_revenue` (`name`,`amount`,`date_recorded`,`customer_name`,`customer_contact`,`contact_person`,`revenue_description`,`revenue_category`) VALUES (?,?,?,?,?,?,?,?)";
             $stmt = $conn2->prepare($insert);
-            $stmt->bind_param("sssssss",$revenue_name,$revenue_amount,$revenue_date,$customer_name,$customer_contacts_revenue,$contact_person,$revenue_description);
+            $stmt->bind_param("ssssssss",$revenue_name,$revenue_amount,$revenue_date,$customer_name,$customer_contacts_revenue,$contact_person,$revenue_description,$revenue_categories);
             $stmt->execute();
 
             echo "<p class='text-success'>Revenue has been successfully recorded!</p>";
@@ -3421,11 +3688,12 @@
             $customer_contacts_revenue = $_POST['customer_contacts_revenue'];
             $contact_person = $_POST['contact_person'];
             $revenue_description = $_POST['revenue_description'];
+            $revenue_category = $_POST['revenue_category'];
 
             // UPDATE THE DATABASES ACCORDINGLY
-            $update = "UPDATE `school_revenue` SET `name` = ?, `amount` = ?, `date_recorded` = ?, `customer_name` = ?, `customer_contact` = ?, `contact_person` = ?, `revenue_description` = ? WHERE `id` = ?";
+            $update = "UPDATE `school_revenue` SET `name` = ?, `amount` = ?, `date_recorded` = ?, `customer_name` = ?, `customer_contact` = ?, `contact_person` = ?, `revenue_description` = ?, `revenue_category` = ? WHERE `id` = ?";
             $stmt = $conn2->prepare($update);
-            $stmt->bind_param("ssssssss",$revenue_name,$revenue_amount,$revenue_date,$customer_name,$customer_contacts_revenue,$contact_person,$revenue_description,$revenue_id);
+            $stmt->bind_param("sssssssss",$revenue_name,$revenue_amount,$revenue_date,$customer_name,$customer_contacts_revenue,$contact_person,$revenue_description,$revenue_category,$revenue_id);
             $stmt->execute();
 
             // echo results
@@ -3440,6 +3708,29 @@
             $stmt->execute();
 
             echo "<p class='text-success'>Revenue record has been successfully deleted!</p>";
+        }elseif(isset($_POST['get_revenue_categories'])){
+            include("../../connections/conn2.php");
+            // get the expense categories
+            $revenue_id = $_POST['revenue_id'];
+            $select = "SELECT * FROM `settings` WHERE `sett` = 'revenue_categories'; ";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $data_to_display = "<p class='text-danger'>No revenue categories set!</p>";
+            if($result){
+                if($row = $result->fetch_assoc()){
+                    $valued = $row['valued'];
+                    if(isJson($valued)){
+                        $data_to_display = "<select class='form-control w-100' id='".$revenue_id."'><option hidden >Select an option!</option>";
+                        $valued = json_decode($valued);
+                        foreach ($valued as $key => $value) {
+                            $data_to_display.="<option value='".$value->category_id."'>".$value->category_name."</option>";
+                        }
+                        $data_to_display.="</select>";
+                    }
+                }
+            }
+            echo $data_to_display;
         }
     }
 
@@ -3470,6 +3761,27 @@
         
         return $string;
       }
+
+    function getSalaryExpQuaterly($conn2,$term_period){
+        $salaries = [];
+        $select = "SELECT SUM(`amount_paid`) AS 'Total' FROM `salary_payment` WHERE `date_paid` BETWEEN ? AND ?;";
+        for ($index=0; $index < count($term_period); $index++) {
+            $stmt = $conn2->prepare($select);
+            $stmt->bind_param("ss",$term_period[$index][0],$term_period[$index][1]);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            if ($result) {
+                if ($row = $result->fetch_assoc()) {
+                    if (isset($row['Total'])) {
+                        array_push($salaries,$row['Total']);
+                    }else {
+                        array_push($salaries,"0");
+                    }
+                }
+            }
+        }
+        return $salaries;
+    }
     function getSalaryExp($conn2,$term_period){
         $select = "SELECT SUM(`amount_paid`) AS 'Total' FROM `salary_payment` WHERE `date_paid` BETWEEN ? AND ?;";
         $stmt = $conn2->prepare($select);
@@ -3956,7 +4268,7 @@
         }
         return "0";
     }
-    function getALlExpenseNames($term_expense){
+    function getAllExpenseNames($term_expense){
         //its a multilevel array
         $allitems = [];
         for ($index1=0; $index1 < count($term_expense); $index1++) { 
@@ -3984,6 +4296,26 @@
             }
         }
         return false;
+    }
+
+    // get taxes quaterly
+    function getTaxesQuaterly($array_period,$conn2){
+        $termExp = [];
+        $select = "SELECT `exp_category` as 'Expense', sum(`exp_amount`) AS 'Total' FROM `expenses` WHERE `expense_date` BETWEEN ? and ?   AND `exp_category` = 'taxes'  GROUP BY `Expense`";
+        for ($index=0; $index < count($array_period); $index++) {
+            $stmt = $conn2->prepare($select);
+            $stmt->bind_param("ss",$array_period[$index][0],$array_period[$index][1]);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $taxes = 0;
+            if ($result) {
+                if ($row = $result->fetch_assoc()) {
+                    $taxes = $row['Total'];
+                }
+            }
+            array_push($termExp,$taxes);
+        }
+        return $termExp;
     }
     function getTaxes($arrayPeriod,$conn2){
         $select = "SELECT `exp_category` as 'Expense', sum(`exp_amount`) AS 'Total' FROM `expenses` WHERE `expense_date` BETWEEN ? and ?   AND `exp_category` = 'taxes'  GROUP BY `Expense`";
@@ -4026,6 +4358,27 @@
         return $termExp;
     }
 
+    function getExpensesQuaterly($array_period,$conn2){
+        $select = "SELECT `exp_category` as 'Expense', sum(`exp_amount`) AS 'Total' FROM `expenses` WHERE `expense_date` BETWEEN ? and ?   AND `exp_category` != 'taxes'  GROUP BY `Expense`";
+        $termExp = [];
+        for ($index=0; $index < count($array_period); $index++) { 
+            $stmt = $conn2->prepare($select);
+            $stmt->bind_param("ss",$array_period[$index][0],$array_period[$index][1]);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            if ($result) {
+                $termPexp1 = [];
+                while ($row = $result->fetch_assoc()) {
+                    array_push($termPexp1,$row['Expense'].":".$row['Total']);
+                }
+                array_push($termExp,$termPexp1);
+            }
+        }
+
+        // term expense
+        return $termExp;
+    }
+
     function getExpenses($arrayPeriod,$conn2){
         $select = "SELECT `exp_category` as 'Expense', sum(`exp_amount`) AS 'Total' FROM `expenses` WHERE `expense_date` BETWEEN ? and ?   AND `exp_category` != 'taxes'  GROUP BY `Expense`";
         $termExp = [];
@@ -4065,6 +4418,47 @@
         return $termExp;
     }
 
+    function getOtherRevenueQuaterly($conn2){
+        $annual_quaters = [];
+        $q1a = date("Y-m-d",strtotime(date("Y")."0101"));
+        $q1b = date("Y-m-d",strtotime(date("Y")."0331"));
+        array_push($annual_quaters,[$q1a,$q1b]);
+        $q2a = date("Y-m-d",strtotime(date("Y")."0401"));
+        $q2b = date("Y-m-d",strtotime(date("Y")."0630"));
+        array_push($annual_quaters,[$q2a,$q2b]);
+        $q3a = date("Y-m-d",strtotime(date("Y")."0701"));
+        $q3b = date("Y-m-d",strtotime(date("Y")."0930"));
+        array_push($annual_quaters,[$q3a,$q3b]);
+        $q4a = date("Y-m-d",strtotime(date("Y")."1001"));
+        $q4b = date("Y-m-d",strtotime(date("Y")."1231"));
+        array_push($annual_quaters,[$q4a,$q4b]);
+
+
+        $select = "SELECT SUM(`amount`) AS 'Total' FROM `school_revenue` WHERE `date_recorded` BETWEEN ? AND ?";
+        $school_revenue = [];
+        for ($index=0; $index < count($annual_quaters); $index++) {
+            $term_start = $annual_quaters[$index][0];
+            $term_end = $annual_quaters[$index][1];
+
+            // prepare select
+            $revenue = 0;
+            $stmt = $conn2->prepare($select);
+            $stmt->bind_param("ss",$term_start,$term_end);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            if($result){
+                if($row = $result->fetch_assoc()){
+                    $revenue = $row['Total']*1;
+                }
+            }
+
+            // array push
+            array_push($school_revenue,$revenue);
+        }
+        // $stmt->bind_param("ss",)
+        return $school_revenue;
+    }
+
     function getOtherRevenue($conn2){
         $get_term_period = getTermPeriods($conn2);
         $select = "SELECT SUM(`amount`) AS 'Total' FROM `school_revenue` WHERE `date_recorded` BETWEEN ? AND ?";
@@ -4091,6 +4485,34 @@
         }
         // $stmt->bind_param("ss",)
         return $school_revenue;
+    }
+
+    function getTermIncomeQuaterly($array_period,$conn2){
+        $term_pay = [];
+        $select = "SELECT sum(`amount`)  AS 'Total' FROM `finance` WHERE `date_of_transaction` BETWEEN ? AND ?";
+        for ($index=0; $index < count($array_period); $index++) {
+            $stmt = $conn2->prepare($select);
+            $stmt->bind_param("ss",$array_period[$index][0],$array_period[$index][1]);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $err = 0;
+            if ($result) {
+                if ($row = $result->fetch_assoc()) {
+                    $total = strlen(trim($row['Total'])) > 0 ? $row['Total'] : 0;
+                    if ($total != 0 && $total != null) {
+                        array_push($term_pay,$row['Total']);
+                    }else {
+                        $err++;
+                        array_push($term_pay,0);
+                    }
+                }else {
+                    array_push($term_pay,"0");
+                }
+            }else {
+                array_push($term_pay,"0");
+            }
+        }
+        return $term_pay;
     }
 
     function getTermIncome($arrayPeriod,$conn2){

@@ -1,5 +1,4 @@
 <?php
-
     use PHPMailer\PHPMailer\PHPMailer;
     use PHPMailer\PHPMailer\SMTP;
     use PHPMailer\PHPMailer\Exception;
@@ -3842,6 +3841,88 @@
                 $data_to_display.="</select>";
                 echo $data_to_display;
             }
+        }elseif(isset($_GET['save_revenue_category'])){
+            $select = "SELECT * FROM `settings` WHERE `sett` = 'revenue_categories'";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            if($result){
+                if($row = $result->fetch_assoc()){
+                    $valued = $row['valued'];
+                    // add to the existing array
+                    if(isJson_report($valued)){
+                        $new_array = json_decode($valued);
+                        $present = false;
+                        for ($ind=0; $ind < count($new_array); $ind++) {
+                            $category_name = $new_array[$ind]->category_name;
+                            if(strtolower($category_name) == strtolower($_GET['category_name'])){
+                                $present = true;
+                                break;
+                            }
+                        }
+                        $id = 0;
+                        for ($ind=0; $ind < count($new_array); $ind++) {
+                            $category_id = $new_array[$ind]->category_id;
+                            if($category_id > $id){
+                                $id = $category_id;
+                            }
+                        }
+                        // id
+                        $id+=1;
+
+                        // is present
+                        if(!$present){
+                            // category name
+                            $category_details = [];
+                            $category_details['category_id'] = $id;
+                            $category_details['category_name'] = $_GET['category_name'];
+                            array_push($new_array,$category_details);
+
+                            // update 
+                            $new_array = json_encode($new_array);
+                            $update = "UPDATE `settings` SET `valued` = '$new_array' WHERE `sett` = 'revenue_categories'";
+                            $stmt = $conn2->prepare($update);
+                            $stmt->execute();
+                            echo "<p class='text-success'>\"".$_GET['category_name']."\" has been added successfully!</p>";
+                        }else{
+                            echo "<p class='text-danger'>\"".$_GET['category_name']."\" is already used! Use another name.</p>";
+                        }
+                    }else{
+                        // update
+                        // category name
+                        $category_details = [];
+                        $category_details['category_id'] = $id;
+                        $category_details['category_name'] = $_GET['category_name'];
+                        $new_array = json_encode([$category_details]);
+                        $update = "INSERT INTO `settings` (`sett`,`valued`) VALUES ('revenue_categories','".$new_array."')";
+                        $stmt = $conn2->prepare($update);
+                        $stmt->execute();
+                        echo "<p class='text-success'>\"".$_GET['category_name']."\" has been added successfully!</p>";
+                    }
+                }else{
+                    // update
+                    // category name
+                    $category_details = [];
+                    $category_details['category_id'] = $id;
+                    $category_details['category_name'] = $_GET['category_name'];
+                    $new_array = json_encode([$category_details]);
+                    $update = "INSERT INTO `settings` (`sett`,`valued`) VALUES ('revenue_categories','".$new_array."')";
+                    $stmt = $conn2->prepare($update);
+                    $stmt->execute();
+                    echo "<p class='text-success'>\"".$_GET['category_name']."\" has been added successfully!</p>";
+                }
+            }else{
+                // update 
+                // category name
+                $category_details = [];
+                $category_details['category_id'] = $id;
+                $category_details['category_name'] = $_GET['category_name'];
+                $new_array = json_encode([$category_details]);
+                $update = "INSERT INTO `settings` (`sett`,`valued`) VALUES ('revenue_categories','".$new_array."')";
+                $stmt = $conn2->prepare($update);
+                $stmt->execute();
+                echo "<p class='text-success'>\"".$_GET['category_name']."\" has been added successfully!</p>";
+            }
         }elseif(isset($_GET['save_expense_category'])){
             $select = "SELECT * FROM `settings` WHERE `sett` = 'expense categories'";
             $category_name = trim(ucwords(strtolower($_GET['category_name'])));
@@ -3898,6 +3979,30 @@
                 }
                 echo "<p class='text-success border border-success my-2 p-2'>Expense name added successfully!.</p>";
             }
+        }elseif(isset($_GET['show_revenue_category'])){
+            $select = "SELECT * FROM `settings` WHERE `sett` = 'revenue_categories'";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $present = 0;
+            $expense_cats = "";
+            $data_to_display = "<p class='text-danger border border-danger my-2 p-2'>Add Revenue categories, they will appear here.</p>";
+            if ($result) {
+                if($row = $result->fetch_assoc()){
+                    $exp_cat = trim($row['valued']);
+                    $expense_cats = $exp_cat;
+                    if(isJson_report($exp_cat)){
+                        $data_to_display = "<table class='table'><tr><th>No.</th><th>Revenue Category.</th><th>Actions.</th></tr>";
+                        // get if the name is used before
+                        $exp_cats = json_decode($exp_cat);
+                        for ($index=0; $index < count($exp_cats); $index++) {
+                            $data_to_display.="<tr><td>".($index+1).". </td><td id='revenue_name_".$exp_cats[$index]->category_id."'>".$exp_cats[$index]->category_name."</td><td><p><span class='mx-1 link edit_revenue_cat' id='edit_revenue_cat_".$exp_cats[$index]->category_id."'><i class='fas fa-pen-fancy'></i></span> <span class='mx-1 link delete_revenue_cat' id = 'delete_revenue_cat_".$exp_cats[$index]->category_id."'><i class='fas fa-trash'></i></span></p></td></tr>";
+                        }
+                        $data_to_display .= "</table>";
+                    }
+                }
+            }
+            echo $data_to_display;
         }elseif(isset($_GET['show_expense_cat'])){
             $select = "SELECT * FROM `settings` WHERE `sett` = 'expense categories'";
             $stmt = $conn2->prepare($select);
@@ -3911,13 +4016,13 @@
                     $exp_cat = trim($row['valued']);
                     $expense_cats = $exp_cat;
                     if(isJson_report($exp_cat)){
-                        $data_to_display = "<div class='container my-2 tableme' id='expense_category_table_holder'><table class='table'><tr><th>No.</th><th>Expense Category.</th><th>Actions.</th></tr>";
+                        $data_to_display = "<table class='table'><tr><th>No.</th><th>Expense Category</th><th>Actions.</th></tr>";
                         // get if the name is used before
                         $exp_cats = json_decode($exp_cat);
                         for ($index=0; $index < count($exp_cats); $index++) {
                             $data_to_display.="<tr><td>".($index+1).". </td><td id='exp_name_".$index."'>".$exp_cats[$index]."</td><td><p><span class='mx-1 link edit_exp_cat' id='edit_exp_cat_".$index."'><i class='fas fa-pen-fancy'></i></span> <span class='mx-1 link delete_exp_cat' id = 'delete_exp_cat_".$index."'><i class='fas fa-trash'></i></span></p></td></tr>";
                         }
-                        $data_to_display .= "</table></div>";
+                        $data_to_display .= "</div>";
                     }
                 }
             }
@@ -3958,6 +4063,56 @@
                 }
             }
             echo "<p class='text-success border border-success my-2 p-2'>Expense has been updated successfully!</p>";
+        }elseif(isset($_GET['change_revenue_categories'])){
+            $change_revenue_categories = ($_GET['change_revenue_categories']);
+            $new_revenue_name = $_GET['new_revenue_name'];
+            $revenue_indexes = $_GET['revenue_indexes'];
+            
+            $select = "SELECT * FROM `settings` WHERE `sett` = 'revenue_categories'";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            if($result){
+                if($row = $result->fetch_assoc()){
+                    $valued = $row['valued'];
+                    if(isJson_report($row['valued'])){
+                        // valued data
+                        $valued = json_decode($valued);
+                        $present = false;
+                        for ($index=0; $index < count($valued); $index++) {
+                            if($valued[$index]->category_id != $revenue_indexes && $valued[$index]->category_name == $new_revenue_name){
+                                $present = true;
+                            }
+                        }
+
+                        // if the new revenue category name is reused twice, refuse it
+                        if(!$present){
+                            // proceed and add update in the database
+                            for($index = 0; $index < count($valued); $index++){
+                                if($valued[$index]->category_id == $revenue_indexes){
+                                    $valued[$index]->category_name = $new_revenue_name;
+                                    break;
+                                }
+                            }
+
+                            // update the database
+                            $update = "UPDATE `settings` SET `valued` = ? WHERE `sett` = 'revenue_categories'";
+                            $stmt = $conn2->prepare($update);
+                            $valued = json_encode($valued);
+                            $stmt->bind_param("s",$valued);
+                            $stmt->execute();
+                            echo "<p class='text-success'>".ucwords(strtolower($new_revenue_name))." has been successfully updated!</p>";
+                        }else{
+                            // otherwise refuse
+                            echo "<p class='text-danger'>".ucwords(strtolower($new_revenue_name))." is already used! Use another name!</p>";
+                        }
+                    }else{
+                        // otherwise refuse
+                        echo "<p class='text-danger'>An error has occured!</p>";
+                    }
+                }
+            }
+            // echo "<p class='text-success border border-success my-2 p-2'>Expense has been updated successfully!</p>";
         }elseif(isset($_GET['get_expense_cats'])){
             $select = "SELECT * FROM `settings` WHERE `sett` = 'expense categories'";
             $stmt = $conn2->prepare($select);
@@ -6564,6 +6719,38 @@
                 }
             }
             echo "<p class='text-success'>Department deleted successfully!</p>";
+        }elseif(isset($_POST['delete_revenue_category'])){
+            $delete_revenue_category = $_POST['delete_revenue_category'];
+            $select = "SELECT * FROM `settings` WHERE `sett` = 'revenue_categories'";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            if($result){
+                if($row = $result->fetch_assoc()){
+                    $valued = $row['valued'];
+                    $new_values = [];
+                    if(isJson_report($valued)){
+                        $valued = json_decode($valued);
+                        for($index = 0; $index < count($valued); $index++){
+                            if($delete_revenue_category != $index){
+                                array_push($new_values,$valued[$index]);
+                            }
+                        }
+                    }
+
+                    // update the database
+                    $update = "UPDATE `settings` SET `valued` = ? WHERE `sett` = 'revenue_categories'";
+                    $stmt = $conn2->prepare($update);
+                    $new_values = json_encode($new_values);
+                    $stmt->bind_param("s",$new_values);
+                    $stmt->execute();
+                    echo "<p class='text-success'>Revenue category has been deleted successfully!</p>";
+                }else{
+                    echo "<p class='text-danger'>An error has occured!</p>";
+                }
+            }else{
+                echo "<p class='text-danger'>An error has occured!</p>";
+            }
         }
     }
     function isPresent_dept($array,$string){
@@ -11140,3 +11327,4 @@ function isJson_report($string) {
         $result = str_replace('"', "'", $string);
         return $result;
     }
+?>

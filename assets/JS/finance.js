@@ -59,10 +59,19 @@ cObj("save_revenue").onclick = function () {
     err += checkBlank("revenue_amount");
     err += checkBlank("revenue_date");
     err += checkBlank("customer_name");
+    // err += (cObj("revenue_categories") != undefined) ? 0 : 1;
+    // console.log(cObj("revenue_category"));
+    
+    if(cObj("revenue_category") == undefined){
+        cObj("error_handler_revenue_collection").innerHTML = "<p class='text-danger'>Set up the revenue categories before you proceed!</p>";
+        return 0;
+    }else{
+        cObj("error_handler_revenue_collection").innerHTML = "";
+    }
 
     if (err == 0) {
         cObj("error_handler_revenue_collection").innerHTML = "<p class='text-danger'></p>";
-        let datapass = "add_revenue=true&revenue_name="+valObj("revenue_name")+"&revenue_amount="+valObj("revenue_amount")+"&revenue_date="+valObj("revenue_date")+"&customer_name="+valObj("customer_name")+"&customer_contacts_revenue="+valObj("customer_contacts_revenue")+"&contact_person="+valObj("contact_person")+"&revenue_description="+valObj("revenue_description")
+        let datapass = "add_revenue=true&revenue_name="+valObj("revenue_name")+"&revenue_amount="+valObj("revenue_amount")+"&revenue_date="+valObj("revenue_date")+"&customer_name="+valObj("customer_name")+"&customer_contacts_revenue="+valObj("customer_contacts_revenue")+"&contact_person="+valObj("contact_person")+"&revenue_description="+valObj("revenue_description")+"&revenue_categories="+valObj("revenue_category");
         sendDataPost("POST","ajax/finance/financial.php",datapass,cObj("error_handler_revenue_collection"),cObj("save_revenue_loader"));
         setTimeout(() => {
             var ids = setInterval(() => {
@@ -257,6 +266,30 @@ function edit_revenues() {
 
     // get the row value
     row_value = JSON.parse(row_value);
+    
+    // check if the revenue category holder is set
+    var datapass = "get_revenue_categories=true&revenue_id=edit_revenue_category";
+    sendDataPost("POST","ajax/finance/financial.php",datapass,cObj("edit_revenue_category_holder"),cObj("edit_revenue_categories_loader"));
+    setTimeout(() => {
+        var ids = setInterval(() => {
+            // remove the values from the input fields
+            if (cObj("edit_revenue_categories_loader").classList.contains("hide")) {
+                if (cObj("edit_revenue_category") != undefined) {
+                    // proceed and select the selected category
+                    var children = cObj("edit_revenue_category").children;
+                    for (let index = 0; index < children.length; index++) {
+                        const element = children[index];
+                        if (element.value == row_value.revenue_category) {
+                            element.selected = true;
+                        }
+                    }
+                }
+                stopInterval(ids);
+            }
+        }, 10);
+    }, 10);
+
+
     // fill all fields with the row data
     cObj("revenue_name_edit").value = row_value.name;
     cObj("revenue_amount_edit").value = row_value.amount;
@@ -281,11 +314,15 @@ cObj("save_revenue_edit").onclick = function () {
     err += checkBlank("customer_name_edit");
     err += checkBlank("customer_contacts_revenue_edit");
     err += checkBlank("contact_person_edit");
-    err += checkBlank("revenue_description_edit");
+    // err += checkBlank("revenue_description_edit");
+
+    if (cObj("edit_revenue_category") == undefined) {
+        cObj("error_handler_revenue_collection_edit").innerHTML = "<p class='text-danger'>Set up your revenue categories before updating a record!</p>";
+    }
 
     if (err == 0) {
         cObj("error_handler_revenue_collection_edit").innerHTML = "<p class='text-danger'></p>";
-        let datapass = "update_revenue=true&revenue_name="+valObj("revenue_name_edit")+"&revenue_amount="+valObj("revenue_amount_edit")+"&revenue_date="+valObj("revenue_date_edit")+"&customer_name="+valObj("customer_name_edit")+"&customer_contacts_revenue="+valObj("customer_contacts_revenue_edit")+"&contact_person="+valObj("contact_person_edit")+"&revenue_description="+valObj("revenue_description_edit")+"&revenue_id="+valObj("revenue_ids");
+        let datapass = "update_revenue=true&revenue_name="+valObj("revenue_name_edit")+"&revenue_amount="+valObj("revenue_amount_edit")+"&revenue_date="+valObj("revenue_date_edit")+"&customer_name="+valObj("customer_name_edit")+"&customer_contacts_revenue="+valObj("customer_contacts_revenue_edit")+"&contact_person="+valObj("contact_person_edit")+"&revenue_description="+valObj("revenue_description_edit")+"&revenue_id="+valObj("revenue_ids")+"&revenue_category="+valObj("edit_revenue_category");
         sendDataPost("POST","ajax/finance/financial.php",datapass,cObj("error_handler_revenue_collection_edit"),cObj("update_revenue_loader"));
         setTimeout(() => {
             var ids = setInterval(() => {
@@ -316,7 +353,14 @@ cObj("confirm_Delete_revenue_no").onclick = function () {
 cObj("add-revenue-btn").onclick = function () {
     cObj("show_revenue_list").classList.add("hide");
     cObj("add_revenues").classList.remove("hide");
+    display_revenue_category();
 }
+
+function display_revenue_category() {
+    var datapass = "get_revenue_categories=true&revenue_id=revenue_category";
+    sendDataPost("POST","ajax/finance/financial.php",datapass,cObj("revenue_categories_list"),cObj("show_revenue_loader"));
+}
+
 
 function editFees() {
     //get the values from the table
@@ -586,6 +630,20 @@ function showdatefunct() {
         cObj("option1_2").selected = true;
         cObj("option1_3").selected = true;
     }
+}
+
+cObj("cash_flow_statement").onchange = function () {
+    var this_value = this.value;
+    if (this_value == "income_statement") {
+        incomeStatement();
+    }else if(this_value == "income_statement_quaterly"){
+        income_statement_quaterly();
+    }
+}
+
+function income_statement_quaterly() {
+    var datapass = "?income_statement_quaterly=true";
+    sendData1("GET", "finance/financial.php", datapass, cObj("finance_statements"));
 }
 
 cObj("confirmyes").onclick = function () {

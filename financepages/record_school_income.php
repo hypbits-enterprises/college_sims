@@ -77,7 +77,7 @@
                 </div>
             </div>
             <div class="container hide" id="add_revenues">
-                <button id="return_to_revenue_list"><i class="fa fa-arrow-left"></i> Back to revenue</button>
+                <button id="return_to_revenue_list"><i class="fa fa-arrow-left"></i> Back to revenue </button>
                 <div class="row my-2">
                     <div class="col-md-12 my-2"><h4 class="text-center"><u>Add Revenue</u></h4></div>
                     <div class="col-md-4 form-group">
@@ -87,6 +87,10 @@
                     <div class="col-md-4 form-group">
                         <label for="revenue_amount" class="form-label"><b>Amount</b></label>
                         <input type="number" name="revenue_amount" id="revenue_amount" class="form-control w-100" placeholder="e.g, 1000">
+                    </div>
+                    <div class="col-md-4 form-group">
+                        <label for="revenue_category" class="form-control-label"><b>Revenue Categories</b> <img class="hide" src="images/ajax_clock_small.gif" id="revenue_categories_loader"></label>
+                        <div id="revenue_categories_list"></div>
                     </div>
                     <div class="col-md-4 form-group">
                         <label for="revenue_date" class="form-label"><b>Date</b></label>
@@ -126,6 +130,10 @@
                     <div class="col-md-4 form-group">
                         <label for="revenue_amount_edit" class="form-label"><b>Amount</b></label>
                         <input type="number" name="revenue_amount_edit" id="revenue_amount_edit" class="form-control w-100" placeholder="e.g, 1000">
+                    </div>
+                    <div class="col-md-4 form-group">
+                        <label for="edit_revenue_category" class="form-control-label"><b>Revenue Categories</b> <img class="hide" src="images/ajax_clock_small.gif" id="edit_revenue_categories_loader"></label>
+                        <div id="edit_revenue_category_holder"></div>
                     </div>
                     <div class="col-md-4 form-group">
                         <label for="revenue_date_edit" class="form-label"><b>Date</b></label>

@@ -674,6 +674,7 @@ cObj("set_btns").onclick = function () {
     working_days();
     getPaymentOptions();
     displayExpCategories();
+    displayRevenueCategories();
     get_courses();
     get_admission_prefix();
 }
@@ -6990,6 +6991,15 @@ cObj("cancel_expense_category").onclick = function () {
     cObj("add_expense_category_window").classList.add("hide");
 }
 
+cObj("setup_revenue_category").onclick = function () {
+    cObj("add_revenue_category_window").classList.remove("hide");
+}
+cObj("close_window_revenue_category").onclick = function () {
+    cObj("add_revenue_category_window").classList.add("hide");
+}
+cObj("cancel_revenue_category").onclick = function () {
+    cObj("add_revenue_category_window").classList.add("hide");
+}
 
 
 cObj("save_expense_category").onclick = function () {
@@ -7017,6 +7027,94 @@ cObj("save_expense_category").onclick = function () {
             }, 100);
         }, 100);
     }
+}
+
+
+cObj("save_revenue_category").onclick = function () {
+    var err = checkBlank("revenue_category_name");
+    if (err == 0) {
+        var datapass = "?save_revenue_category=true&category_name=" + escape(valObj("revenue_category_name"));
+        sendData2("GET", "administration/admissions.php", datapass, cObj("display_data_revenue_category"), cObj("revenue_categories_loaders"));
+        setTimeout(() => {
+            var timeout = 0;
+            var ids = setInterval(() => {
+                timeout++;
+                //after two minutes of slow connection the next process wont be executed
+                if (timeout == 1200) {
+                    stopInterval(ids);
+                }
+                if (cObj("revenue_categories_loaders").classList.contains("hide")) {
+                    setTimeout(() => {
+                        cObj("display_data_revenue_category").innerHTML = "";
+                    }, 3000);
+                    displayRevenueCategories();
+                    cObj("revenue_category_name").value = "";
+                    cObj("cancel_revenue_category").click();
+                    stopInterval(ids);
+                }
+            }, 100);
+        }, 100);
+    }
+}
+
+function delete_revenue_categories() {
+    console.log(this.id);
+    cObj("delete_revenue_category").classList.remove("hide");
+    cObj("revenue_category_name_holder").innerText = cObj("revenue_name_"+this.id.substr(19)).innerText;
+    cObj("revenue_index").value = this.id.substr(19);
+}
+
+cObj("yes_delete_revenue_category").onclick = function () {
+    var datapass = "delete_revenue_category="+cObj("revenue_index").value;
+    sendDataPost("POST","ajax/administration/admissions.php", datapass, cObj("display_data_revenue_category"), cObj("revenue_categories_loaders"));
+    setTimeout(() => {
+        var timeout = 0;
+        var ids = setInterval(() => {
+            timeout++;
+            //after two minutes of slow connection the next process wont be executed
+            if (timeout == 1200) {
+                stopInterval(ids);
+            }
+            if (cObj("revenue_categories_loaders").classList.contains("hide")) {
+                cObj("delete_revenue_category").classList.add("hide");
+                displayRevenueCategories();
+                stopInterval(ids);
+            }
+        }, 100);
+    }, 100);
+}
+
+cObj("no_delete_revenue_category").onclick = function () {
+    cObj("delete_revenue_category").classList.add("hide");
+}
+
+function displayRevenueCategories() {
+    var datapass = "?show_revenue_category=true";
+    sendData2("GET", "administration/admissions.php", datapass, cObj("revenue_category_table_holder"), cObj("revenue_categories_loaders"));
+    setTimeout(() => {
+        var timeout = 0;
+        var ids = setInterval(() => {
+            timeout++;
+            //after two minutes of slow connection the next process wont be executed
+            if (timeout == 1200) {
+                stopInterval(ids);
+            }
+            if (cObj("revenue_categories_loaders").classList.contains("hide")) {
+                var delete_revenue_cat = document.getElementsByClassName("delete_revenue_cat");
+                for (let index = 0; index < delete_revenue_cat.length; index++) {
+                    const element = delete_revenue_cat[index];
+                    element.addEventListener("click", delete_revenue_categories);
+                }
+
+                var edit_revenue_cat = document.getElementsByClassName("edit_revenue_cat");
+                for (let index = 0; index < edit_revenue_cat.length; index++) {
+                    const element = edit_revenue_cat[index];
+                    element.addEventListener("click", edit_revenue_category);
+                }
+                stopInterval(ids);
+            }
+        }, 100);
+    }, 100);
 }
 
 function displayExpCategories() {
@@ -7055,6 +7153,39 @@ cObj("close_change_expense_category_window").onclick = function () {
     cObj("change_expense_category_window").classList.add("hide");
 }
 
+cObj("cancel_change_revenue_category").onclick = function () {
+    cObj("change_revenue_category_window").classList.add("hide");
+}
+cObj("close_change_revenue_category_window").onclick = function () {
+    cObj("change_revenue_category_window").classList.add("hide");
+}
+
+cObj("save_change_revenue_category").onclick = function name() {
+    var err = checkBlank("change_revenue_category_input_window");
+    if (err == 0) {
+        var datapass = "?change_revenue_categories=true&new_revenue_name=" + escape(valObj("change_revenue_category_input_window")) + "&revenue_indexes=" + escape(valObj("revenue_indexes_update"));
+        sendData2("GET", "administration/admissions.php", datapass, cObj("display_data_revenue_category"), cObj("revenue_categories_loaders"));
+        setTimeout(() => {
+            var timeout = 0;
+            var ids = setInterval(() => {
+                timeout++;
+                //after two minutes of slow connection the next process wont be executed
+                if (timeout == 1200) {
+                    stopInterval(ids);
+                }
+                if (cObj("revenue_categories_loaders").classList.contains("hide")) {
+                    displayRevenueCategories();
+                    setTimeout(() => {
+                        cObj("display_data_revenue_category").innerHTML = "";
+                    }, 3000);
+                    cObj("cancel_change_revenue_category").click();
+                    stopInterval(ids);
+                }
+            }, 100);
+        }, 100);
+    }
+}
+
 cObj("save_change_expense_category").onclick = function name() {
     var err = checkBlank("change_expense_category_input_window");
     if (err == 0) {
@@ -7085,6 +7216,14 @@ function edit_expense_category() {
     cObj("expense_category_change_name").innerHTML = cObj("exp_name_" + this_id).innerText;
     cObj("change_expense_category_window").classList.remove("hide");
     cObj("exp_indexes_update").value = this_id;
+}
+
+function edit_revenue_category() {
+    var this_id = this.id.substr(17);
+    cObj("change_revenue_category_input_window").value = cObj("revenue_name_" + this_id).innerText;
+    cObj("revenue_category_change_name").innerHTML = cObj("revenue_name_" + this_id).innerText;
+    cObj("change_revenue_category_window").classList.remove("hide");
+    cObj("revenue_indexes_update").value = this_id;
 }
 
 function delete_exp_categories() {

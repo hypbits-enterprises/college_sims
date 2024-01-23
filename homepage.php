@@ -2264,6 +2264,22 @@ function checkPresnt($array, $string){
                 </div>
             </div>
         </div>
+        <div class="confirmpaymentwindow hide" style="overflow: auto;" id="add_revenue_category_window">
+            <div class="changesubwindow editexams animate">
+                <div class="container w-100">
+                    <p class="funga" id="close_window_revenue_category">&times</p>
+                    <h6 class="text-center"><b>Add Revenue Category</b></h6>
+                </div>
+                <div class="container w-100" id="">
+                    <label for="revenue_category_name" class="form-control-label">Revenue Category Name.</label>
+                    <input type="" name="" id="revenue_category_name" class="form-control" placeholder="E.x., Transfers from National Government entities">
+                    <div class="btns">
+                        <button type="button" id="save_revenue_category">Save</button>
+                        <button type="button" id="cancel_revenue_category">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="confirmpaymentwindow hide" style="overflow: auto;" id="delete_expense_category_window">
             <div class="changesubwindow editexams animate">
                 <div class="container w-100">
@@ -2316,6 +2332,24 @@ function checkPresnt($array, $string){
                         <button type="button" id="close_edit_expense_window">Close</button>
                     </div>
                     <div class="container" id="error_handlers_expenses">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="confirmpaymentwindow hide" style="overflow: auto;" id="change_revenue_category_window">
+            <div class="changesubwindow editexams animate">
+                <div class="container w-100">
+                    <p class="funga" id="close_change_revenue_category_window">&times</p>
+                    <h6 class="text-center"><b>Change Revenue Category</b></h6>
+                </div>
+                <div class="container w-100" id="">
+                    <p>Are you sure you want to change <b id="revenue_category_change_name"></b>? <br> <b class="text-danger"> Note</b> <br> All entities with this name will be changed in the system.</p>
+                    <label for="change_revenue_category_input_window" class="form-control-label">New Revenue Category Name</label>
+                    <input type="text" class="form-control w-100" id="change_revenue_category_input_window">
+                    <input type="hidden" id="revenue_indexes_update">
+                    <div class="btns">
+                        <button type="button" id="save_change_revenue_category">Yes</button>
+                        <button type="button" id="cancel_change_revenue_category">Close</button>
                     </div>
                 </div>
             </div>
@@ -2887,6 +2921,19 @@ function checkPresnt($array, $string){
             <div class="buttons">
                 <button type='button' id='yes_delete_permanently'>Yes</button>
                 <button type='button' id='no_delete_permanently'>No</button>
+            </div>
+        </div>
+    </div>
+    <div class="dialogholder hide" id="delete_revenue_category">
+        <div class="dialogwindow animate2">
+            <h6>Confirm</h6>
+            <div class="message">
+                <input type="hidden" id="revenue_index" value="-1">
+                <p>Are you sure you want to delete <b><span id="revenue_category_name_holder">unknown</span></b> the revenue permanently ?</p>
+            </div>
+            <div class="buttons">
+                <button type='button' id='yes_delete_revenue_category'>Yes</button>
+                <button type='button' id='no_delete_revenue_category'>No</button>
             </div>
         </div>
     </div>

@@ -365,6 +365,30 @@
                     <p id="display_data_exp_category"></p>
                 </div>
             </div>
+            <div class="setting_s">
+                <h6>Revenue Categories<span class="hide" id="revenue_categories_loaders"><img src="images/ajax_clock_small.gif"></span></h6>
+                <p>- Add an revenue category to use when recording revenue</p>
+                <input type="hidden" name="" id="revenue_category_storage">
+                <div class="container my-1">
+                    <p style="width: fit-content;" class="link" id="setup_revenue_category"><i class="fa fa-plus"></i> Add Revenue Category</p>
+                    <div class="container my-2 tableme" style="overflow-y: auto; max-height: 300px;" id="revenue_category_table_holder">
+                        <table class="table">
+                            <tr>
+                                <th>No.</th>
+                                <th>Revenue Category.</th>
+                                <th>Actions.</th>
+                            </tr>
+                            <tr>
+                                <td>1. </td>
+                                <td>Transfers from National Government entities</td>
+                                <td><p><span class="mx-1 link"><i class="fas fa-pen-fancy"></i></span> <span class="mx-1 link"><i class="fas fa-trash"></i></span></p></td>
+                            </tr>
+                        </table>
+                        <!-- <p class='text-danger border border-success my-2 p-2'>Add revenue categories, they will appear here.</p> -->
+                    </div>
+                    <p id="display_data_revenue_category"></p>
+                </div>
+            </div>
         </div>
         <div class="bottom1">
             <p>Managed by Ladybird</p>
