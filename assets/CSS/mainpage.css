@@ -2239,7 +2239,7 @@ td{
     padding: 10px 0;
     text-align: center;
 }
-.titles, .finance_body , .finance_body_total{
+.titles, .finance_body , .finance_body_total, .finance_body_total_2{
     position: relative;
     display: flex;
     justify-content: space-between;
@@ -2249,9 +2249,16 @@ td{
 .finance_header{
     margin: 10px 0;
 }
-.finance_body .name_title, .finance_body_total .name_title{
+.finance_body .name_title, .finance_body_total .name_title, .finance_body_total_2 .name_title{
     font-weight: 600;
     width: 200px;
+}
+.finance_body_total_2 {
+    border-top: 1px solid gray;
+    border-bottom: 1px solid gray;
+    margin: 4px 0;
+    padding: 5px 0;
+    font-weight: 600;
 }
 .finance_body_total{
     border-top: 4px double gray;

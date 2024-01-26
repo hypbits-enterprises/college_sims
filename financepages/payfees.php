@@ -41,7 +41,7 @@
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <button type='button' id='assign_fees_credit_notes' >Assign Fees Credit Notes</button>
+                    <button type='button' class="d-none" id='assign_fees_credit_notes' >Assign Fees Credit Notes</button>
                     <button type='button' id='record_school_income' >Manage Revenue</button>
                 </div>
             </div>

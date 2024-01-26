@@ -463,12 +463,14 @@
                                     if ($school == 0) {
                                         $partnerID = getPatnerId($conn);
                                         $shortcodes = getShortCode($conn);
+                                        $send_sms_url = getUrl($conn);
                                     }else {
                                         $partnerID = getPatnerId($conn2);
                                         $shortcodes = getShortCode($conn2);
+                                        $send_sms_url = getUrl($conn2);
                                     }
                                 //send sms
-                                $response = sendSmsToClient($phone_number,$message,$api_key,$partnerID,$shortcodes);
+                                $response = sendSmsToClient($phone_number,$message,$api_key,$partnerID,$shortcodes,$send_sms_url);
                                 $decoded = json_decode($response);
                                 if (isset($decoded->{'message'})) {
                                     // echo $decoded->{'message'};
@@ -1489,11 +1491,13 @@
             $exp_unit = $_GET['unitcost'];
             $exp_totcost = $_GET['total'];
             $unit_name = $_GET['unit_name'];
-            $date = date("Y-m-d");
+            $expense_cash_activity = $_GET['expense_cash_activity'];
+            $expense_record_date = $_GET['expense_record_date'];
+            $date = date("Y-m-d",strtotime($expense_record_date));
             $time = date("H:i:s");
-            $insert = "INSERT INTO `expenses` (`expid`,`exp_name`,`exp_category`,`unit_name`,`exp_quantity`,`exp_unit_cost`,`exp_amount`,`expense_date`,`exp_time`,`exp_active`)VALUES (null,?,?,?,?,?,?,?,?,0)";
+            $insert = "INSERT INTO `expenses` (`expid`,`exp_name`,`exp_category`,`unit_name`,`exp_quantity`,`exp_unit_cost`,`exp_amount`,`expense_date`,`exp_time`,`exp_active`,`expense_categories`)VALUES (null,?,?,?,?,?,?,?,?,0,?)";
             $stmt = $conn2->prepare($insert);
-            $stmt->bind_param("ssssssss",$exp_name,$exp_cat,$unit_name,$exp_quant,$exp_unit,$exp_totcost,$date,$time);
+            $stmt->bind_param("sssssssss",$exp_name,$exp_cat,$unit_name,$exp_quant,$exp_unit,$exp_totcost,$date,$time,$expense_cash_activity);
             if($stmt->execute()){
                 echo "<p class='green_notice'>Expense uploaded successfully!<span id='uploaded'></span></p>";
             }else {
@@ -1536,8 +1540,15 @@
                                         <td><b>Ksh ".$rows['exp_amount']."</b></td>
                                     </tr>";
                                     $total_pay+=$rows['exp_amount'];
-                    $json_2.="{\"exp_name\":\"".trim(ucwords(strtolower($rows['exp_name'])))."\",\"exp_category\":\"".trim(ucwords(strtolower($rows['exp_category'])))."\",\"exp_quantity\":".trim($rows['exp_quantity']).",\"exp_unit_cost\":".trim($rows['exp_unit_cost']).",\"exp_amount\":".trim($rows['exp_amount']).",\"expense_date\":\"".trim(date("dS M Y",strtotime($rows['expense_date'])))."\",\"exp_time\":\"".$rows['exp_time']."\",\"unit_name\":\"".ucwords(strtolower($rows['unit_name']))."\",\"exp_ids\":\"".trim($rows['expid'])."\"},";
+                                    // change some fields
+                                    $rows['exp_category'] = ucwords(strtolower($rows['exp_category']));
+                                    $rows['exp_quantity'] = trim($rows['exp_quantity']);
+                                    $rows['date'] = $rows['expense_date'];
+                                    $rows['expense_date'] = date("D dS M Y",strtotime($rows['expense_date']));
+                                    $json_2.=json_encode($rows).",";
+                    // $json_2.="{\"exp_name\":\"".trim(ucwords(strtolower($rows['exp_name'])))."\",\"exp_category\":\"".trim(ucwords(strtolower($rows['exp_category'])))."\",\"exp_quantity\":".trim($rows['exp_quantity']).",\"exp_unit_cost\":".trim($rows['exp_unit_cost']).",\"exp_amount\":".trim($rows['exp_amount']).",\"expense_date\":\"".trim(date("dS M Y",strtotime($rows['expense_date'])))."\",\"exp_time\":\"".$rows['exp_time']."\",\"unit_name\":\"".ucwords(strtolower($rows['unit_name']))."\",\"exp_ids\":\"".trim($rows['expid'])."\"},";
                 }
+
                 $data_to_display.="<tr><td></td><td></td><td></td><td></td><td>Total</td><td>Ksh ".$total_pay."</td></tr>";
                 $data_to_display.="</table></div>";
                 $json_2 = substr($json_2,0,(strlen($json_2)-1));
@@ -1678,24 +1689,812 @@
                 }
             }
             echo "<p class='text-success'>Data has been updated successfully!</p>";
-        }elseif(isset($_GET['income_statement_quaterly'])){
+        }elseif(isset($_GET['cashflow_statement_annual'])){
+            // get the current and the previous financial year
+            $year = date("Y", strtotime($_GET['year']."0101")) * 1;
+            $year_1 = ($year*1 - 1);
+            $year_2 = ($year_1*1 - 1);
+            $previous_financial_year = [$year_2,$year_1];
+            $current_financial_year = [$year_1,$year];
+            
+            // start getting the revenue catgories present
+            $select = "SELECT * FROM `settings` WHERE `sett` = 'revenue_categories';";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $revenue_category = [];
+            if ($result) {
+                if($row = $result->fetch_assoc()){
+                    $revenue_category = json_decode($row['valued']);
+                }
+            }
+
+            // start with operating activities
+            $select = "SELECT `revenue_category` ,COUNT(*) AS 'Records', SUM(`amount`) AS 'Total' FROM `school_revenue` WHERE `cash_flow_activities` = '1' AND `date_recorded` BETWEEN ? AND ? GROUP BY `revenue_category`;";
+            
+            // current year operating activities
+            $stmt = $conn2->prepare($select);
+            $curr_year = [date("Ymd",strtotime($current_financial_year[0]."-07-01")),date("Ymd",strtotime($current_financial_year[1]."-06-30"))];
+            $stmt->bind_param("ss",$curr_year[0],$curr_year[1]);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $curr_operating_activities = [];
+            $operating_revenue_categories = [];
+            $fees_id = 2000;
+            $fees_category_added = false;
+            if ($result) {
+                while($row = $result->fetch_assoc()){
+                    $row['revenue_category_name'] = "N/A";
+                    foreach ($revenue_category as $key => $value) {
+                        if($value->category_id == $row['revenue_category']){
+                            $row['revenue_category_name'] = $value->category_name;
+                        }
+                    }
+                    if(!check_revenue_category($operating_revenue_categories,$row['revenue_category'])){
+                        $revenue = new stdClass();
+                        $revenue->category_id = $row['revenue_category'];
+                        $revenue->category_name = $row['revenue_category_name'];
+                        array_push($operating_revenue_categories,$revenue);
+                    }
+                    array_push($curr_operating_activities,$row);
+                }
+            }
+            // get the fees for this year
+            $student_fees = "SELECT COUNT(*) AS 'Records', SUM(`amount`) AS 'Total' FROM `finance` WHERE `date_of_transaction` BETWEEN ? AND ?";
+            $stmt = $conn2->prepare($student_fees);
+            $stmt->bind_param("ss",$curr_year[0],$curr_year[1]);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            if ($result) {
+                if($row = $result->fetch_assoc()){
+                    $fees_category = [];
+                    $fees_category['revenue_category'] = $fees_id;
+                    $fees_category['Records'] = $row['Records'];
+                    $fees_category['Total'] = $row['Total'] == null ? 0 : $row['Total']*1;
+                    $fees_category['revenue_category_name'] = "Rendering of services- fees from students";
+                    array_push($curr_operating_activities,$fees_category);
+
+                    $revenue = new stdClass();
+                    $revenue->category_id = $fees_id;
+                    $revenue->category_name = "Rendering of services- fees from students";
+                    array_push($operating_revenue_categories,$revenue);
+                    $fees_category_added = true;
+                }
+            }
+
+            // operating revenue previous year
+            $stmt = $conn2->prepare($select);
+            $prev_year = [date("Ymd",strtotime($previous_financial_year[0]."-07-01")),date("Ymd",strtotime($previous_financial_year[1]."-06-30"))];
+            $stmt->bind_param("ss",$prev_year[0],$prev_year[1]);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $prev_operating_activities = [];
+            // $max_id = 0;
+            if ($result) {
+                while($row = $result->fetch_assoc()){
+                    $row['revenue_category_name'] = "N/A";
+                    foreach ($revenue_category as $key => $value) {
+                        if($value->category_id == $row['revenue_category']){
+                            $row['revenue_category_name'] = $value->category_name;
+                        }
+                    }
+                    if(!check_revenue_category($operating_revenue_categories,$row['revenue_category'])){
+                        $revenue = new stdClass();
+                        $revenue->category_id = $row['revenue_category'];
+                        $revenue->category_name = $row['revenue_category_name'];
+                        array_push($operating_revenue_categories,$revenue);
+                    }
+                    array_push($prev_operating_activities,$row);
+                }
+            }
+
+            // get the previous year student fees
+            $stmt = $conn2->prepare($student_fees);
+            $stmt->bind_param("ss",$prev_year[0],$prev_year[1]);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            if ($result) {
+                if($row = $result->fetch_assoc()){
+                    $fees_category = [];
+                    $fees_category['revenue_category'] = $fees_id;
+                    $fees_category['Records'] = $row['Records'];
+                    $fees_category['Total'] = $row['Total'] == null ? 0 : $row['Total']*1;
+                    $fees_category['revenue_category_name'] = "Rendering of services- fees from students";
+                    array_push($prev_operating_activities,$fees_category);
+
+                    if(!$fees_category_added){
+                        $revenue = new stdClass();
+                        $revenue->category_id = $fees_id;
+                        $revenue->category_name = "Rendering of services- fees from students";
+                        array_push($operating_revenue_categories,$revenue);
+                    }
+                }
+            }
+            // echo $fees_id;
+            // echo json_encode($curr_operating_activities)." ". json_encode($prev_operating_activities);
+            // return 0;
+
+            // start with investing activities
+            $select = "SELECT `revenue_category` ,COUNT(*) AS 'Records', SUM(`amount`) AS 'Total' FROM `school_revenue` WHERE `cash_flow_activities` = '2' AND `date_recorded` BETWEEN ? AND ? GROUP BY `revenue_category`;";
+            
+            // current year investing activities
+            $stmt = $conn2->prepare($select);
+            $curr_year = [date("Ymd",strtotime($current_financial_year[0]."-07-01")),date("Ymd",strtotime($current_financial_year[1]."-06-30"))];
+            $stmt->bind_param("ss",$curr_year[0],$curr_year[1]);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $curr_investing_activities = [];
+            $investing_revenue_categories = [];
+            if ($result) {
+                while($row = $result->fetch_assoc()){
+                    $row['revenue_category_name'] = "N/A";
+                    foreach ($revenue_category as $key => $value) {
+                        if($value->category_id == $row['revenue_category']){
+                            $row['revenue_category_name'] = $value->category_name;
+                        }
+                    }
+                    if(!check_revenue_category($investing_revenue_categories,$row['revenue_category'])){
+                        $revenue = new stdClass();
+                        $revenue->category_id = $row['revenue_category'];
+                        $revenue->category_name = $row['revenue_category_name'];
+                        array_push($investing_revenue_categories,$revenue);
+                    }
+                    array_push($curr_investing_activities,$row);
+                }
+            }
+
+            // operating investing previous year
+            $stmt = $conn2->prepare($select);
+            $prev_year = [date("Ymd",strtotime($previous_financial_year[0]."-07-01")),date("Ymd",strtotime($previous_financial_year[1]."-06-30"))];
+            $stmt->bind_param("ss",$prev_year[0],$prev_year[1]);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $prev_investing_activities = [];
+            if ($result) {
+                while($row = $result->fetch_assoc()){
+                    $row['revenue_category_name'] = "N/A";
+                    foreach ($revenue_category as $key => $value) {
+                        if($value->category_id == $row['revenue_category']){
+                            $row['revenue_category_name'] = $value->category_name;
+                        }
+                    }
+                    if(!check_revenue_category($investing_revenue_categories,$row['revenue_category'])){
+                        $revenue = new stdClass();
+                        $revenue->category_id = $row['revenue_category'];
+                        $revenue->category_name = $row['revenue_category_name'];
+                        array_push($investing_revenue_categories,$revenue);
+                    }
+                    array_push($prev_investing_activities,$row);
+                }
+            }
+
+            // start with financing activities
+            $select = "SELECT `revenue_category` ,COUNT(*) AS 'Records', SUM(`amount`) AS 'Total' FROM `school_revenue` WHERE `cash_flow_activities` = '3' AND `date_recorded` BETWEEN ? AND ? GROUP BY `revenue_category`;";
+            
+            // current year financing activities
+            $stmt = $conn2->prepare($select);
+            $curr_year = [date("Ymd",strtotime($current_financial_year[0]."-07-01")),date("Ymd",strtotime($current_financial_year[1]."-06-30"))];
+            $stmt->bind_param("ss",$curr_year[0],$curr_year[1]);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $curr_financing_activities = [];
+            $financing_revenue_categories = [];
+            if ($result) {
+                while($row = $result->fetch_assoc()){
+                    $row['revenue_category_name'] = "N/A";
+                    foreach ($revenue_category as $key => $value) {
+                        if($value->category_id == $row['revenue_category']){
+                            $row['revenue_category_name'] = $value->category_name;
+                        }
+                    }
+                    if(!check_revenue_category($financing_revenue_categories,$row['revenue_category'])){
+                        $revenue = new stdClass();
+                        $revenue->category_id = $row['revenue_category'];
+                        $revenue->category_name = $row['revenue_category_name'];
+                        array_push($financing_revenue_categories,$revenue);
+                    }
+                    array_push($curr_financing_activities,$row);
+                }
+            }
+
+            // financing activity previous year
+            $stmt = $conn2->prepare($select);
+            $prev_year = [date("Ymd",strtotime($previous_financial_year[0]."-07-01")),date("Ymd",strtotime($previous_financial_year[1]."-06-30"))];
+            $stmt->bind_param("ss",$prev_year[0],$prev_year[1]);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $prev_finance_activities = [];
+            if ($result) {
+                while($row = $result->fetch_assoc()){
+                    $row['revenue_category_name'] = "N/A";
+                    foreach ($revenue_category as $key => $value) {
+                        if($value->category_id == $row['revenue_category']){
+                            $row['revenue_category_name'] = $value->category_name;
+                        }
+                    }
+                    if(!check_revenue_category($financing_revenue_categories,$row['revenue_category'])){
+                        $revenue = new stdClass();
+                        $revenue->category_id = $row['revenue_category'];
+                        $revenue->category_name = $row['revenue_category_name'];
+                        array_push($financing_revenue_categories,$revenue);
+                    }
+                    array_push($prev_finance_activities,$row);
+                }
+            }
+
+            // get the operating expenses of the previous years and this year
+            $curr_year_operating_expenses = [];
+            $operating_expense_categories = [];
+            $select = "SELECT `exp_category`, COUNT(*) AS 'count_expense_category', SUM(`exp_amount`) AS 'expense_amount' FROM `expenses`  WHERE `expense_categories` = '1' AND `expense_date` BETWEEN ? AND ? GROUP BY `exp_category`";
+            $stmt = $conn2->prepare($select);
+            $curr_year = [date("Y-m-d",strtotime($current_financial_year[0]."-07-01")),date("Y-m-d",strtotime($current_financial_year[1]."-06-30"))];
+            $stmt->bind_param("ss",$curr_year[0],$curr_year[1]);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            if ($result) {
+                while($row = $result->fetch_assoc()){
+                    array_push($curr_year_operating_expenses,$row);
+                    if(!in_array($row['exp_category'],$operating_expense_categories)){
+                        array_push($operating_expense_categories,$row['exp_category']);
+                    }
+                }
+            }
+
+            // get the previoud years
+            $prev_year_operating_expenses = [];
+            $stmt = $conn2->prepare($select);
+            $prev_year = [date("Y-m-d",strtotime($previous_financial_year[0]."-07-01")),date("Y-m-d",strtotime($previous_financial_year[1]."-06-30"))];
+            $stmt->bind_param("ss",$prev_year[0],$prev_year[1]);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            if ($result) {
+                while($row = $result->fetch_assoc()){
+                    array_push($prev_year_operating_expenses,$row);
+                    if(!in_array($row['exp_category'],$operating_expense_categories)){
+                        array_push($operating_expense_categories,$row['exp_category']);
+                    }
+                }
+            }
+
+
+            // get the operating expenses of the previous years and this year
+            $curr_year_investing_expenses = [];
+            $investing_expense_categories = [];
+            $select = "SELECT `exp_category`, COUNT(*) AS 'count_expense_category', SUM(`exp_amount`) AS 'expense_amount' FROM `expenses`  WHERE `expense_categories` = '2' AND `expense_date` BETWEEN ? AND ? GROUP BY `exp_category`";
+            $stmt = $conn2->prepare($select);
+            $curr_year = [date("Y-m-d",strtotime($current_financial_year[0]."-07-01")),date("Y-m-d",strtotime($current_financial_year[1]."-06-30"))];
+            $stmt->bind_param("ss",$curr_year[0],$curr_year[1]);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            if ($result) {
+                while($row = $result->fetch_assoc()){
+                    array_push($curr_year_investing_expenses,$row);
+                    if(!in_array($row['exp_category'],$investing_expense_categories)){
+                        array_push($investing_expense_categories,$row['exp_category']);
+                    }
+                }
+            }
+
+            // get the previoud years
+            $prev_year_investing_expenses = [];
+            $stmt = $conn2->prepare($select);
+            $prev_year = [date("Y-m-d",strtotime($previous_financial_year[0]."-07-01")),date("Y-m-d",strtotime($previous_financial_year[1]."-06-30"))];
+            $stmt->bind_param("ss",$prev_year[0],$prev_year[1]);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            if ($result) {
+                while($row = $result->fetch_assoc()){
+                    array_push($prev_year_investing_expenses,$row);
+                    if(!in_array($row['exp_category'],$investing_expense_categories)){
+                        array_push($investing_expense_categories,$row['exp_category']);
+                    }
+                }
+            }
+
+            // get the operating expenses of the previous years and this year
+            $curr_year_financing_expenses = [];
+            $financing_expense_categories = [];
+            $select = "SELECT `exp_category`, COUNT(*) AS 'count_expense_category', SUM(`exp_amount`) AS 'expense_amount' FROM `expenses`  WHERE `expense_categories` = '3' AND `expense_date` BETWEEN ? AND ? GROUP BY `exp_category`";
+            $stmt = $conn2->prepare($select);
+            $curr_year = [date("Y-m-d",strtotime($current_financial_year[0]."-07-01")),date("Y-m-d",strtotime($current_financial_year[1]."-06-30"))];
+            $stmt->bind_param("ss",$curr_year[0],$curr_year[1]);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            if ($result) {
+                while($row = $result->fetch_assoc()){
+                    array_push($curr_year_financing_expenses,$row);
+                    if(!in_array($row['exp_category'],$financing_expense_categories)){
+                        array_push($financing_expense_categories,$row['exp_category']);
+                    }
+                }
+            }
+
+            // get the previoud years
+            $prev_year_financing_expenses = [];
+            $stmt = $conn2->prepare($select);
+            $prev_year = [date("Y-m-d",strtotime($previous_financial_year[0]."-07-01")),date("Y-m-d",strtotime($previous_financial_year[1]."-06-30"))];
+            $stmt->bind_param("ss",$prev_year[0],$prev_year[1]);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            if ($result) {
+                while($row = $result->fetch_assoc()){
+                    array_push($prev_year_financing_expenses,$row);
+                    if(!in_array($row['exp_category'],$financing_expense_categories)){
+                        array_push($financing_expense_categories,$row['exp_category']);
+                    }
+                }
+            }
+
+            // display the data now since its ready
+            $current_acad_year = [date("Y-m-d",strtotime($current_financial_year[0]."-07-01")),date("Y-m-d",strtotime($current_financial_year[1]."-06-30"))];
+            $previous_acad_year = [date("Y-m-d",strtotime($previous_financial_year[0]."-07-01")),date("Y-m-d",strtotime($previous_financial_year[1]."-06-30"))];
+            // echo json_encode($previous_acad_year[0]);
+            $data_to_display = "<div class='financial_statements'>
+                                    <h3 class='text-center my-2 fs-16px'><u>Statement of Cashflow for year end 30th Jun ".date("Y",strtotime($current_acad_year[1]))."</u></h3>
+                                    <div class='row'>
+                                        <div class='col-md-9'>
+                                        </div>
+                                        <div class='col-md-3'>
+                                            <form target='_blank' action='reports/reports.php' method='post'>
+                                                <input type='hidden' name='generate_income_statement' value='true'>
+                                                <button type='submit'><i class='fa fa-print'></i> Print</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                    <div class='finace_headers p-2'>
+                                        <div class='conts'><p style='text-align:left;'>Date Generated: ".date("l dS M Y")."</p></div><hr>
+                                        ";
+            $data_to_display.="<div class='row'>
+                                    <div class='col-md-6'><p class='fs-12px text-left' style='text-align:left;'><b>Financial Statements</b></p></div>
+                                    <div class='col-md-3'>
+                                        <h6 class='fs-12px'><b><small>".date("Y",strtotime($current_acad_year[0]))."/".date("Y",strtotime($current_acad_year[1]))."</small></b></h6>
+                                    </div>
+                                    <div class='col-md-3'>
+                                        <h6 class='fs-12px'><b><small>".date("Y",strtotime($previous_acad_year[0]))."/".date("Y",strtotime($previous_acad_year[1]))."</small></b></h6>
+                                    </div>
+                                </div>
+                                <div class='titles rows'>
+                                    <div class='col-md-6'></div>
+                                    <div class='col-md-3'>
+                                        <h6 class='fs-12px'><b><small>Kes</small></b></h6>
+                                    </div>
+                                    <div class='col-md-3'>
+                                        <h6 class='fs-12px'><b><small>Kes</small></b></h6>
+                                    </div>
+                                </div>
+                            </div>";
+
+                        /**CASH FLOW FROM OPERATING ACTIVITIES */
+
+                        $data_to_display.="<div class='finance_header'>
+                                                <p class='title_name'>Cashflow from Operating Activities</p>
+                                            </div>";
+                        $index = 1;
+                        $total_current = 0;
+                        $total_previous = 0;
+                        if(count($operating_revenue_categories) > 0 ){
+                            foreach($operating_revenue_categories as $key => $value){
+                                $current_year = 0;
+                                $previous_year = 0;
+                                // get the current year
+                                foreach ($curr_operating_activities as $key_activity => $key_value) {
+                                    if ($key_value['revenue_category'] == $value->category_id) {
+                                        $current_year = $key_value['Total'];
+                                        $total_current += $current_year;
+                                    }
+                                }
+    
+                                // get the previous year
+                                foreach ($prev_operating_activities as $key_activity => $key_value) {
+                                    if ($key_value['revenue_category'] == $value->category_id) {
+                                        $previous_year = $key_value['Total'];
+                                        $total_previous+=$previous_year;
+                                    }
+                                }
+    
+                                // set the display values
+                                $data_to_display.="<div class='finance_body'>
+                                                        <div class='col-md-6'>
+                                                            <p class=''>".$index.". ".$value->category_name."</p></div>";
+                                    $data_to_display.="<div class='col-md-3 text-center'>
+                                                            <p>Ksh ".number_format($current_year)."</p>
+                                                        </div>";
+                                    $data_to_display.="<div class='col-md-3 text-center'>
+                                                            <p>Ksh ".number_format($previous_year)."</p>
+                                                        </div>
+                                                    </div>";
+                                $index++;
+                            }
+                        }else{
+                            $data_to_display.="<div class='finance_body'>
+                                                    <p class='text-danger'>No cash flow from operating activities record!</p>
+                                                </div>";
+                        }
+                        // get the totals
+                        $data_to_display.="";
+                        $data_to_display.="<div class='finance_body_total_2'>
+                                                <div class='col-md-6'>
+                                                    <p class='name_title'>Total</p>
+                                                </div>
+                                                <div class='col-md-3 text-center px-2'>
+                                                    <p>Ksh ".number_format($total_current)."</p>
+                                                </div>
+                                                <div class='col-md-3 text-center'>
+                                                    <p>Ksh ".number_format($total_previous)."</p>
+                                                </div>
+                                            </div>";
+                    
+
+                        /**PAYMENTS / EXPENSES **/
+
+                        $data_to_display.="<div class='finance_header mt-2'>
+                                            <p class='title_name'>Cashflow Used in Operating Activity</p>
+                                        </div>";
+                        
+                        $index = 1;
+                        $total_current_expense = 0;
+                        $total_previous_expense = 0;
+
+                        // echo json_encode($operating_expense_categories);
+                        // return 0;
+                        if(count($operating_expense_categories) > 0 ){
+                            foreach($operating_expense_categories as $key => $value){
+                                $current_year = 0;
+                                $previous_year = 0;
+                                // get the current year
+                                foreach ($curr_year_operating_expenses as $key_activity => $key_value) {
+                                    if ($key_value['exp_category'] == $value) {
+                                        $current_year = $key_value['expense_amount'];
+                                        $total_current_expense += $current_year;
+                                    }
+                                }
+    
+                                // get the previous year
+                                foreach ($prev_year_operating_expenses as $key_activity => $key_value) {
+                                    if ($key_value['exp_category'] == $value) {
+                                        $previous_year = $key_value['expense_amount'];
+                                        $total_previous_expense+=$previous_year;
+                                    }
+                                }
+    
+                                // set the display values
+                                $data_to_display.="<div class='finance_body'>
+                                                    <div class='col-md-6'>
+                                                        <p class=''>".$index.". ".$value."</p></div>";
+                                $data_to_display.="<div class='col-md-3 text-center'>
+                                                        <p>Ksh ".number_format($current_year)."</p>
+                                                    </div>";
+                                $data_to_display.="<div class='col-md-3 text-center'>
+                                                        <p>Ksh ".number_format($previous_year)."</p>
+                                                    </div></div>";
+                                $index++;
+                            }
+                        }else{
+                            $data_to_display.="<div class='finance_body'>
+                                <p class='text-danger'>No Operating Activity Expenses!</p>
+                                </div>";
+                        }
+                        // get the totals
+                        $data_to_display.="";
+                        $data_to_display.="<div class='finance_body_total_2'>
+                                                <div class='col-md-6'>
+                                                    <p class='name_title'>Total</p>
+                                                </div>
+                                                <div class='col-md-3 text-center'>
+                                                    <p>Ksh ".number_format($total_current_expense)."</p>
+                                                </div>
+                                                    <div class='col-md-3 text-center'>
+                                                    <p>Ksh ".number_format($total_previous_expense)."</p>
+                                                </div>
+                                            </div>";
+                        $data_to_display.="<div class='finance_body_total mt-4 text-primary'>
+                                                <div class='col-md-6'>
+                                                    <p class='name_title'>Net Cashflow From Operating Revenue</p>
+                                                </div>
+                                                <div class='col-md-3 text-center'>
+                                                    <p>Ksh ".number_format($total_current - $total_current_expense)."</p>
+                                                </div>
+                                                    <div class='col-md-3 text-center'>
+                                                    <p>Ksh ".number_format($total_previous  - $total_previous_expense)."</p>
+                                                </div>
+                                            </div>";
+                    
+
+                        /**NET CASHFLOW FROM INVESTING ACTIVITIES **/
+
+                        $data_to_display.="<div class='finance_header mt-4'>
+                                            <p class='title_name'>Net Cashflow from Investing Activities</p>
+                                        </div>";
+                        
+                        $index = 1;
+                        $total_current = 0;
+                        $total_previous = 0;
+                        // echo json_encode($investing_revenue_categories);
+                        // return 0;
+                        if(count($investing_revenue_categories) > 0 ){
+                            foreach($investing_revenue_categories as $key => $value){
+                                $current_year = 0;
+                                $previous_year = 0;
+                                // get the current year
+                                foreach ($curr_investing_activities as $key_activity => $key_value) {
+                                    if ($key_value['revenue_category'] == $value->category_id) {
+                                        $current_year = $key_value['Total'];
+                                        $total_current += $current_year;
+                                    }
+                                }
+    
+                                // get the previous year
+                                foreach ($prev_investing_activities as $key_activity => $key_value) {
+                                    if ($key_value['revenue_category'] == $value) {
+                                        $previous_year = $key_value['Total'];
+                                        $total_previous+=$previous_year;
+                                    }
+                                }
+    
+                                // set the display values
+                                $data_to_display.="<div class='finance_body'>
+                                                    <div class='col-md-6'>
+                                                        <p class=''>".$index.". ".ucwords(strtolower($value->category_name))."</p></div>";
+                                $data_to_display.="<div class='col-md-3 text-center'>
+                                                        <p>Ksh ".number_format($current_year)."</p>
+                                                    </div>";
+                                $data_to_display.="<div class='col-md-3 text-center'>
+                                                        <p>Ksh ".number_format($previous_year)."</p>
+                                                    </div></div>";
+                                $index++;
+                            }
+                        }else{
+                            $data_to_display.="<div class='finance_body'>
+                                <p class='text-danger'>No Cashflow from Investing Activities!</p>
+                                </div>";
+                        }
+                        // get the totals
+                        $data_to_display.="";
+                        $data_to_display.="<div class='finance_body_total_2'>
+                                                <div class='col-md-6'>
+                                                    <p class='name_title'>Total</p>
+                                                </div>
+                                                <div class='col-md-3 text-center'>
+                                                    <p>Ksh ".number_format($total_current)."</p>
+                                                </div>
+                                                    <div class='col-md-3 text-center'>
+                                                    <p>Ksh ".number_format($total_previous)."</p>
+                                                </div>
+                                            </div>";
+                    
+
+                        /**PAYMENTS / EXPENSES **/
+
+                        $data_to_display.="<div class='finance_header mt-2'>
+                                            <p class='title_name'>Cashflow Used in Investing Activity</p>
+                                        </div>";
+                        
+                        $index = 1;
+                        $total_current_expense = 0;
+                        $total_previous_expense = 0;
+
+                        // echo json_encode($operating_expense_categories);
+                        // return 0;
+                        if(count($investing_expense_categories) > 0 ){
+                            foreach($investing_expense_categories as $key => $value){
+                                $current_year = 0;
+                                $previous_year = 0;
+                                // get the current year
+                                foreach ($curr_year_investing_expenses as $key_activity => $key_value) {
+                                    if ($key_value['exp_category'] == $value) {
+                                        $current_year = $key_value['expense_amount'];
+                                        $total_current_expense += $current_year;
+                                    }
+                                }
+    
+                                // get the previous year
+                                foreach ($prev_year_investing_expenses as $key_activity => $key_value) {
+                                    if ($key_value['exp_category'] == $value) {
+                                        $previous_year = $key_value['expense_amount'];
+                                        $total_previous_expense+=$previous_year;
+                                    }
+                                }
+    
+                                // set the display values
+                                $data_to_display.="<div class='finance_body'>
+                                                    <div class='col-md-6'>
+                                                        <p class=''>".$index.". ".$value."</p></div>";
+                                $data_to_display.="<div class='col-md-3 text-center'>
+                                                        <p>Ksh ".number_format($current_year)."</p>
+                                                    </div>";
+                                $data_to_display.="<div class='col-md-3 text-center'>
+                                                        <p>Ksh ".number_format($previous_year)."</p>
+                                                    </div></div>";
+                                $index++;
+                            }
+                        }else{
+                            $data_to_display.="<div class='finance_body'>
+                                <p class='text-danger'>No Investing Activity Expenses!</p>
+                                </div>";
+                        }
+                        // get the totals
+                        $data_to_display.="";
+                        $data_to_display.="<div class='finance_body_total_2'>
+                                                <div class='col-md-6'>
+                                                    <p class='name_title'>Total</p>
+                                                </div>
+                                                <div class='col-md-3 text-center'>
+                                                    <p>Ksh ".number_format($total_current_expense)."</p>
+                                                </div>
+                                                    <div class='col-md-3 text-center'>
+                                                    <p>Ksh ".number_format($total_previous_expense)."</p>
+                                                </div>
+                                            </div>";
+                        $data_to_display.="<div class='finance_body_total mt-4 text-primary'>
+                                                <div class='col-md-6'>
+                                                    <p class='name_title'>Net Cashflow From Investing Revenue</p>
+                                                </div>
+                                                <div class='col-md-3 text-center'>
+                                                    <p>Ksh ".number_format($total_current - $total_current_expense)."</p>
+                                                </div>
+                                                    <div class='col-md-3 text-center'>
+                                                    <p>Ksh ".number_format($total_previous  - $total_previous_expense)."</p>
+                                                </div>
+                                            </div>";
+                    
+
+                        /**NET CASHFLOW FROM FINANCING ACTIVITIES **/
+
+                        $data_to_display.="<div class='finance_header mt-4'>
+                                            <p class='title_name'>Net Cashflow from Financing Activities</p>
+                                        </div>";
+                        
+                        $index = 1;
+                        $total_current = 0;
+                        $total_previous = 0;
+                        // echo json_encode($curr_financing_activities);
+                        // return 0;
+                        if(count($financing_revenue_categories) > 0 ){
+                            foreach($financing_revenue_categories as $key => $value){
+                                $current_year = 0;
+                                $previous_year = 0;
+                                // get the current year
+                                foreach ($curr_financing_activities as $key_activity => $key_value) {
+                                    if ($key_value['revenue_category'] == $value->category_id) {
+                                        $current_year = $key_value['Total'];
+                                        $total_current += $current_year;
+                                    }
+                                }
+    
+                                // get the previous year
+                                foreach ($prev_finance_activities as $key_activity => $key_value) {
+                                    if ($key_value['revenue_category'] == $value) {
+                                        $previous_year = $key_value['Total'];
+                                        $total_previous+=$previous_year;
+                                    }
+                                }
+    
+                                // set the display values
+                                $data_to_display.="<div class='finance_body'>
+                                                    <div class='col-md-6'>
+                                                        <p class=''>".$index.". ".ucwords(strtolower($value->category_name))."</p></div>";
+                                $data_to_display.="<div class='col-md-3 text-center'>
+                                                        <p>Ksh ".number_format($current_year)."</p>
+                                                    </div>";
+                                $data_to_display.="<div class='col-md-3 text-center'>
+                                                        <p>Ksh ".number_format($previous_year)."</p>
+                                                    </div></div>";
+                                $index++;
+                            }
+                        }else{
+                            $data_to_display.="<div class='finance_body'>
+                                <p class='text-danger'>No Financing Activity records!</p>
+                                </div>";
+                        }
+                        // get the totals
+                        $data_to_display.="";
+                        $data_to_display.="<div class='finance_body_total_2'>
+                                                <div class='col-md-6'>
+                                                    <p class='name_title'>Total</p>
+                                                </div>
+                                                <div class='col-md-3 text-center'>
+                                                    <p>Ksh ".number_format($total_current)."</p>
+                                                </div>
+                                                    <div class='col-md-3 text-center'>
+                                                    <p>Ksh ".number_format($total_previous)."</p>
+                                                </div>
+                                            </div>";
+                    
+
+                        /**PAYMENTS / EXPENSES **/
+
+                        $data_to_display.="<div class='finance_header mt-2'>
+                                            <p class='title_name'>Cashflow Used in Financing Activity</p>
+                                        </div>";
+                        
+                        $index = 1;
+                        $total_current_expense = 0;
+                        $total_previous_expense = 0;
+
+                        // echo json_encode($operating_expense_categories);
+                        // return 0;
+                        if(count($financing_expense_categories) > 0 ){
+                            foreach($financing_expense_categories as $key => $value){
+                                $current_year = 0;
+                                $previous_year = 0;
+                                // get the current year
+                                foreach ($curr_year_financing_expenses as $key_activity => $key_value) {
+                                    if ($key_value['exp_category'] == $value) {
+                                        $current_year = $key_value['expense_amount'];
+                                        $total_current_expense += $current_year;
+                                    }
+                                }
+    
+                                // get the previous year
+                                foreach ($prev_year_financing_expenses as $key_activity => $key_value) {
+                                    if ($key_value['exp_category'] == $value) {
+                                        $previous_year = $key_value['expense_amount'];
+                                        $total_previous_expense+=$previous_year;
+                                    }
+                                }
+    
+                                // set the display values
+                                $data_to_display.="<div class='finance_body'>
+                                                    <div class='col-md-6'>
+                                                        <p class=''>".$index.". ".$value."</p></div>";
+                                $data_to_display.="<div class='col-md-3 text-center'>
+                                                        <p>Ksh ".number_format($current_year)."</p>
+                                                    </div>";
+                                $data_to_display.="<div class='col-md-3 text-center'>
+                                                        <p>Ksh ".number_format($previous_year)."</p>
+                                                    </div></div>";
+                                $index++;
+                            }
+                        }else{
+                            $data_to_display.="<div class='finance_body'>
+                                <p class='text-danger'>No Financing Activity Expenses!</p>
+                                </div>";
+                        }
+                        // get the totals
+                        $data_to_display.="";
+                        $data_to_display.="<div class='finance_body_total_2'>
+                                                <div class='col-md-6'>
+                                                    <p class='name_title'>Total</p>
+                                                </div>
+                                                <div class='col-md-3 text-center'>
+                                                    <p>Ksh ".number_format($total_current_expense)."</p>
+                                                </div>
+                                                    <div class='col-md-3 text-center'>
+                                                    <p>Ksh ".number_format($total_previous_expense)."</p>
+                                                </div>
+                                            </div>";
+                        $data_to_display.="<div class='finance_body_total mt-4 text-primary'>
+                                                <div class='col-md-6'>
+                                                    <p class='name_title'>Net Cashflow From Investing Revenue</p>
+                                                </div>
+                                                <div class='col-md-3 text-center'>
+                                                    <p>Ksh ".number_format($total_current - $total_current_expense)."</p>
+                                                </div>
+                                                    <div class='col-md-3 text-center'>
+                                                    <p>Ksh ".number_format($total_previous  - $total_previous_expense)."</p>
+                                                </div>
+                                            </div>";
+                    
+            echo $data_to_display;
+        }elseif(isset($_GET['income_statement_quarterly'])){
             // annual quater array
+            $year = $_GET['year'];
             $annual_quaters = [];
-            $q1a = date("Y-m-d",strtotime(date("Y")."0101"));
-            $q1b = date("Y-m-d",strtotime(date("Y")."0331"));
+            $q1a = date("Y-m-d",strtotime($year."0101"));
+            $q1b = date("Y-m-d",strtotime($year."0331"));
             array_push($annual_quaters,[$q1a,$q1b]);
-            $q2a = date("Y-m-d",strtotime(date("Y")."0401"));
-            $q2b = date("Y-m-d",strtotime(date("Y")."0630"));
+            $q2a = date("Y-m-d",strtotime($year."0401"));
+            $q2b = date("Y-m-d",strtotime($year."0630"));
             array_push($annual_quaters,[$q2a,$q2b]);
-            $q3a = date("Y-m-d",strtotime(date("Y")."0701"));
-            $q3b = date("Y-m-d",strtotime(date("Y")."0930"));
+            $q3a = date("Y-m-d",strtotime($year."0701"));
+            $q3b = date("Y-m-d",strtotime($year."0930"));
             array_push($annual_quaters,[$q3a,$q3b]);
-            $q4a = date("Y-m-d",strtotime(date("Y")."1001"));
-            $q4b = date("Y-m-d",strtotime(date("Y")."1231"));
+            $q4a = date("Y-m-d",strtotime($year."1001"));
+            $q4b = date("Y-m-d",strtotime($year."1231"));
             array_push($annual_quaters,[$q4a,$q4b]);
 
             // get the term incomes
-            $revenue = getOtherRevenueQuaterly($conn2);
+            $revenue = getOtherRevenueQuaterly($conn2,$year);
             
             // get the term income
             $term_income = getTermIncomeQuaterly($annual_quaters,$conn2);
@@ -1945,22 +2744,38 @@
             echo $data_to_display;
 
         }elseif (isset($_GET['incomestatement'])) {
+            $year = $_GET['year'];
+            
             // get the term incomes
             $revenue = getOtherRevenue($conn2);
+            
             //get the time periods between terms
             $term_arrays = getTermPeriods($conn2);
+            foreach ($term_arrays as $key => $value) {
+                $term_arrays[$key] = date("Y-m-d",strtotime($year.substr($term_arrays[$key],4)));
+            }
+            
             //get the income based on the period above
             $term_income = getTermIncome($term_arrays,$conn2);
+            
             //get the expenses per term
             $term_expense = getExpenses($term_arrays,$conn2);
+            
             //get all the expenses names
             $all_expenses = getAllExpenseNames($term_expense);
+            
             //get taxes
             $all_taxes = getTaxes($term_arrays,$conn2);
+            
             //term periods 
             $term_per = getTermPeriod($conn2);
+            foreach ($term_per as $key => $value) {
+                $term_per[$key] = date("Y-m-d",strtotime($year.substr($term_per[$key],4)));
+            }
+
             //get the current term period
             $years = date("Y");
+
             //create the table now
             //1. start with the table header
             $data_to_display = "<div class='financial_statements'>
@@ -3604,7 +4419,7 @@
             $fileLocation = $targetDirectory . $fileName;
 
             if (move_uploaded_file($file["tmp_name"], $fileLocation)) {
-                $fileLocation = "/sims/FinanceSupportingDocuments/".$_SESSION['dbname']."/".$_POST['student_admission']."/".$fileName;
+                $fileLocation = "/college_sims/FinanceSupportingDocuments/".$_SESSION['dbname']."/".$_POST['student_admission']."/".$fileName;
                 $response = array("fileName" => $fl_name, "fileLocation" => $fileLocation, "date_created" => date("YmdHis"));
                 echo json_encode($response);
             } else {
@@ -3622,11 +4437,12 @@
             $contact_person = $_POST['contact_person'];
             $revenue_description = $_POST['revenue_description'];
             $revenue_categories = $_POST['revenue_categories'];
+            $revenue_cash_activity = $_POST['revenue_cash_activity'];
 
             // SAVE THE DATA TO THE DATABASE
-            $insert = "INSERT INTO `school_revenue` (`name`,`amount`,`date_recorded`,`customer_name`,`customer_contact`,`contact_person`,`revenue_description`,`revenue_category`) VALUES (?,?,?,?,?,?,?,?)";
+            $insert = "INSERT INTO `school_revenue` (`name`,`amount`,`date_recorded`,`customer_name`,`customer_contact`,`contact_person`,`revenue_description`,`revenue_category`,`cash_flow_activities`) VALUES (?,?,?,?,?,?,?,?,?)";
             $stmt = $conn2->prepare($insert);
-            $stmt->bind_param("ssssssss",$revenue_name,$revenue_amount,$revenue_date,$customer_name,$customer_contacts_revenue,$contact_person,$revenue_description,$revenue_categories);
+            $stmt->bind_param("sssssssss",$revenue_name,$revenue_amount,$revenue_date,$customer_name,$customer_contacts_revenue,$contact_person,$revenue_description,$revenue_categories,$revenue_cash_activity);
             $stmt->execute();
 
             echo "<p class='text-success'>Revenue has been successfully recorded!</p>";
@@ -3666,6 +4482,31 @@
                 }
             }
 
+            // get the revenue categories
+            $select = "SELECT * FROM `settings` WHERE `sett` = 'revenue_categories';";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $revenue_categories = [];
+            if ($result) {
+                if ($row = $result->fetch_assoc()) {
+                    if(isJson($row['valued'])){
+                        $valued = json_decode($row['valued']);
+                        $revenue_categories = $valued;
+                    }
+                }
+            }
+            foreach($revenue as $key_revenue => $value){
+                $revenue_category = $value['revenue_category'];
+                $revenue[$key_revenue]['revenue_category_name'] = "Not-Set";
+                foreach($revenue_categories as $key_rev => $value_1){
+                    if($value_1->category_id == $revenue_category){
+                        $revenue[$key_revenue]['revenue_category_name'] = ucwords(strtolower($value_1->category_name));
+                        break;
+                    }
+                }
+            }
+
             // store in assoc array
             $revenue_data = new stdClass();
             $revenue_data->total_pages = $total_pages;
@@ -3673,6 +4514,7 @@
             $revenue_data->data = $revenue;
             $revenue_data->total_record = $count;
             $revenue_data->start_from = $limit_1;
+            $revenue_data->revenue_categories = $revenue_categories;
 
             // return the json encoded string to the front end
             echo json_encode($revenue_data);
@@ -3688,12 +4530,13 @@
             $customer_contacts_revenue = $_POST['customer_contacts_revenue'];
             $contact_person = $_POST['contact_person'];
             $revenue_description = $_POST['revenue_description'];
+            $edit_revenue_cash_activity = $_POST['edit_revenue_cash_activity'];
             $revenue_category = $_POST['revenue_category'];
 
             // UPDATE THE DATABASES ACCORDINGLY
-            $update = "UPDATE `school_revenue` SET `name` = ?, `amount` = ?, `date_recorded` = ?, `customer_name` = ?, `customer_contact` = ?, `contact_person` = ?, `revenue_description` = ?, `revenue_category` = ? WHERE `id` = ?";
+            $update = "UPDATE `school_revenue` SET `name` = ?, `amount` = ?, `date_recorded` = ?, `customer_name` = ?, `customer_contact` = ?, `contact_person` = ?, `revenue_description` = ?, `revenue_category` = ?, `cash_flow_activities` = ? WHERE `id` = ?";
             $stmt = $conn2->prepare($update);
-            $stmt->bind_param("sssssssss",$revenue_name,$revenue_amount,$revenue_date,$customer_name,$customer_contacts_revenue,$contact_person,$revenue_description,$revenue_category,$revenue_id);
+            $stmt->bind_param("ssssssssss",$revenue_name,$revenue_amount,$revenue_date,$customer_name,$customer_contacts_revenue,$contact_person,$revenue_description,$revenue_category,$edit_revenue_cash_activity,$revenue_id);
             $stmt->execute();
 
             // echo results
@@ -4117,6 +4960,7 @@
         //echo $salary_arr[$salary_index];
         return $payPlan;
     }
+
     function addMonthsFinance($mon,$month){
         $nt_mon = date_create($month);
         $no_of_mons = $mon." Months";
@@ -4125,6 +4969,13 @@
         return $nextMonth;
     }
 
+    function addYears($number,$year){
+        $init_year = date_create($year);
+        $no_of_mons = $number." Year";
+        $nxt_yr = date_add($init_year, date_interval_create_from_date_string($no_of_mons));
+        $next_year = date_format($nxt_yr, 'Y');
+        return $next_year;
+    }
 
     function getSalaryIndex($last_paid,$curr_salo,$salary_evo){
         if (strlen($salary_evo) > 0) {
@@ -4418,19 +5269,19 @@
         return $termExp;
     }
 
-    function getOtherRevenueQuaterly($conn2){
+    function getOtherRevenueQuaterly($conn2, $year){
         $annual_quaters = [];
-        $q1a = date("Y-m-d",strtotime(date("Y")."0101"));
-        $q1b = date("Y-m-d",strtotime(date("Y")."0331"));
+        $q1a = date("Y-m-d",strtotime($year."0101"));
+        $q1b = date("Y-m-d",strtotime($year."0331"));
         array_push($annual_quaters,[$q1a,$q1b]);
-        $q2a = date("Y-m-d",strtotime(date("Y")."0401"));
-        $q2b = date("Y-m-d",strtotime(date("Y")."0630"));
+        $q2a = date("Y-m-d",strtotime($year."0401"));
+        $q2b = date("Y-m-d",strtotime($year."0630"));
         array_push($annual_quaters,[$q2a,$q2b]);
-        $q3a = date("Y-m-d",strtotime(date("Y")."0701"));
-        $q3b = date("Y-m-d",strtotime(date("Y")."0930"));
+        $q3a = date("Y-m-d",strtotime($year."0701"));
+        $q3b = date("Y-m-d",strtotime($year."0930"));
         array_push($annual_quaters,[$q3a,$q3b]);
-        $q4a = date("Y-m-d",strtotime(date("Y")."1001"));
-        $q4b = date("Y-m-d",strtotime(date("Y")."1231"));
+        $q4a = date("Y-m-d",strtotime($year."1001"));
+        $q4b = date("Y-m-d",strtotime($year."1231"));
         array_push($annual_quaters,[$q4a,$q4b]);
 
 
@@ -5201,6 +6052,14 @@
             return 0;
         }
         return 0;
+    }
+    function check_revenue_category($array,$id){
+        foreach ($array as $key => $value) {
+            if ($value->category_id == $id) {
+                return true;
+            }
+        }
+        return false;
     }
     // get the student payment of transport per term if joined the same term the payment is taken for the only term
     function transportBalanceSinceAdmission($conn2,$admno){
@@ -6519,6 +7378,18 @@
         if ($result) {
             if ($row = $result->fetch_assoc()) {
                 return $row['short_code'];
+            }
+        }
+        return 0;
+    }
+    function getUrl($conn){
+        $select = "SELECT `send_sms_url` FROM `sms_api`";
+        $stmt = $conn->prepare($select);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result) {
+            if ($row = $result->fetch_assoc()) {
+                return $row['send_sms_url'];
             }
         }
         return 0;

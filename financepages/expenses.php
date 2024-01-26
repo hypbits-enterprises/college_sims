@@ -83,49 +83,40 @@
                         </div>
                     <div class="row border border-secondary m-1 p-1" >
                         <div class="conts col-md-4">
-                            <label class="form-control-label" for="exp_named">Expense Name: <br></label>
+                            <label class="form-control-label" for="exp_named"><b>Expense Name:</b> <br></label>
                             <input class="form-control w-100" type="text" name="exp_named" id="exp_named" placeholder = "Expense Name">
                         </div>
                         <div class="conts col-md-4">
-                            <label class="form-control-label" for="exp_cat">Expense category <br><span class="hide" id="load_expense_categs"><img src="images/ajax_clock_small.gif" id=""></span></label>
-                            <p id="expense_categories_holders"></p>
-                            <!-- <select class="form-control w-100" name="exp_cat" id="exp_cat">
-                                <option value="" id="main_sele" hidden >Select..</option>
-                                <option value="daily-expense">Daily Expenses</option>
-                                <option value="labour">Labour</option>
-                                <option value="utility">Utilities</option>
-                                <option value="officeExpenses">Office Expenses</option>
-                                <option value="Rent">Rent</option>
-                                <option value="taxes">Taxes</option>
-                                <option value="Bonus">Teacher`s Bonuses</option>
-                                <option value="Medical">Medical Bills</option>
-                                <option value="FoodStuffs">Food Stuffs</option>
-                                <option value="Transport">Transport</option>
-                                <option value="Construction">Construction</option>
-                                <option value="Licences">Licences</option>
-                                <option value="Clubs">Clubs</option>
-                                <option value="NHIF">NHIF</option>
-                                <option value="NSSF">NSSF</option>
-                                <option value="Cleaning">Cleaning</option>
-                                <option value="Exams">Exams</option>
-                                <option value="Marketing">Marketing</option>
-                                <option value="Salaries">Salaries</option>
-                            </select> -->
+                            <label class="form-control-label" for="exp_cat"><b>Expense category</b> <br><span class="hide" id="load_expense_categs"><img src="images/ajax_clock_small.gif" id=""></span></label>
+                            <div id="expense_categories_holders"></div>
+                        </div>
+                        <div class="col-md-4 form-group">
+                            <label for="expense_cash_activity" class="form-control-label"><b>Expense Activity</b></label>
+                            <select name="expense_cash_activity" id="expense_cash_activity" class="form-control w-100">
+                                <option value="" hidden>Select Option</option>
+                                <option value="1">Operating Activities</option>
+                                <option value="2">Investing Activities</option>
+                                <option value="3">Financing Activities</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 form-group">
+                            <label for="expense_record_date" class="form-control-label"><b>Expense Record Date</b></label>
+                            <input type="date" class="form-control w-100" id="expense_record_date" value="<?php echo date("Y-m-d");?>">
                         </div>
                         <div class="conts col-md-4">
-                            <label class="form-control-label" for="exp_quant">Expense quantity: <br></label>
+                            <label class="form-control-label" for="exp_quant"><b>Expense quantity:</b> <br></label>
                             <input class="form-control w-100" type="number" name="exp_quant" id="exp_quant"  min = "0" placeholder = "Quantity">
                         </div>
                         <div class="conts col-md-4">
-                            <label class="form-control-label" for="exp_amnt">Expense unit cost: <br></label>
+                            <label class="form-control-label" for="exp_amnt"><b>Expense unit cost:</b> <br></label>
                             <input class="form-control w-100" type="number" name="exp_amnt" id="exp_amnt" value = '0' min = "0" placeholder = "Amount">
                         </div>
                         <div class="conts col-md-4">
-                            <label class="form-control-label" for="unit_name">Unit Name: <small>(eg. kgs, litres)</small> <br></label>
+                            <label class="form-control-label" for="unit_name"><b>Unit Name:</b> <small>(eg. kgs, litres)</small> <br></label>
                             <input class="form-control w-100" type="text" name="unit_name" id="unit_name" placeholder = "Unit Name">
                         </div>
                         <div class="conts col-md-4">
-                            <label class="form-control-label" for="exp_total_amt">Expense Amount <br></label>
+                            <label class="form-control-label" for="exp_total_amt"><b>Expense Amount</b> <br></label>
                             <input class="form-control w-100" type="number" class="dis-abled" name="exp_total_amt" id="exp_total_amt" value = "0"  min = "0" readonly placeholder = "Amount">
                         </div>
                         <div class="conts col-md-4">

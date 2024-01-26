@@ -45,7 +45,9 @@ function getExpensesNDisplay(student_data) {
             col.push(element['expense_date']);
             col.push(element['unit_name']);
             col.push((index+1));
-            col.push(element['exp_ids']);
+            col.push(element['expid']);
+            col.push(element['expense_categories']);
+            col.push(element['date']);
             // var col = element.split(":");
             rowsColStudents_expenses.push(col);
         }
@@ -86,10 +88,22 @@ function editExpense() {
         cObj("show_total_unit_costs").innerHTML = data[0];
         cObj("total_unit_cost").value = data[0];
         cObj("expense_ids_in").value = data[9];
+        cObj("edit_expense_record_date").value = data[11];
+        
+        // set the expense activity
+        var edit_expense_cash_activity = cObj("edit_expense_cash_activity").children;
+        edit_expense_cash_activity[0].selected = true;
+        for (let index = 0; index < edit_expense_cash_activity.length; index++) {
+            const element = edit_expense_cash_activity[index];
+            if (element.value == data[10]) {
+                // console.log(element.value);
+                edit_expense_cash_activity[index].selected = true;
+            }
+        }
         
         cObj("edit_expense_windows").classList.remove("hide");
         var datapass = "getExpenseCategories=true";
-        sendDataPost("POST","/sims/ajax/administration/admissions.php",datapass,cObj("show_expense_category"),cObj("expense_cat_egories"));
+        sendDataPost("POST","ajax/administration/admissions.php",datapass,cObj("show_expense_category"),cObj("expense_cat_egories"));
         setTimeout(() => {
             var timeout = 0;
             var ids = setInterval(() => {
@@ -109,8 +123,8 @@ function editExpense() {
                     }
                     stopInterval(ids);
                 }
-            }, 100);
-        }, 200);
+            }, 10);
+        }, 10);
     }
 }
 

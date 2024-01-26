@@ -4124,7 +4124,7 @@
                     $expense_categories = $row['valued'];
                     // echo $expense_categories;
                     if(isJson_report($expense_categories)){
-                        $data_to_display = "<select class='form-control ' name='exp_cat' id='exp_cat'><option value='' id='main_sele' hidden >Select..</option>";
+                        $data_to_display = "<select class='form-control w-100' name='exp_cat' id='exp_cat'><option value='' id='main_sele' hidden >Select..</option>";
                         $expense_lists = json_decode($expense_categories);
                         for ($index=0; $index < count($expense_lists); $index++) { 
                             $data_to_display .= "<option value='".$expense_lists[$index]."'>".$expense_lists[$index]."</option>";
@@ -5996,7 +5996,7 @@
             echo $data_to_display;
 
         }elseif(isset($_POST['update_expense'])){
-            echo $_POST['expense_name'];
+            // echo $_POST['expense_name'];
             $expense_name = $_POST['expense_name'];
             $expense_category = $_POST['expense_category'];
             $expense_quantity = $_POST['expense_quantity'];
@@ -6004,10 +6004,13 @@
             $unit_name = $_POST['unit_name'];
             $total_unit_cost = $_POST['total_unit_cost'];
             $expense_ids_in = $_POST['expense_ids_in'];
+            $expense_cash_activity = $_POST['expense_cash_activity'];
+            $edit_expense_record_date = $_POST['edit_expense_record_date'];
 
-            $update = "UPDATE `expenses` SET `exp_name` = ? , `exp_category` = ?, `unit_name` = ?, `exp_quantity` = ?, `exp_unit_cost` = ?, `exp_amount` = ? WHERE `expid` = ?";
+            $update = "UPDATE `expenses` SET `exp_name` = '".$expense_name."' , `exp_category` = '".$expense_category."', `unit_name` = '".$unit_name."', `exp_quantity` = '".$expense_quantity."', `exp_unit_cost` = '".$unit_cost."', `exp_amount` = '".$total_unit_cost."', `expense_date` = '".$edit_expense_record_date."', `expense_categories` = '".$expense_cash_activity."' WHERE `expid` = '".$expense_ids_in."'";
             $stmt = $conn2->prepare($update);
-            $stmt->bind_param("sssssss",$expense_name,$expense_category,$unit_name,$expense_quantity,$unit_cost,$total_unit_cost,$expense_ids_in);
+            // echo $update;
+            // $stmt->bind_param("sssssssss",$expense_name,$expense_category,$unit_name,$expense_quantity,$unit_cost,$total_unit_cost,$edit_expense_record_date,$expense_cash_activity,$expense_ids_in);
             if($stmt->execute()){
                 echo "<p class='text-success p-2 border border-success rounded'>Data has been saved successfully!</p>";
             }else{

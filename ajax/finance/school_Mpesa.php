@@ -134,14 +134,16 @@
                                     if ($school == 0) {
                                         $partnerID = getPatnerId($conn);
                                         $shortcodes = getShortCode($conn);
+                                        $send_sms_url = getUrl($conn);
                                     }else {
                                         $partnerID = getPatnerId($conn2);
                                         $shortcodes = getShortCode($conn2);
+                                        $send_sms_url = getUrl($conn2);
                                     }
                                 //send sms
-                                $response = sendSmsToClient($phone_number,$message,$api_key,$partnerID,$shortcodes);
+                                $response = sendSmsToClient($phone_number,$message,$api_key,$partnerID,$shortcodes,$send_sms_url);
                                 if ($dont_send == 0) {
-                                    $response = sendSmsToClient($parentPhone,$message,$api_key,$partnerID,$shortcodes);
+                                    $response = sendSmsToClient($parentPhone,$message,$api_key,$partnerID,$shortcodes,$send_sms_url);
                                 }
                                 $decoded = json_decode($response);
                                 if (isset($decoded->{'message'})) {
@@ -185,12 +187,14 @@
                                 if ($school == 0) {
                                     $partnerID = getPatnerId($conn);
                                     $shortcodes = getShortCode($conn);
+                                    $send_sms_url = getUrl($conn);
                                 }else {
                                     $partnerID = getPatnerId($conn2);
                                     $shortcodes = getShortCode($conn2);
+                                    $send_sms_url = getUrl($conn2);
                                 }
                                 //send sms
-                                $response = sendSmsToClient($phone_number,$message,$api_key,$partnerID,$shortcodes);
+                                $response = sendSmsToClient($phone_number,$message,$api_key,$partnerID,$shortcodes,$send_sms_url);
                                 $decoded = json_decode($response);
                                 if (isset($decoded->{'message'})) {
                                     // echo $decoded->{'message'};

@@ -59,6 +59,7 @@ cObj("save_revenue").onclick = function () {
     err += checkBlank("revenue_amount");
     err += checkBlank("revenue_date");
     err += checkBlank("customer_name");
+    err += checkBlank("revenue_cash_activity");
     // err += (cObj("revenue_categories") != undefined) ? 0 : 1;
     // console.log(cObj("revenue_category"));
     
@@ -71,7 +72,7 @@ cObj("save_revenue").onclick = function () {
 
     if (err == 0) {
         cObj("error_handler_revenue_collection").innerHTML = "<p class='text-danger'></p>";
-        let datapass = "add_revenue=true&revenue_name="+valObj("revenue_name")+"&revenue_amount="+valObj("revenue_amount")+"&revenue_date="+valObj("revenue_date")+"&customer_name="+valObj("customer_name")+"&customer_contacts_revenue="+valObj("customer_contacts_revenue")+"&contact_person="+valObj("contact_person")+"&revenue_description="+valObj("revenue_description")+"&revenue_categories="+valObj("revenue_category");
+        let datapass = "add_revenue=true&revenue_name="+valObj("revenue_name")+"&revenue_amount="+valObj("revenue_amount")+"&revenue_date="+valObj("revenue_date")+"&customer_name="+valObj("customer_name")+"&customer_contacts_revenue="+valObj("customer_contacts_revenue")+"&contact_person="+valObj("contact_person")+"&revenue_description="+valObj("revenue_description")+"&revenue_categories="+valObj("revenue_category")+"&revenue_cash_activity="+valObj("revenue_cash_activity");
         sendDataPost("POST","ajax/finance/financial.php",datapass,cObj("error_handler_revenue_collection"),cObj("save_revenue_loader"));
         setTimeout(() => {
             var ids = setInterval(() => {
@@ -127,10 +128,10 @@ function getRevenue(page = 1) {
 }
 
 function display_revenue(data,start_from) {
-    var data_to_display = "<br><h4 class='text-center'><u>Revenue List</u></h4><table class='table'><thead><tr><th>No.</th><th>Name</th><th>Amount</th><th>Date Recorded.</th><th>Customer Name</th><th>Customer Contact</th><th>Contact Person</th><th>Action</th></tr></thead><tbody id='revenue_lists_all_display'>";
+    var data_to_display = "<br><h4 class='text-center'><u>Revenue List</u></h4><table class='table'><thead><tr><th>No.</th><th>Name</th><th>Amount</th><th>Date Recorded.</th><th>Revenue Name.</th><th>Contact Person</th><th>Customer Contact</th><th>Action</th></tr></thead><tbody id='revenue_lists_all_display'>";
     for (let index = 0; index < data.length; index++) {
         const element = data[index];
-        data_to_display+="<tr><td><input hidden value='"+JSON.stringify(element)+"' id='revenue_values_"+element.id+"'>"+(start_from+index+1)+"</td><td>"+element.name+"</td><td>Kes "+comma3(element.amount)+"</td><td>"+formatDate_1(element.date_recorded+"000000")+"</td><td>"+element.customer_name+"</td><td>"+element.customer_contact+"</td><td>"+element.contact_person+"</td><td><span style='font-size:12px;' class='link edit_revenue_window' id='edit_revenue_window_"+element.id+"'><i class='fa fa-pen-fancy'></i> Edit </span> <span style='font-size:12px;' class='link delete_revenue_window' id='delete_revenue_window_"+element.id+"'><i class='fa fa-trash'></i> Delete</span></td></tr>";
+        data_to_display+="<tr><td><input hidden value='"+JSON.stringify(element)+"' id='revenue_values_"+element.id+"'>"+(start_from+index+1)+"</td><td>"+element.name+"</td><td>Kes "+comma3(element.amount)+"</td><td>"+formatDate_1(element.date_recorded+"000000")+"</td><td>"+element.revenue_category_name+"</td><td>"+element.contact_person+"</td><td>"+element.customer_contact+"</td><td><span style='font-size:12px;' class='link edit_revenue_window' id='edit_revenue_window_"+element.id+"'><i class='fa fa-pen-fancy'></i> Edit </span> <span style='font-size:12px;' class='link delete_revenue_window' id='delete_revenue_window_"+element.id+"'><i class='fa fa-trash'></i> Delete</span></td></tr>";
     }
     data_to_display+="</tbody></table>";
 
@@ -288,7 +289,16 @@ function edit_revenues() {
             }
         }, 10);
     }, 10);
-
+    
+    // set the value for the revenue cash flow activity
+    var select_children = cObj("edit_revenue_cash_activity").children;
+    select_children[0].selected = true;
+    for (let index = 0; index < select_children.length; index++) {
+        const element = select_children[index];
+        if (element.value == row_value.cash_flow_activities) {
+            element.selected = true;
+        }
+    }
 
     // fill all fields with the row data
     cObj("revenue_name_edit").value = row_value.name;
@@ -314,6 +324,7 @@ cObj("save_revenue_edit").onclick = function () {
     err += checkBlank("customer_name_edit");
     err += checkBlank("customer_contacts_revenue_edit");
     err += checkBlank("contact_person_edit");
+    err += checkBlank("edit_revenue_cash_activity");
     // err += checkBlank("revenue_description_edit");
 
     if (cObj("edit_revenue_category") == undefined) {
@@ -322,7 +333,7 @@ cObj("save_revenue_edit").onclick = function () {
 
     if (err == 0) {
         cObj("error_handler_revenue_collection_edit").innerHTML = "<p class='text-danger'></p>";
-        let datapass = "update_revenue=true&revenue_name="+valObj("revenue_name_edit")+"&revenue_amount="+valObj("revenue_amount_edit")+"&revenue_date="+valObj("revenue_date_edit")+"&customer_name="+valObj("customer_name_edit")+"&customer_contacts_revenue="+valObj("customer_contacts_revenue_edit")+"&contact_person="+valObj("contact_person_edit")+"&revenue_description="+valObj("revenue_description_edit")+"&revenue_id="+valObj("revenue_ids")+"&revenue_category="+valObj("edit_revenue_category");
+        let datapass = "update_revenue=true&revenue_name="+valObj("revenue_name_edit")+"&revenue_amount="+valObj("revenue_amount_edit")+"&revenue_date="+valObj("revenue_date_edit")+"&customer_name="+valObj("customer_name_edit")+"&customer_contacts_revenue="+valObj("customer_contacts_revenue_edit")+"&contact_person="+valObj("contact_person_edit")+"&revenue_description="+valObj("revenue_description_edit")+"&revenue_id="+valObj("revenue_ids")+"&revenue_category="+valObj("edit_revenue_category")+"&edit_revenue_cash_activity="+valObj("edit_revenue_cash_activity");
         sendDataPost("POST","ajax/finance/financial.php",datapass,cObj("error_handler_revenue_collection_edit"),cObj("update_revenue_loader"));
         setTimeout(() => {
             var ids = setInterval(() => {
@@ -632,19 +643,27 @@ function showdatefunct() {
     }
 }
 
-cObj("cash_flow_statement").onchange = function () {
-    var this_value = this.value;
+cObj("generate_finance_reports").onclick = function () {
+    var this_value = cObj("cash_flow_statement").value;
     if (this_value == "income_statement") {
-        incomeStatement();
-    }else if(this_value == "income_statement_quaterly"){
-        income_statement_quaterly();
+        incomeStatement(valObj("year_of_statement"));
+    }else if(this_value == "income_statement_quarterly"){
+        income_statement_quarterly(valObj("year_of_statement"));
+    }else if (this_value == "annual_report") {
+        annual_cashflow_report(valObj("year_of_statement"));
     }
 }
 
-function income_statement_quaterly() {
-    var datapass = "?income_statement_quaterly=true";
+function annual_cashflow_report(year) {
+    var datapass = "?cashflow_statement_annual=true&year="+year;
     sendData1("GET", "finance/financial.php", datapass, cObj("finance_statements"));
 }
+
+function income_statement_quarterly(year) {
+    var datapass = "?income_statement_quarterly=true&year="+year;
+    sendData1("GET", "finance/financial.php", datapass, cObj("finance_statements"));
+}
+
 
 cObj("confirmyes").onclick = function () {
     // add sms functionality to the payment system
@@ -1193,7 +1212,7 @@ function checkerrorstrans() {
 var a;
 function printFeesReciept() {
     a = window.open('', '', 'height=500px, width=500px');
-    a.document.write("<html><head><link rel='stylesheet' href='/sims/assets/CSS/homepage2.css'></head><body>");
+    a.document.write("<html><head><link rel='stylesheet' href='../../assets/CSS/homepage2.css'></head><body>");
     a.document.write(cObj("fees_reciept").innerHTML);
     a.document.write("</body></html>");
     a.document.close();
@@ -1215,7 +1234,7 @@ function closeWin() {
 var b;
 function printFeesReminded() {
     a = window.open('', '', 'height=480px, width=700px');
-    a.document.write("<html><head><link rel='stylesheet' href='/sims/assets/CSS/homepage2.css'></head><body>");
+    a.document.write("<html><head><link rel='stylesheet' href='../../assets/CSS/homepage2.css'></head><body>");
     a.document.write(cObj("print_reminded").innerHTML);
     a.document.write("</body></html>");
     a.document.close();
@@ -1233,7 +1252,7 @@ function closeWinB() {
 var c;
 function printFeesStructure() {
     c = window.open('', '', 'height=480px, width=700px');
-    c.document.write("<html><head><link rel='stylesheet' href='/sims/assets/CSS/homepage2.css'></head><body>");
+    c.document.write("<html><head><link rel='stylesheet' href='../../assets/CSS/homepage2.css'></head><body>");
     c.document.write(cObj("fees_struct-in").innerHTML);
     c.document.write("</body></html>");
     c.document.close();
@@ -1387,6 +1406,8 @@ function addExpense() {
         err += checkBlank("exp_quant");
         err += checkBlank("exp_amnt");
         err += checkBlank("exp_total_amt");
+        err += checkBlank("exp_cat");
+        err += checkBlank("exp_cat");
         if (err == 0) {
             cObj("err_hndler_expenses").innerHTML = "<p class='green_notice'></p>";
             err = 0;
@@ -1399,7 +1420,7 @@ function addExpense() {
                 cObj("err_hndler_expenses").innerHTML = "<p class='green_notice'></p>";
             }
             if (err == 0) {
-                var datapass = "?addExpenses=true&exp_name=" + cObj("exp_named").value + "&expensecat=" + cObj("exp_cat").value + "&quantity=" + cObj("exp_quant").value + "&unitcost=" + cObj("exp_amnt").value + "&total=" + cObj("exp_total_amt").value + "&unit_name=" + cObj("unit_name").value;
+                var datapass = "?addExpenses=true&exp_name=" + cObj("exp_named").value + "&expensecat=" + cObj("exp_cat").value + "&quantity=" + cObj("exp_quant").value + "&unitcost=" + cObj("exp_amnt").value + "&total=" + cObj("exp_total_amt").value + "&unit_name=" + cObj("unit_name").value+"&expense_cash_activity="+valObj("expense_cash_activity")+"&expense_record_date="+valObj("expense_record_date");
                 sendData1("GET", "finance/financial.php", datapass, cObj("err_hndler_expenses"));
                 setTimeout(() => {
                     var timeout = 0;
@@ -1586,8 +1607,8 @@ cObj("disp_btns").onclick = function () {
 }
 
 //get the income finance statement
-function incomeStatement() {
-    var datapass = "?incomestatement=true";
+function incomeStatement(year) {
+    var datapass = "?incomestatement=true&year="+year;
     sendData1("GET", "finance/financial.php", datapass, cObj("finance_statements"));
 }
 //create the select teachers to get the teachers in their pay roll
@@ -4012,6 +4033,8 @@ cObj("save_expense_details").onclick = function () {
         err+=checkBlank("edit_expense_category");
         err+=checkBlank("edit_expense_quantity");
         err+=checkBlank("edit_expense_unit_cost");
+        err+=checkBlank("edit_expense_cash_activity");
+        err+=checkBlank("edit_expense_record_date");
         
         if (err == 0) {
             cObj("error_handlers_expenses").innerHTML = "";
@@ -4022,10 +4045,12 @@ cObj("save_expense_details").onclick = function () {
             var edit_expense_unit_name = valObj("edit_expense_unit_name");
             var total_unit_cost = valObj("total_unit_cost");
             var expense_ids_in = valObj("expense_ids_in");
+            var edit_expense_cash_activity = valObj("edit_expense_cash_activity");
+            var edit_expense_record_date = valObj("edit_expense_record_date");
     
     
-            var datapass = "update_expense=true&expense_name="+edit_expense_name+"&expense_category="+edit_expense_category+"&expense_quantity="+edit_expense_quantity+"&unit_cost="+edit_expense_unit_cost+"&unit_name="+edit_expense_unit_name+"&total_unit_cost="+total_unit_cost+"&expense_ids_in="+expense_ids_in;
-            sendDataPost("POST","/sims/ajax/administration/admissions.php",datapass,cObj("error_handlers_expenses"),cObj("expense_editor_loader"));
+            var datapass = "update_expense=true&expense_name="+edit_expense_name+"&expense_category="+edit_expense_category+"&expense_quantity="+edit_expense_quantity+"&unit_cost="+edit_expense_unit_cost+"&unit_name="+edit_expense_unit_name+"&total_unit_cost="+total_unit_cost+"&expense_ids_in="+expense_ids_in+"&expense_cash_activity="+edit_expense_cash_activity+"&edit_expense_record_date="+edit_expense_record_date;
+            sendDataPost("POST","ajax/administration/admissions.php",datapass,cObj("error_handlers_expenses"),cObj("expense_editor_loader"));
             setTimeout(() => {
                 var timeout = 0;
                 var ids = setInterval(() => {
@@ -4058,7 +4083,7 @@ cObj("delete_promt_expenses").onclick = function () {
 cObj("delete_expense_entry").onclick = function () {
     var expense_ids_in = valObj("expense_ids_in");
     var datapass = "delete_expense=true&exp_ids="+expense_ids_in;
-    sendDataPost("POST","/sims/ajax/administration/admissions.php",datapass,cObj("error_handlers_expenses"),cObj("expense_editor_loader"));
+    sendDataPost("POST","ajax/administration/admissions.php",datapass,cObj("error_handlers_expenses"),cObj("expense_editor_loader"));
     setTimeout(() => {
         var timeout = 0;
         var ids = setInterval(() => {
@@ -4096,7 +4121,7 @@ cObj("upload_supporting_documents").onclick = function () {
         formData.append("student_admission", customFileName);
       
         var xhr = new XMLHttpRequest();
-        xhr.open("POST", "/sims/ajax/finance/financial.php", true);
+        xhr.open("POST", "../../ajax/finance/financial.php", true);
         
         xhr.upload.onprogress = function (e) {
           if (e.lengthComputable) {

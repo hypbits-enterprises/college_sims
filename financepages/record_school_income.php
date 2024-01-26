@@ -89,6 +89,15 @@
                         <input type="number" name="revenue_amount" id="revenue_amount" class="form-control w-100" placeholder="e.g, 1000">
                     </div>
                     <div class="col-md-4 form-group">
+                        <label for="revenue_cash_activity" class="form-control-label"><b>Revenue Cashflow Activity</b></label>
+                        <select name="revenue_cash_activity" id="revenue_cash_activity" class="form-control w-100">
+                            <option value="" hidden>Select Option</option>
+                            <option value="1">Operating Activities</option>
+                            <option value="2">Investing Activities</option>
+                            <option value="3">Financing Activities</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 form-group">
                         <label for="revenue_category" class="form-control-label"><b>Revenue Categories</b> <img class="hide" src="images/ajax_clock_small.gif" id="revenue_categories_loader"></label>
                         <div id="revenue_categories_list"></div>
                     </div>
@@ -132,6 +141,15 @@
                         <input type="number" name="revenue_amount_edit" id="revenue_amount_edit" class="form-control w-100" placeholder="e.g, 1000">
                     </div>
                     <div class="col-md-4 form-group">
+                        <label for="edit_revenue_cash_activity" class="form-control-label"><b>Revenue Cashflow Activity</b></label>
+                        <select name="edit_revenue_cash_activity" id="edit_revenue_cash_activity" class="form-control w-100">
+                            <option value="" hidden>Select Option</option>
+                            <option value="1">Operating Activities</option>
+                            <option value="2">Investing Activities</option>
+                            <option value="3">Financing Activities</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 form-group">
                         <label for="edit_revenue_category" class="form-control-label"><b>Revenue Categories</b> <img class="hide" src="images/ajax_clock_small.gif" id="edit_revenue_categories_loader"></label>
                         <div id="edit_revenue_category_holder"></div>
                     </div>
@@ -157,7 +175,7 @@
                     </div>
                     <div class="col-md-12">
                         <div id="error_handler_revenue_collection_edit"></div>
-                        <button id="save_revenue_edit"><i class="fa fa-save"></i> Save Revenue <img class="hide" src="images/ajax_clock_small.gif" id="update_revenue_loader"></button>
+                        <button id="save_revenue_edit"><i class="fa fa-save"></i> Update Revenue <img class="hide" src="images/ajax_clock_small.gif" id="update_revenue_loader"></button>
                     </div>
                 </div>
             </div>

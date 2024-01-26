@@ -1,14 +1,15 @@
 <?php
   //another one
-  function sendSmsToClient($phone_number,$message,$apikey,$partnerID,$shortcodes){
+  function sendSmsToClient($phone_number,$message,$apikey,$partnerID,$shortcodes,$url = null){
     $partnerID = $partnerID;
     $apikey = $apikey;
     $shortcode = $shortcodes;
+    $url = $url != null ? $url : "https://mysms.celcomafrica.com/api/services/sendsms/";
     
     $mobile = $phone_number; // Bulk messages can be comma separated
     $message = $message;
     
-    $finalURL = "https://mysms.celcomafrica.com/api/services/sendsms/?apikey=" . urlencode($apikey) . "&partnerID=" . urlencode($partnerID) . "&message=" . urlencode($message) . "&shortcode=$shortcode&mobile=$mobile";
+    $finalURL = $url."?apikey=" . urlencode($apikey) . "&partnerID=" . urlencode($partnerID) . "&message=" . urlencode($message) . "&shortcode=$shortcode&mobile=$mobile";
     //$finalURL = "https://quicksms.advantasms.com/api/services/sendsms/?message=".urlencode($message)."&mobile=".$phone_number."&shortcode=".urlencode($shortcodes)."&partnerID=".urlencode($partnerID)."&apikey=".urlencode($apikey)."";
     //$finalURL = "https://quicksms.advantasms.com/api/services/sendsms/?message=Test Message&mobile=0704241905&shortcode=JuaMobile&partnerID=3468&apikey=9dbd3d8b9ae3d183db6598e815d66f12";
     $ch = curl_init();

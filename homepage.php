@@ -2307,12 +2307,23 @@ function checkPresnt($array, $string){
                     Are you sure you want to delete this expense entry! <br>
                     <span id="delete_expense_entry" class="text-danger link"><i class="fas fa-trash"></i>Delete</span>
                 </p>
-                <div class="container w-100" id="">
+                <div class="cont w-100" id="">
                     <label for="edit_expense_name" class="form-label">Expense Name</label>
                     <input type="text" class="form-control" id="edit_expense_name" placeholder="Expense Name">
                     
+                    <label for="edit_expense_record_date" class="form-label">Expense Record Date</label>
+                    <input type="date" class="form-control" id="edit_expense_record_date" value="<?=date("Y-m-d")?>">
+
                     <label for="edit_expense_category" class="form-label">Expense Category <img src="images/ajax_clock_small.gif" id="expense_cat_egories" class="hide"></label>
                     <p id="show_expense_category"></p>
+
+                    <label for="edit_expense_cash_activity" class="form-control-label"><b>Expense Activity</b></label>
+                    <select name="edit_expense_cash_activity" id="edit_expense_cash_activity" class="form-control w-100">
+                        <option value="" hidden>Select Option</option>
+                        <option value="1">Operating Activities</option>
+                        <option value="2">Investing Activities</option>
+                        <option value="3">Financing Activities</option>
+                    </select>
                     
                     <label for="edit_expense_quantity" class="form-label">Expense Quantity <small>(Number of unit)</small></label>
                     <input type="number" class="form-control" id="edit_expense_quantity" placeholder="Expense Quantity">
@@ -3125,7 +3136,7 @@ function checkPresnt($array, $string){
     </div>
     </div>
     <div class="copyright">
-        <p> Last System Update: 1st August 2023 @ 12:01PM || Ladybird SMIS Copyright © 2020 - <?php echo date("Y", strtotime("3 hour")); ?> | All rights reserved</p>
+        <p> Last System Update: 26th January 2024 @ 10:01AM || Ladybird SMIS Copyright © 2020 - <?php echo date("Y", strtotime("3 hour")); ?> | All rights reserved</p>
     </div>
     <script src="assets/JS/functions.js"></script>
     <script src="assets/JS/print.min.js"></script>
