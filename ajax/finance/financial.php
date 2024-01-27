@@ -1689,13 +1689,66 @@
                 }
             }
             echo "<p class='text-success'>Data has been updated successfully!</p>";
-        }elseif(isset($_GET['cashflow_statement_annual'])){
+        }elseif(isset($_GET['cashflow_statement'])){
+            // report type
+            $report_type = $_GET['report_type'];
+
             // get the current and the previous financial year
             $year = date("Y", strtotime($_GET['year']."0101")) * 1;
-            $year_1 = ($year*1 - 1);
-            $year_2 = ($year_1*1 - 1);
-            $previous_financial_year = [$year_2,$year_1];
-            $current_financial_year = [$year_1,$year];
+            if($_GET['report_type'] == "annual_report"){
+                $year_1 = ($year*1 - 1);
+                $year_2 = ($year_1*1 - 1);
+                $previous_financial_year = [$year_2,$year_1];
+                $current_financial_year = [$year_1,$year];
+                $curr_year = [date("Ymd",strtotime($current_financial_year[0]."-07-01")),date("Ymd",strtotime($current_financial_year[1]."-06-30"))];
+                $prev_year = [date("Ymd",strtotime($previous_financial_year[0]."-07-01")),date("Ymd",strtotime($previous_financial_year[1]."-06-30"))];
+                
+                $current_display_year = date("Y",strtotime($curr_year[0]))."/".date("Y",strtotime($curr_year[1]));
+                $previous_display_year = date("Y",strtotime($prev_year[0]))."/".date("Y",strtotime($prev_year[1]));
+            }elseif($_GET['report_type'] == "quarterly_report_sep"){
+                $year_1 = ($year*1 - 1);
+                $year_2 = ($year_1*1 - 1);
+                $previous_financial_year = [$year_2,$year_1];
+                $current_financial_year = [$year_1,$year];
+                $curr_year = [date("Ymd",strtotime($current_financial_year[1]."-07-01")),date("Ymd",strtotime($current_financial_year[1]."-09-30"))];
+                $prev_year = [date("Ymd",strtotime($previous_financial_year[1]."-07-01")),date("Ymd",strtotime($previous_financial_year[1]."-09-30"))];
+                // echo json_encode($curr_year);
+                // return 0;
+                $current_display_year = date("M dS Y",strtotime($curr_year[1]));
+                $previous_display_year = date("M dS Y",strtotime($prev_year[1]));
+            }elseif($_GET['report_type'] == "quarterly_report_dec"){
+                $year_1 = ($year*1 - 1);
+                $year_2 = ($year_1*1 - 1);
+                $previous_financial_year = [$year_2,$year_1];
+                $current_financial_year = [$year_1,$year];
+                $curr_year = [date("Ymd",strtotime($current_financial_year[1]."-07-01")),date("Ymd",strtotime($current_financial_year[1]."-12-31"))];
+                $prev_year = [date("Ymd",strtotime($previous_financial_year[1]."-07-01")),date("Ymd",strtotime($previous_financial_year[1]."-12-31"))];
+                // echo json_encode($curr_year);
+                // return 0;
+                $current_display_year = date("M dS Y",strtotime($curr_year[1]));
+                $previous_display_year = date("M dS Y",strtotime($prev_year[1]));
+            }elseif($_GET['report_type'] == "quarterly_report_mar"){
+                $year_1 = ($year*1 - 1);
+                $year_2 = ($year_1*1 - 1);
+                $previous_financial_year = [$year_2,$year_1];
+                $current_financial_year = [$year_1,$year];
+                $curr_year = [date("Ymd",strtotime((($current_financial_year[0]*1)+1)."-07-01")),date("Ymd",strtotime((($current_financial_year[1]*1)+1)."-03-31"))];
+                $prev_year = [date("Ymd",strtotime((($previous_financial_year[0]*1)+1)."-07-01")),date("Ymd",strtotime((($previous_financial_year[1]*1)+1)."-03-31"))];
+                // echo json_encode($curr_year);
+                // return 0;
+                $current_display_year = date("M dS Y",strtotime($curr_year[1]));
+                $previous_display_year = date("M dS Y",strtotime($prev_year[1]));
+            }else{
+                $year_1 = ($year*1 - 1);
+                $year_2 = ($year_1*1 - 1);
+                $previous_financial_year = [$year_2,$year_1];
+                $current_financial_year = [$year_1,$year];
+                $curr_year = [date("Ymd",strtotime($current_financial_year[0]."-07-01")),date("Ymd",strtotime($current_financial_year[1]."-06-30"))];
+                $prev_year = [date("Ymd",strtotime($previous_financial_year[0]."-07-01")),date("Ymd",strtotime($previous_financial_year[1]."-06-30"))];
+                
+                $current_display_year = date("Y",strtotime($curr_year[0]))."/".date("Y",strtotime($curr_year[1]));
+                $previous_display_year = date("Y",strtotime($prev_year[0]))."/".date("Y",strtotime($prev_year[1]));
+            }
             
             // start getting the revenue catgories present
             $select = "SELECT * FROM `settings` WHERE `sett` = 'revenue_categories';";
@@ -1714,7 +1767,6 @@
             
             // current year operating activities
             $stmt = $conn2->prepare($select);
-            $curr_year = [date("Ymd",strtotime($current_financial_year[0]."-07-01")),date("Ymd",strtotime($current_financial_year[1]."-06-30"))];
             $stmt->bind_param("ss",$curr_year[0],$curr_year[1]);
             $stmt->execute();
             $result = $stmt->get_result();
@@ -1739,6 +1791,7 @@
                     array_push($curr_operating_activities,$row);
                 }
             }
+
             // get the fees for this year
             $student_fees = "SELECT COUNT(*) AS 'Records', SUM(`amount`) AS 'Total' FROM `finance` WHERE `date_of_transaction` BETWEEN ? AND ?";
             $stmt = $conn2->prepare($student_fees);
@@ -1764,7 +1817,6 @@
 
             // operating revenue previous year
             $stmt = $conn2->prepare($select);
-            $prev_year = [date("Ymd",strtotime($previous_financial_year[0]."-07-01")),date("Ymd",strtotime($previous_financial_year[1]."-06-30"))];
             $stmt->bind_param("ss",$prev_year[0],$prev_year[1]);
             $stmt->execute();
             $result = $stmt->get_result();
@@ -1819,7 +1871,6 @@
             
             // current year investing activities
             $stmt = $conn2->prepare($select);
-            $curr_year = [date("Ymd",strtotime($current_financial_year[0]."-07-01")),date("Ymd",strtotime($current_financial_year[1]."-06-30"))];
             $stmt->bind_param("ss",$curr_year[0],$curr_year[1]);
             $stmt->execute();
             $result = $stmt->get_result();
@@ -1845,7 +1896,6 @@
 
             // operating investing previous year
             $stmt = $conn2->prepare($select);
-            $prev_year = [date("Ymd",strtotime($previous_financial_year[0]."-07-01")),date("Ymd",strtotime($previous_financial_year[1]."-06-30"))];
             $stmt->bind_param("ss",$prev_year[0],$prev_year[1]);
             $stmt->execute();
             $result = $stmt->get_result();
@@ -1873,7 +1923,6 @@
             
             // current year financing activities
             $stmt = $conn2->prepare($select);
-            $curr_year = [date("Ymd",strtotime($current_financial_year[0]."-07-01")),date("Ymd",strtotime($current_financial_year[1]."-06-30"))];
             $stmt->bind_param("ss",$curr_year[0],$curr_year[1]);
             $stmt->execute();
             $result = $stmt->get_result();
@@ -1899,7 +1948,6 @@
 
             // financing activity previous year
             $stmt = $conn2->prepare($select);
-            $prev_year = [date("Ymd",strtotime($previous_financial_year[0]."-07-01")),date("Ymd",strtotime($previous_financial_year[1]."-06-30"))];
             $stmt->bind_param("ss",$prev_year[0],$prev_year[1]);
             $stmt->execute();
             $result = $stmt->get_result();
@@ -1927,7 +1975,6 @@
             $operating_expense_categories = [];
             $select = "SELECT `exp_category`, COUNT(*) AS 'count_expense_category', SUM(`exp_amount`) AS 'expense_amount' FROM `expenses`  WHERE `expense_categories` = '1' AND `expense_date` BETWEEN ? AND ? GROUP BY `exp_category`";
             $stmt = $conn2->prepare($select);
-            $curr_year = [date("Y-m-d",strtotime($current_financial_year[0]."-07-01")),date("Y-m-d",strtotime($current_financial_year[1]."-06-30"))];
             $stmt->bind_param("ss",$curr_year[0],$curr_year[1]);
             $stmt->execute();
             $result = $stmt->get_result();
@@ -1943,7 +1990,6 @@
             // get the previoud years
             $prev_year_operating_expenses = [];
             $stmt = $conn2->prepare($select);
-            $prev_year = [date("Y-m-d",strtotime($previous_financial_year[0]."-07-01")),date("Y-m-d",strtotime($previous_financial_year[1]."-06-30"))];
             $stmt->bind_param("ss",$prev_year[0],$prev_year[1]);
             $stmt->execute();
             $result = $stmt->get_result();
@@ -1962,7 +2008,6 @@
             $investing_expense_categories = [];
             $select = "SELECT `exp_category`, COUNT(*) AS 'count_expense_category', SUM(`exp_amount`) AS 'expense_amount' FROM `expenses`  WHERE `expense_categories` = '2' AND `expense_date` BETWEEN ? AND ? GROUP BY `exp_category`";
             $stmt = $conn2->prepare($select);
-            $curr_year = [date("Y-m-d",strtotime($current_financial_year[0]."-07-01")),date("Y-m-d",strtotime($current_financial_year[1]."-06-30"))];
             $stmt->bind_param("ss",$curr_year[0],$curr_year[1]);
             $stmt->execute();
             $result = $stmt->get_result();
@@ -1978,7 +2023,6 @@
             // get the previoud years
             $prev_year_investing_expenses = [];
             $stmt = $conn2->prepare($select);
-            $prev_year = [date("Y-m-d",strtotime($previous_financial_year[0]."-07-01")),date("Y-m-d",strtotime($previous_financial_year[1]."-06-30"))];
             $stmt->bind_param("ss",$prev_year[0],$prev_year[1]);
             $stmt->execute();
             $result = $stmt->get_result();
@@ -1996,7 +2040,6 @@
             $financing_expense_categories = [];
             $select = "SELECT `exp_category`, COUNT(*) AS 'count_expense_category', SUM(`exp_amount`) AS 'expense_amount' FROM `expenses`  WHERE `expense_categories` = '3' AND `expense_date` BETWEEN ? AND ? GROUP BY `exp_category`";
             $stmt = $conn2->prepare($select);
-            $curr_year = [date("Y-m-d",strtotime($current_financial_year[0]."-07-01")),date("Y-m-d",strtotime($current_financial_year[1]."-06-30"))];
             $stmt->bind_param("ss",$curr_year[0],$curr_year[1]);
             $stmt->execute();
             $result = $stmt->get_result();
@@ -2012,7 +2055,6 @@
             // get the previoud years
             $prev_year_financing_expenses = [];
             $stmt = $conn2->prepare($select);
-            $prev_year = [date("Y-m-d",strtotime($previous_financial_year[0]."-07-01")),date("Y-m-d",strtotime($previous_financial_year[1]."-06-30"))];
             $stmt->bind_param("ss",$prev_year[0],$prev_year[1]);
             $stmt->execute();
             $result = $stmt->get_result();
@@ -2026,11 +2068,11 @@
             }
 
             // display the data now since its ready
-            $current_acad_year = [date("Y-m-d",strtotime($current_financial_year[0]."-07-01")),date("Y-m-d",strtotime($current_financial_year[1]."-06-30"))];
-            $previous_acad_year = [date("Y-m-d",strtotime($previous_financial_year[0]."-07-01")),date("Y-m-d",strtotime($previous_financial_year[1]."-06-30"))];
+            $current_acad_year = [date("Y-m-d",strtotime($curr_year[0]."-07-01")),date("Y-m-d",strtotime($curr_year[1]."-06-30"))];
+            $previous_acad_year = [date("Y-m-d",strtotime($prev_year[0]."-07-01")),date("Y-m-d",strtotime($prev_year[1]."-06-30"))];
             // echo json_encode($previous_acad_year[0]);
             $data_to_display = "<div class='financial_statements'>
-                                    <h3 class='text-center my-2 fs-16px'><u>Statement of Cashflow for year end 30th Jun ".date("Y",strtotime($current_acad_year[1]))."</u></h3>
+                                    <h3 class='text-center my-2 fs-16px'><u>Statement of Cashflow for year end of ".date("dS M",strtotime($curr_year[1]))." ".date("Y",strtotime($current_acad_year[1]))."</u></h3>
                                     <div class='row'>
                                         <div class='col-md-9'>
                                         </div>
@@ -2047,10 +2089,10 @@
             $data_to_display.="<div class='row'>
                                     <div class='col-md-6'><p class='fs-12px text-left' style='text-align:left;'><b>Financial Statements</b></p></div>
                                     <div class='col-md-3'>
-                                        <h6 class='fs-12px'><b><small>".date("Y",strtotime($current_acad_year[0]))."/".date("Y",strtotime($current_acad_year[1]))."</small></b></h6>
+                                        <h6 class='fs-12px'><b><small>".$current_display_year."</small></b></h6>
                                     </div>
                                     <div class='col-md-3'>
-                                        <h6 class='fs-12px'><b><small>".date("Y",strtotime($previous_acad_year[0]))."/".date("Y",strtotime($previous_acad_year[1]))."</small></b></h6>
+                                        <h6 class='fs-12px'><b><small>".$previous_display_year."</small></b></h6>
                                     </div>
                                 </div>
                                 <div class='titles rows'>
@@ -2747,10 +2789,10 @@
             $year = $_GET['year'];
             
             // get the term incomes
-            $revenue = getOtherRevenue($conn2);
+            $revenue = getOtherRevenue($conn2,$year);
             
             //get the time periods between terms
-            $term_arrays = getTermPeriods($conn2);
+            $term_arrays = getTermPeriods($conn2, $year);
             foreach ($term_arrays as $key => $value) {
                 $term_arrays[$key] = date("Y-m-d",strtotime($year.substr($term_arrays[$key],4)));
             }
@@ -2931,7 +2973,7 @@
             $before_taxes = [];
             for ($index=0; $index < count($term_income); $index++) {
                 // add other revenue
-                $term_income[$index] += $revenue[$index];
+                // $term_income[$index] += $revenue[$index];
 
                 // add before tx
                 $befo_taxes = $term_income[$index] - $totalExpenses[$index];
@@ -5310,8 +5352,9 @@
         return $school_revenue;
     }
 
-    function getOtherRevenue($conn2){
-        $get_term_period = getTermPeriods($conn2);
+    function getOtherRevenue($conn2, $year = null){
+        $year = $year == null ? date("Y") : $year;
+        $get_term_period = getTermPeriods($conn2, $year);
         $select = "SELECT SUM(`amount`) AS 'Total' FROM `school_revenue` WHERE `date_recorded` BETWEEN ? AND ?";
         $school_revenue = [];
         for ($index=0; $index < count($get_term_period)/2; $index++) {
@@ -5351,7 +5394,7 @@
                 if ($row = $result->fetch_assoc()) {
                     $total = strlen(trim($row['Total'])) > 0 ? $row['Total'] : 0;
                     if ($total != 0 && $total != null) {
-                        array_push($term_pay,$row['Total']);
+                        array_push($term_pay,($row['Total'] != null ? $row['Total'] : 0));
                     }else {
                         $err++;
                         array_push($term_pay,0);
@@ -5378,7 +5421,7 @@
             if ($row = $result->fetch_assoc()) {
                 $total = $row['Total'];
                 if ($total >= 0 || $total != null) {
-                    array_push($term_pay,$row['Total']);
+                    array_push($term_pay,($row['Total'] != null ? $row['Total'] : 0));
                 }else {
                     $err++;
                     array_push($term_pay,0);
@@ -5396,7 +5439,7 @@
             if ($row = $result->fetch_assoc()) {
                 $total = $row['Total'];
                 if ($total >= 0 || $total != null) {
-                    array_push($term_pay,$row['Total']);
+                    array_push($term_pay,($row['Total'] != null ? $row['Total'] : 0));
                 }else {
                     array_push($term_pay,0);
                     $err++;
@@ -5414,7 +5457,7 @@
             if ($row = $result->fetch_assoc()) {
                 $total = $row['Total'];
                 if ($total >= 0 || $total != null) {
-                    array_push($term_pay,$row['Total']);
+                    array_push($term_pay,($row['Total'] != null ? $row['Total'] : 0));
                 }else {
                     $err++;
                     array_push($term_pay,0);
@@ -5430,8 +5473,8 @@
         }
         return $term_pay;
     }
-    function getTermPeriods($conn2){
-        $date = date("Y");
+    function getTermPeriods($conn2, $year = null){
+        $date = $year == null ? date("Y")."0101" : $year."0101";
         // $select = "SELECT  `term`,`start_time`,`end_time`,`closing_date` FROM `academic_calendar` WHERE 
         // (YEAR(`end_time`) >= ? AND `term` = 'TERM_1') 
         // OR (YEAR(`end_time`) >= ? AND `term` = 'TERM_2') 
@@ -5447,7 +5490,7 @@
         $result = $stmt->get_result();
         if ($result) {
             while($row = $result->fetch_assoc()){
-                array_push($period,$row['start_time'],$row['end_time']);
+                array_push($period,date("Y",strtotime($date)).substr($row['start_time'],4),date("Y",strtotime($date)).substr($row['end_time'],4));
             }
         }
         return $period;

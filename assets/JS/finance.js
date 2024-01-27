@@ -651,11 +651,24 @@ cObj("generate_finance_reports").onclick = function () {
         income_statement_quarterly(valObj("year_of_statement"));
     }else if (this_value == "annual_report") {
         annual_cashflow_report(valObj("year_of_statement"));
+    }else if (this_value == "quarterly_report_sep") {
+        annual_cashflow_report(valObj("year_of_statement"));
+    }else if (this_value == "quarterly_report_mar") {
+        annual_cashflow_report(valObj("year_of_statement"));
+    }else if (this_value == "quarterly_report_dec") {
+        annual_cashflow_report(valObj("year_of_statement"));
+    }else if (this_value == "quarterly_report_jun") {
+        annual_cashflow_report(valObj("year_of_statement"));
     }
+    console.log(this_value);
 }
 
 function annual_cashflow_report(year) {
-    var datapass = "?cashflow_statement_annual=true&year="+year;
+    var datapass = "?cashflow_statement=true&year="+year+"&report_type="+cObj("cash_flow_statement").value;
+    sendData1("GET", "finance/financial.php", datapass, cObj("finance_statements"));
+}
+function end_of_sep_cashflow_report(year) {
+    var datapass = "?cashflow_statement=true&year="+year+"&report_type="+cObj("cash_flow_statement").value;
     sendData1("GET", "finance/financial.php", datapass, cObj("finance_statements"));
 }
 
