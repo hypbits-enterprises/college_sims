@@ -1620,7 +1620,7 @@ cObj("disp_btns").onclick = function () {
 }
 
 //get the income finance statement
-function incomeStatement(year) {
+function incomeStatement(year = null) {
     var datapass = "?incomestatement=true&year="+year;
     sendData1("GET", "finance/financial.php", datapass, cObj("finance_statements"));
 }
