@@ -2833,7 +2833,8 @@
                                     </div>
                                     <div class='col-md-3'>
                                         <form target='_blank' action='reports/reports.php' method='post'>
-                                            <input type='hidden' name='generate_income_statement' value='true'>
+                                            <input type='hidden' name='generate_income_statement_quaterly' value='true'>
+                                            <input type='hidden' name='year' value='".$year."'>
                                             <button type='submit'><i class='fa fa-print'></i> Print</button>
                                         </form>
                                     </div>
@@ -3104,6 +3105,7 @@
                                     <div class='col-md-3'>
                                         <form target='_blank' action='reports/reports.php' method='post'>
                                             <input type='hidden' name='generate_income_statement' value='true'>
+                                            <input type='hidden' name='year' value='".$year."'>
                                             <button type='submit'><i class='fa fa-print'></i> Print</button>
                                         </form>
                                     </div>
@@ -3131,10 +3133,10 @@
                                     </div>
                                 </div>";
             $data_to_display.="<div class='finance_header '>
-                <div class='conts'>
-                    <h2 class='title_statements fs-16px bg-cadet px-2'>Income Statement</h2>
-                </div>
-            </div>";
+                                    <div class='conts'>
+                                        <h2 class='title_statements fs-16px bg-cadet px-2'>Income Statement</h2>
+                                    </div>
+                                </div>";
             //the income statement start by displaying the primary Income
             $data_to_display.="<div class='finance_header'>
                                     <p class='title_name'>Primary Income</p>
@@ -3143,8 +3145,8 @@
                                     <p class='name_title'>Operating revenue</p>";
             for ($indes=0; $indes < count($term_income); $indes++) {
                 $data_to_display.="<div class='t1'>
-                                    <p>Ksh ".comma($term_income[$indes])."</p>
-                                </div>";
+                                        <p>Ksh ".comma($term_income[$indes])."</p>
+                                    </div>";
             }
             $data_to_display.="</div>";
             //end of primary income and start of secondary income even though there is nothing at the moment

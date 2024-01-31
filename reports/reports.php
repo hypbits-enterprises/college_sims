@@ -11239,9 +11239,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
     }elseif(isset($_POST['generate_income_statement'])){
         include_once("../connections/conn1.php");
         include_once("../connections/conn2.php");
+        $year = $_POST['year'];
         // echo json_encode($student_data);
-        $pdf = new PDF('L', 'mm', 'A4');
-        $tittle = "Income Statement";
+        $pdf = new PDF('P', 'mm', 'A4');
+        $pdf->setHeaderPos(200);
+        $tittle = "Income Statement of ".$year;
         $pdf->set_document_title($tittle);
         $pdf->setSchoolLogo("../../" . schoolLogo($conn));
         $pdf->set_school_name($_SESSION['schname']);
@@ -11249,27 +11251,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
         $pdf->set_school_box_code($_SESSION['box_codes']);
         $pdf->set_school_contact($_SESSION['school_contact']);
         $pdf->AddPage();
-        $pdf->SetFont('Helvetica', '', 10);
-        $pdf->Cell(275, 10, "Date Generated : ".date("l dS M Y"), 0, 0, 'L', false);
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(275, 8, "Date Generated : ".date("l dS M Y"), 0, 0, 'L', false);
         $pdf->ln();
-        // $pdf->SetFont('Helvetica', 'B', 10);
+        // $pdf->SetFont('Times', 'B', 10);
         $pdf->Cell(40, 10, "", 0, 0, 'C', false);
-        $pdf->SetFont('Helvetica', 'B', 10);
-        $pdf->Cell(75, 7, "TERM 1", 1, 0, 'C', false);
-        $pdf->Cell(75, 7, "TERM 2", 1, 0, 'C', false);
-        $pdf->Cell(75, 7, "TERM 3", 1, 0, 'C', false);
+        $pdf->SetFont('Times', 'B', 10);
+        $pdf->SetFillColor(0, 112, 192);
+        $pdf->Cell(50, 6, "TERM 1", 1, 0, 'C', TRUE);
+        $pdf->Cell(50, 6, "TERM 2", 1, 0, 'C', TRUE);
+        $pdf->Cell(50, 6, "TERM 3", 1, 0, 'C', TRUE);
 
         // SET THE PRIMARY INCOME
         $pdf->ln();
-        $pdf->SetFont('Helvetica', 'BU', 10);
-        $pdf->Cell(40, 10, "Primary Income", 0, 0, 'C', false);
+        $pdf->SetFont('Times', 'BU', 10);
+        $pdf->Cell(40, 6, "Primary Income", 0, 0, 'L', false);
+        $pdf->Cell(150, 6, "", 1, 0, 'C', false);
         $pdf->ln();
 
         // get the operating revenue
         // get the term incomes
-        $revenue = getOtherRevenue_report($conn2);
+        $revenue = getOtherRevenue_report($conn2,$year);
         //get the time periods between terms
-        $term_arrays = getTermPeriods_report($conn2);
+        $term_arrays = getTermPeriods_report($conn2,$year);
         //get the income based on the period above
         $term_income = getTermIncome_report($term_arrays,$conn2);
         //get the expenses per term
@@ -11284,22 +11288,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
         $years = date("Y");
 
         // operating revenue
-        $pdf->SetFont('Helvetica', '', 10);
-        $pdf->Cell(40, 7, "Operating Revenue", 0, 0, 'L', false);
+        $pdf->SetFont('Times', '', 11);
+        $pdf->Cell(40, 6, "Operating Revenue", 0, 0, 'L', false);
         for ($indes=0; $indes < count($term_income); $indes++) {
-            $pdf->Cell(75, 7, "Kes ".number_format($term_income[$indes]), 1, 0, 'C', false);
+            $pdf->Cell(50, 6, "Kes ".number_format($term_income[$indes]), 1, 0, 'C', false);
         }
         $pdf->ln();
-        $pdf->Cell(40, 7, "Other Income", 0, 0, 'L', false);
-        $pdf->Cell(75, 7, "Kes ".number_format($revenue[0]), 1, 0, 'C', false);
-        $pdf->Cell(75, 7, "Kes ".number_format($revenue[1]), 1, 0, 'C', false);
-        $pdf->Cell(75, 7, "Kes ".number_format($revenue[2]), 1, 0, 'C', false);
+        $pdf->Cell(40, 6, "Other Income", 0, 0, 'L', false);
+        $pdf->Cell(50, 6, "Kes ".number_format($revenue[0]), 1, 0, 'C', false);
+        $pdf->Cell(50, 6, "Kes ".number_format($revenue[1]), 1, 0, 'C', false);
+        $pdf->Cell(50, 6, "Kes ".number_format($revenue[2]), 1, 0, 'C', false);
         $pdf->ln();
-        $pdf->SetFont('Helvetica', 'B', 10);
-        $pdf->Cell(40, 7, "Total Income", 0, 0, 'L', false);
+        $pdf->SetFont('Times', 'BI', 10);
+        $pdf->Cell(40, 6, "Total Income", 0, 0, 'L', false);
         for ($indes=0; $indes < count($term_income); $indes++) {
             $term_income[$indes] += $revenue[$indes];
-            $pdf->Cell(75, 7, "Kes ".number_format($term_income[$indes]), 1, 0, 'C', false);
+            $pdf->Cell(50, 6, "Kes ".number_format($term_income[$indes]), 1, 0, 'C', false);
         }
 
         //create an array with all the expense array list
@@ -11344,24 +11348,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
 
         $pdf->ln();
         $pdf->ln();
-        $pdf->SetFont('Helvetica', 'BU', 10);
-        $pdf->Cell(40, 7, "Expenses", 0, 0, 'C', false);
-        $pdf->SetFont('Helvetica', '', 10);
+        $pdf->SetFont('Times', 'BU', 11);
+        $pdf->Cell(40, 6, "Expenses", 0, 0, 'L', false);
+        $pdf->SetFont('Times', 'B', 10);
+        $pdf->Cell(50, 6, "TERM 1", 1, 0, 'C', TRUE);
+        $pdf->Cell(50, 6, "TERM 2", 1, 0, 'C', TRUE);
+        $pdf->Cell(50, 6, "TERM 3", 1, 0, 'C', TRUE);
+        // $pdf->Cell(225, 6, "", 1, 0, 'L', false);
+        $pdf->SetFont('Times', '', 10);
         $pdf->ln();
 
         for ($indexes=0; $indexes < count($all_expenses); $indexes++) {
-            $pdf->Cell(40, 7, "".$all_expenses[$indexes]."", 0, 0, 'L', false);
-            $pdf->Cell(75, 7, "Kes ".number_format($expenses_val[$all_expenses[$indexes]][0]), 1, 0, 'C', false);
-            $pdf->Cell(75, 7, "Kes ".number_format($expenses_val[$all_expenses[$indexes]][1]), 1, 0, 'C', false);
-            $pdf->Cell(75, 7, "Kes ".number_format($expenses_val[$all_expenses[$indexes]][2]), 1, 0, 'C', false);
+            $pdf->Cell(40, 6, "".$all_expenses[$indexes]."", 0, 0, 'L', false);
+            $pdf->Cell(50, 6, "Kes ".number_format($expenses_val[$all_expenses[$indexes]][0]), 1, 0, 'C', false);
+            $pdf->Cell(50, 6, "Kes ".number_format($expenses_val[$all_expenses[$indexes]][1]), 1, 0, 'C', false);
+            $pdf->Cell(50, 6, "Kes ".number_format($expenses_val[$all_expenses[$indexes]][2]), 1, 0, 'C', false);
             $pdf->ln();
         }
 
-        $pdf->SetFont('Helvetica', 'B', 10);
-        $pdf->Cell(40, 7, "Total Expense", 0, 0, 'L', false);
-        $pdf->Cell(75, 7, "Kes ".number_format($totalExpenses[0]), 1, 0, 'C', false);
-        $pdf->Cell(75, 7, "Kes ".number_format($totalExpenses[1]), 1, 0, 'C', false);
-        $pdf->Cell(75, 7, "Kes ".number_format($totalExpenses[2]), 1, 0, 'C', false);
+        $pdf->SetFont('Times', 'BI', 10);
+        $pdf->Cell(40, 6, "Total Expense", 0, 0, 'L', false);
+        $pdf->Cell(50, 6, "Kes ".number_format($totalExpenses[0]), 1, 0, 'C', false);
+        $pdf->Cell(50, 6, "Kes ".number_format($totalExpenses[1]), 1, 0, 'C', false);
+        $pdf->Cell(50, 6, "Kes ".number_format($totalExpenses[2]), 1, 0, 'C', false);
         $pdf->ln();
         
             //deduct term expenses from term income
@@ -11375,22 +11384,35 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
             array_push($before_taxes,$befo_taxes);
         }
         $pdf->ln();
-        $pdf->Cell(40, 7, "Earning Before Tax", 0, 0, 'L', false);
-        $pdf->Cell(75, 7, "Kes ".number_format($before_taxes[0]), 1, 0, 'C', false);
-        $pdf->Cell(75, 7, "Kes ".number_format($before_taxes[1]), 1, 0, 'C', false);
-        $pdf->Cell(75, 7, "Kes ".number_format($before_taxes[2]), 1, 0, 'C', false);
-        $pdf->Ln();
-        $pdf->SetFont('Helvetica', '', 10);
-        $pdf->Ln();
-        $pdf->SetFont('Helvetica', 'BU', 10);
 
-        $pdf->Cell(40, 7, "Taxes", 0, 0, 'L', false);
+        // HEADER
+        $pdf->SetFont('Times', 'B', 10);
+        $pdf->Cell(40, 6, "", 0, 0, 'L', false);
+        $pdf->Cell(50, 6, "TERM 1", 1, 0, 'C', TRUE);
+        $pdf->Cell(50, 6, "TERM 2", 1, 0, 'C', TRUE);
+        $pdf->Cell(50, 6, "TERM 3", 1, 1, 'C', TRUE);
+
+        $pdf->SetFont('Times', 'BI', 10);
+        $pdf->Cell(40, 6, "Earning Before Tax", 0, 0, 'L', false);
+        $pdf->Cell(50, 6, "Kes ".number_format($before_taxes[0]), 1, 0, 'C', false);
+        $pdf->Cell(50, 6, "Kes ".number_format($before_taxes[1]), 1, 0, 'C', false);
+        $pdf->Cell(50, 6, "Kes ".number_format($before_taxes[2]), 1, 0, 'C', false);
+        $pdf->Ln();
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Ln();
+        $pdf->SetFont('Times', 'BU', 11);
+
+        $pdf->Cell(40, 6, "Taxes", 0, 0, 'L', false);
+        $pdf->SetFont('Times', 'B', 10);
+        $pdf->Cell(50, 6, "TERM 1", 1, 0, 'C', TRUE);
+        $pdf->Cell(50, 6, "TERM 2", 1, 0, 'C', TRUE);
+        $pdf->Cell(50, 6, "TERM 3", 1, 0, 'C', TRUE);
         $pdf->ln();
-        $pdf->SetFont('Helvetica', '', 10);
-        $pdf->Cell(40, 7, "Taxes", 0, 0, 'L', false);
-        $pdf->Cell(75, 7, "Kes ".number_format($all_taxes[0]), 1, 0, 'C', false);
-        $pdf->Cell(75, 7, "Kes ".number_format($all_taxes[1]), 1, 0, 'C', false);
-        $pdf->Cell(75, 7, "Kes ".number_format($all_taxes[2]), 1, 0, 'C', false);
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(40, 6, "Taxes", 0, 0, 'L', false);
+        $pdf->Cell(50, 6, "Kes ".number_format($all_taxes[0]), 1, 0, 'C', false);
+        $pdf->Cell(50, 6, "Kes ".number_format($all_taxes[1]), 1, 0, 'C', false);
+        $pdf->Cell(50, 6, "Kes ".number_format($all_taxes[2]), 1, 0, 'C', false);
         $pdf->Ln();
 
         //net income = income before tax - taxes
@@ -11400,14 +11422,212 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
             // add other revenues
             array_push($net_income,$netincome);
         }
-        $pdf->SetFont('Helvetica', 'BU', 10);
+        $pdf->SetFont('Times', 'BUI', 11);
         $pdf->Cell(40, 7, "Net Income", 0, 0, 'L', false);
-        $pdf->SetFont('Helvetica', 'B', 10);
-        $pdf->Cell(75, 7, "Kes ".number_format($net_income[0]), 1, 0, 'C', false);
-        $pdf->Cell(75, 7, "Kes ".number_format($net_income[1]), 1, 0, 'C', false);
-        $pdf->Cell(75, 7, "Kes ".number_format($net_income[2]), 1, 0, 'C', false);
+        $pdf->SetFont('Times', 'BI', 10);
+        $pdf->Cell(50, 7, "Kes ".number_format($net_income[0]), 1, 0, 'C', false);
+        $pdf->Cell(50, 7, "Kes ".number_format($net_income[1]), 1, 0, 'C', false);
+        $pdf->Cell(50, 7, "Kes ".number_format($net_income[2]), 1, 0, 'C', false);
         $pdf->Ln();
         $pdf->Output("I", str_replace(" ", "_", $pdf->school_document_title) . ".pdf");
+    }elseif(isset($_POST['generate_income_statement_quaterly'])){
+        include_once("../connections/conn1.php");
+        include_once("../connections/conn2.php");
+        include_once("../ajax/finance/financial.php");
+        $year = $_POST['year'];
+        $prev_year = ($year*1) - 1;
+        
+        $pdf = new PDF('P', 'mm', 'A4');
+        $pdf->setHeaderPos(200);
+        $tittle = "Income Statement Quaterly of ".$prev_year."/".$year;
+        $pdf->set_document_title($tittle);
+        $pdf->setSchoolLogo("../../" . schoolLogo($conn));
+        $pdf->set_school_name($_SESSION['schname']);
+        $pdf->set_school_po($_SESSION['po_boxs']);
+        $pdf->set_school_box_code($_SESSION['box_codes']);
+        $pdf->set_school_contact($_SESSION['school_contact']);
+        $pdf->AddPage();
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(275, 8, "Date Generated : ".date("l dS M Y"), 0, 0, 'L', false);
+        $pdf->ln();
+        // annual quater array
+        $year_1 = ($year*1)-1;
+        $annual_quaters = [];
+        $q1a = date("Y-m-d",strtotime($year_1."0701"));
+        $q1b = date("Y-m-d",strtotime($year_1."0930"));
+        array_push($annual_quaters,[$q1a,$q1b]);
+        $q2a = date("Y-m-d",strtotime($year_1."1001"));
+        $q2b = date("Y-m-d",strtotime($year_1."1231"));
+        array_push($annual_quaters,[$q2a,$q2b]);
+        $q3a = date("Y-m-d",strtotime($year."0101"));
+        $q3b = date("Y-m-d",strtotime($year."0331"));
+        array_push($annual_quaters,[$q3a,$q3b]);
+        $q4a = date("Y-m-d",strtotime($year."0401"));
+        $q4b = date("Y-m-d",strtotime($year."0630"));
+        array_push($annual_quaters,[$q4a,$q4b]);
+
+        // get the term incomes
+        $revenue = getOtherRevenueQuaterly($conn2,$year,$annual_quaters);
+        
+        // get the term income
+        $term_income = getTermIncomeQuaterly($annual_quaters,$conn2);
+        // echo json_encode($revenue);
+        // return 0;
+        
+        // get the expenses per term
+        $term_expense = getExpensesQuaterly($annual_quaters,$conn2);
+        
+        //get all the expenses names
+        $all_expenses = getAllExpenseNames($term_expense);
+        
+        //get taxes
+        $all_taxes = getTaxesQuaterly($annual_quaters,$conn2);
+        $data_to_display = "";
+
+        $pdf->Ln();
+        $pdf->Cell(40,6,"",0,0,'C',false);
+        $pdf->SetFillColor(0, 112, 192);
+        $pdf->SetFont('Times', 'B', 9);
+        $pdf->Cell(38,6,date("M-d-Y",strtotime($annual_quaters[0][0]))." - ".date("M-d-Y",strtotime($annual_quaters[0][1])),1,0,'C',true);
+        $pdf->Cell(38,6,date("M-d-Y",strtotime($annual_quaters[1][0]))." - ".date("M-d-Y",strtotime($annual_quaters[1][1])),1,0,'C',true);
+        $pdf->Cell(38,6,date("M-d-Y",strtotime($annual_quaters[2][0]))." - ".date("M-d-Y",strtotime($annual_quaters[2][1])),1,0,'C',true);
+        $pdf->Cell(38,6,date("M-d-Y",strtotime($annual_quaters[3][0]))." - ".date("M-d-Y",strtotime($annual_quaters[3][1])),1,1,'C',true);
+        
+        $pdf->SetFont('Times', 'BU', 11);
+        $pdf->Cell(40,6,"Income",0,0,"L");
+        $pdf->Cell(152,6,"",1,1,"L");
+        $pdf->SetFont('Times', '', 10);
+
+        // primary income
+        $pdf->Cell(40,7,"Primary Income",0,0);
+        for ($indes=0; $indes < count($term_income); $indes++) {
+            $pdf->Cell(38,7,"Ksh ".number_format($term_income[$indes])."",1,0,"L");
+        }
+        $pdf->Ln();
+        $pdf->Cell(40,7,"Other Income",0,0);
+        $pdf->Cell(38,7,"Ksh ".number_format($revenue[0])."",1,0);
+        $pdf->Cell(38,7,"Ksh ".number_format($revenue[1])."",1,0);
+        $pdf->Cell(38,7,"Ksh ".number_format($revenue[2])."",1,0);
+        $pdf->Cell(38,7,"Ksh ".number_format($revenue[3])."",1,0);
+        $pdf->Ln();
+
+        //total the income
+        $pdf->SetFont('Times', 'BI', 10);
+        $pdf->Cell(40,7,"Total Income",0,0);
+        for ($indes=0; $indes < count($term_income); $indes++) {
+            $term_income[$indes] += $revenue[$indes];
+            $pdf->Cell(38,7,"Ksh ".number_format($term_income[$indes])."",1,0);
+        }
+        $pdf->Ln();
+
+        $pdf->SetFont('Times', 'BU', 11);
+        $pdf->Cell(40,6,"Expenses",0,0,"L");
+        $pdf->Cell(152,6,"",1,1,"L");
+        $pdf->SetFont('Times', '', 10);
+
+        //create an array with all the expense array list
+        $expenses_val = [];
+        for ($index=0; $index <= count($all_expenses); $index++) { 
+            if ($index == count($all_expenses)) {
+                $expenses_val["Salaries"] = [];
+                break;
+            }else {
+                $expenses_val[$all_expenses[$index]] = [];
+            }
+        }
+
+        //get values per the period given
+        $totalExpenses = [];
+        for ($index=0; $index < count($term_expense); $index++) {
+            //echo "term ".($index+1)." Size is ".count($term_expense[$index])."<br>";
+            $total = 0;
+            for ($index1=0; $index1 < count($all_expenses); $index1++) {
+                if (checkPresent($term_expense[$index],$all_expenses[$index1])) {
+                    $my_val = getValues($term_expense[$index],$all_expenses[$index1]);
+                    //echo "- ".$all_expenses[$index1]." = ".$my_val."<br>";
+                    array_push($expenses_val[$all_expenses[$index1]],$my_val);
+                    $total+=($my_val*1);
+                }else {
+                    //echo "- ".$all_expenses[$index1]." = 0<br>";
+                    array_push($expenses_val[$all_expenses[$index1]],0);
+                }
+            }
+            array_push($totalExpenses,$total);
+        }
+        
+
+        //add a category called salaries and this includes all the salaries the institution distributes
+        $salaries = getSalaryExpQuaterly($conn2,$annual_quaters);
+        //ADD THE SALARIES ARRAY TO THE GROUP
+        array_push($all_expenses,"Salaries");
+        array_push($expenses_val["Salaries"],$salaries[0],$salaries[1],$salaries[2],$salaries[3]);
+        //add the salaries value to the total value
+        for ($intex=0; $intex < count($totalExpenses); $intex++) { 
+            $totalExpenses[$intex]+=$salaries[$intex];
+        }
+
+        for ($indexes=0; $indexes < count($all_expenses); $indexes++) { 
+            $pdf->Cell(40,7,$all_expenses[$indexes],0,0);
+            $pdf->Cell(38,7,"Ksh ".number_format($expenses_val[$all_expenses[$indexes]][0])."",1,0);
+            $pdf->Cell(38,7,"Ksh ".number_format($expenses_val[$all_expenses[$indexes]][1])."",1,0);
+            $pdf->Cell(38,7,"Ksh ".number_format($expenses_val[$all_expenses[$indexes]][2])."",1,0);
+            $pdf->Cell(38,7,"Ksh ".number_format($expenses_val[$all_expenses[$indexes]][3])."",1,1);
+        }
+        
+        //TOTAL ALL THE EXPENSES
+        $pdf->SetFont('Times', 'BI', 10);
+        $pdf->Cell(40,7,"Total Expenses",0,0);
+        $pdf->Cell(38,7,"Ksh ".number_format($totalExpenses[0])."",1,0);
+        $pdf->Cell(38,7,"Ksh ".number_format($totalExpenses[1])."",1,0);
+        $pdf->Cell(38,7,"Ksh ".number_format($totalExpenses[2])."",1,0);
+        $pdf->Cell(38,7,"Ksh ".number_format($totalExpenses[3])."",1,1);
+
+        //CALCULATE EARNINGS BEFORE TAXES
+        //deduct term expenses from term income
+        $before_taxes = [];
+        for ($index=0; $index < count($term_income); $index++) {
+            // add other revenue
+            $term_income[$index] += $revenue[$index];
+
+            // add before tx
+            $befo_taxes = $term_income[$index] - $totalExpenses[$index];
+            array_push($before_taxes,$befo_taxes);
+        }
+        $pdf->Cell(40,6,"",0,0,"L");
+        $pdf->Cell(152,6,"",1,1,"L");
+        $pdf->SetFont('Times', 'BI', 10);
+        $pdf->Cell(40,7,"Earning before Tax",0,0);
+        $pdf->Cell(38,7,"Ksh ".number_format($before_taxes[0])."",1,0);
+        $pdf->Cell(38,7,"Ksh ".number_format($before_taxes[1])."",1,0);
+        $pdf->Cell(38,7,"Ksh ".number_format($before_taxes[2])."",1,0);
+        $pdf->Cell(38,7,"Ksh ".number_format($before_taxes[3])."",1,1);
+
+        // earnings before tax
+        $pdf->Cell(40,6,"Tax",0,0,"L");
+        $pdf->Cell(152,6,"",1,1,"L");
+        $pdf->SetFont('Times', '', 10);
+
+        $pdf->Cell(40,7,"Taxes",0,0);
+        $pdf->Cell(38,7,"Ksh ".number_format($all_taxes[0])."",1,0);
+        $pdf->Cell(38,7,"Ksh ".number_format($all_taxes[1])."",1,0);
+        $pdf->Cell(38,7,"Ksh ".number_format($all_taxes[2])."",1,0);
+        $pdf->Cell(38,7,"Ksh ".number_format($all_taxes[3])."",1,1);
+        
+        //GET THE NET INCOME
+        //net income = income before tax - taxes
+        $net_income = [];
+        for ($index=0; $index < count($all_taxes); $index++) { 
+            $netincome = $before_taxes[$index] - $all_taxes[$index];
+            // add other revenues
+            array_push($net_income,$netincome);
+        }
+        $pdf->SetFont('Times', 'BI', 10);
+        $pdf->Cell(40,6,"Net Income",0,0,"L");
+        $pdf->Cell(38,7,"Ksh ".number_format($net_income[0])."",1,0);
+        $pdf->Cell(38,7,"Ksh ".number_format($net_income[1])."",1,0);
+        $pdf->Cell(38,7,"Ksh ".number_format($net_income[2])."",1,0);
+        $pdf->Cell(38,7,"Ksh ".number_format($net_income[3])."",1,1);
+        $pdf->Output();
     }elseif(isset($_POST['generate_annual'])){
         include_once("../connections/conn1.php");
         include_once("../connections/conn2.php");
@@ -12338,16 +12558,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
         $pdf->Cell(45, 6, "Ksh ".number_format($net_increase_prev_year+$net_increase_prev_year_1), 1, 0, 'L',false);
         $pdf->Cell(45, 6, "Ksh ".number_format($net_increase_prev_year_1), 1, 1, 'L',false);
 
-        $pdf->Cell(100, 6, "Cash and Cash Equivalents at the Beginning of the Period", 1, 0, 'L',false);
-        $pdf->Cell(45, 6, "Ksh ".number_format($net_increase_prev_year+$net_increase_prev_year_1), 1, 0, 'L',false);
-        $pdf->Cell(45, 6, "Ksh ".number_format($net_increase_prev_year_1), 1, 1, 'L',false);
+        $pdf->Cell(100, 6, "Cash and Cash Equivalents at the end of the Period", 1, 0, 'L',false);
+        $pdf->Cell(45, 6, "Ksh ".number_format($net_increase_prev_year_1+$net_increase_prev_year+$net_increase_curr_year), 1, 0, 'L',false);
+        $pdf->Cell(45, 6, "Ksh ".number_format($net_increase_prev_year_1+$net_increase_prev_year), 1, 1, 'L',false);
         $pdf->Output();
     
     }elseif(isset($_POST['generate_annual_excel'])){
         include_once("../connections/conn1.php");
         include_once("../connections/conn2.php");
         include_once("../ajax/finance/financial.php");
-        $letters = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
+        $letters = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','prev_year','S','T','U','V','W','X','Y','Z'];
         $table_style = [
             'font' => [
                 'bold' => true,
@@ -12373,11 +12593,125 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
         ];
         $table_style_2 = [
             'font' => [
+                'bold' => true,
+                'name' => 'Times New Roman',
+            ],
+            'alignment' => [
+                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+            ],
+            'borders' => [
+                'outline' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                ],
+                'inside' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                ],
+            ],
+        ];
+        $table_style_3 = [
+            'font' => [
+                'bold' => true,
+                'italic' => false,
+                'underline' => false,
+                'name' => 'Times New Roman',
+            ],
+            'alignment' => [
+                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+            ],
+            'borders' => [
+                'outline' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                ],
+                'inside' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                ],
+            ],
+            'fill' => [
+                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'startColor' => [
+                    'argb' => 'FF0070C0',
+                ],
+            ],
+        ];
+        $just_border = [
+            'font' => [
+                'name' => 'Times New Roman',
+            ],
+            'borders' => [
+                'outline' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                ],
+                'inside' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                ],
+            ],
+            'fill' => [
+                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'startColor' => [
+                    'argb' => 'FFD8D9DA',
+                ],
+            ],
+        ];
+        $error_border = [
+            'font' => [
                 'bold' => false,
-                'name' => 'Calibri Light',
+                'italic' => false,
+                'underline' => false,
+                'name' => 'Times New Roman',
+                'color' => ['argb' => 'FFFF0000'],
+            ],
+            // 'alignment' => [
+            //     'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+            //     'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+            // ],
+            'borders' => [
+                'outline' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                ],
+                'inside' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                ],
+            ],
+        ];
+        $total_expenses = [
+            'font' => [
+                'bold' => true,
+                'italic' => false,
+                'underline' => false,
+                'name' => 'Times New Roman',
+                // 'color' => ['argb' => 'FFFF0000'],
             ],
             'alignment' => [
                 'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT,
+                'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+            ],
+            'borders' => [
+                'outline' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                ],
+                'inside' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                ],
+            ],
+            // 'fill' => [
+            //     'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+            //     'startColor' => [
+            //         'argb' => 'FF0070C0',
+            //     ],
+            // ],
+        ];
+        $total_expenses_i = [
+            'font' => [
+                'bold' => true,
+                'italic' => true,
+                'underline' => false,
+                'name' => 'Times New Roman',
+                // 'color' => ['argb' => 'FFFF0000'],
+            ],
+            'alignment' => [
+                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT,
+                'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
             ],
             'borders' => [
                 'outline' => [
@@ -12948,10 +13282,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
         $worksheet->setCellValue("B2","Kes");
         $worksheet->setCellValue("C2","Kes");
 
-        // set the values for the data
+        $cellRange = 'A1:C1'; // Adjust the cell range as needed
+        $worksheet->getStyle($cellRange)->applyFromArray($table_style_3);
 
+        $cellRange = 'B2:C2'; // Adjust the cell range as needed
+        $worksheet->getStyle($cellRange)->applyFromArray($table_style_3);
+
+        // MERGE CELL AI:A2
+        $worksheet->mergeCells("A1:A2");
+        
         // CASHFLOW OPERATING ACTIVITIES
         $worksheet->setCellValue("A4", "Cashflow from Operating Activities");
+        
+        // MERGE CELLS
+        $worksheet->mergeCells("A4:C4");
+        $cellRange = 'A4:C4';
+
+        // Adjust the cell range as needed
+        $worksheet->getStyle($cellRange)->applyFromArray($table_style_2);
         $index = 1;
         $total_current = 0;
         $total_previous = 0;
@@ -12994,11 +13342,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                 $worksheet->setCellValue("A".$cell_index,$value->category_name);
                 $worksheet->setCellValue("B".$cell_index,($current_year));
                 $worksheet->setCellValue("C".$cell_index,($previous_year));
+                $cellRange = "A".$cell_index.":C".$cell_index;
+                $worksheet->getStyle($cellRange)->applyFromArray($just_border);
                 $index++;
                 $cell_index++;
             }
         }else{
             $worksheet->setCellValue("A".$cell_index,"No cash flow from operating activities record!");
+            $cellRange = "A".$cell_index.":C".$cell_index;
+            $worksheet->mergeCells($cellRange);
+            $worksheet->getStyle($cellRange)->applyFromArray($error_border);
             $cell_index++;
         }
 
@@ -13006,6 +13359,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
         $worksheet->setCellValue("A".$cell_index,"Total");
         $worksheet->setCellValue("B".$cell_index,($total_current));
         $worksheet->setCellValue("C".$cell_index,($total_previous));
+        $cellRange = "A".$cell_index.":C".$cell_index;
+        $worksheet->getStyle($cellRange)->applyFromArray($total_expenses);
+        $cell_index++;
         $cell_index++;
 
                     
@@ -13014,6 +13370,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
         $total_previous_expense = 0;
         $total_previous_expense_1 = 0;
         $worksheet->setCellValue("A".$cell_index,"Cashflow Used in Operating Activity");
+        $cellRange = "A".$cell_index.":C".$cell_index;
+        $worksheet->mergeCells($cellRange);
+        $worksheet->getStyle($cellRange)->applyFromArray($table_style_2);
         $cell_index++;
 
         if(count($operating_expense_categories) > 0 ){
@@ -13047,25 +13406,38 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                 $worksheet->setCellValue("A".$cell_index,$index.". ".$value);
                 $worksheet->setCellValue("B".$cell_index,($current_year));
                 $worksheet->setCellValue("C".$cell_index,($previous_year));
+                $cellRange = "A".$cell_index.":C".$cell_index;
+                $worksheet->getStyle($cellRange)->applyFromArray($just_border);
                 $cell_index++;
                 $index++;
             }
         }else{
             $worksheet->setCellValue("A".$cell_index,"No Operating Activity Expenses!");
+            $cellRange = "A".$cell_index.":C".$cell_index;
+            $worksheet->mergeCells($cellRange);
+            $worksheet->getStyle($cellRange)->applyFromArray($error_border);
             $cell_index++;
         }
                 
         $worksheet->setCellValue("A".$cell_index,"Total");
         $worksheet->setCellValue("B".$cell_index,($total_current_expense));
         $worksheet->setCellValue("C".$cell_index,($total_previous_expense));
+        $cellRange = "A".$cell_index.":C".$cell_index;
+        $worksheet->getStyle($cellRange)->applyFromArray($total_expenses);
         $cell_index++;
                 
         $worksheet->setCellValue("A".$cell_index,"Net Cashflow From Operating Revenue");
         $worksheet->setCellValue("B".$cell_index,($total_current - $total_current_expense));
         $worksheet->setCellValue("C".$cell_index,($total_previous  - $total_previous_expense));
+        $cellRange = "A".$cell_index.":C".$cell_index;
+        $worksheet->getStyle($cellRange)->applyFromArray($total_expenses);
+        $cell_index++;
         $cell_index++;
 
-        $worksheet->setCellValue("A".$cell_index,"Cashflow from Investing Activities!");
+        $worksheet->setCellValue("A".$cell_index,"Cashflow from Investing Activities");
+        $cellRange = "A".$cell_index.":C".$cell_index;
+        $worksheet->mergeCells($cellRange);
+        $worksheet->getStyle($cellRange)->applyFromArray($table_style_2);
         $cell_index++;
 
         $net_increase_curr_year+=($total_current - $total_current_expense);
@@ -13110,20 +13482,31 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                 $worksheet->setCellValue("A".$cell_index,$index.". ".ucwords(strtolower($value->category_name)));
                 $worksheet->setCellValue("B".$cell_index,($current_year));
                 $worksheet->setCellValue("C".$cell_index,($previous_year));
+                $cellRange = "A".$cell_index.":C".$cell_index;
+                $worksheet->getStyle($cellRange)->applyFromArray($just_border);
                 $cell_index++;
                 $index++;
             }
         }else{
             $worksheet->setCellValue("A".$cell_index,"No Cashflow from Investing Activities!");
+            $cellRange = "A".$cell_index.":C".$cell_index;
+            $worksheet->mergeCells($cellRange);
+            $worksheet->getStyle($cellRange)->applyFromArray($error_border);
             $cell_index++;
         }
                 
         $worksheet->setCellValue("A".$cell_index,"Total");
         $worksheet->setCellValue("B".$cell_index,($total_current));
         $worksheet->setCellValue("C".$cell_index,($total_previous));
+        $cellRange = "A".$cell_index.":C".$cell_index;
+        $worksheet->getStyle($cellRange)->applyFromArray($total_expenses);
+        $cell_index++;
         $cell_index++;
 
         $worksheet->setCellValue("A".$cell_index,"Cashflow Used in Investing Activity");
+        $cellRange = "A".$cell_index.":C".$cell_index;
+        $worksheet->mergeCells($cellRange);
+        $worksheet->getStyle($cellRange)->applyFromArray($table_style_2);
         $cell_index++;
                     
         $index = 1;
@@ -13163,22 +13546,32 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                 $worksheet->setCellValue("A".$cell_index,$index.". ".$value);
                 $worksheet->setCellValue("B".$cell_index,($current_year));
                 $worksheet->setCellValue("C".$cell_index,($previous_year));
+                $cellRange = "A".$cell_index.":C".$cell_index;
+                $worksheet->getStyle($cellRange)->applyFromArray($just_border);
                 $cell_index++;
                 $index++;
             }
         }else{
             $worksheet->setCellValue("A".$cell_index,"No Investing Activity Expenses!");
+            $cellRange = "A".$cell_index.":C".$cell_index;
+            $worksheet->mergeCells($cellRange);
+            $worksheet->getStyle($cellRange)->applyFromArray($error_border);
             $cell_index++;
         }
                 
         $worksheet->setCellValue("A".$cell_index,"Total");
         $worksheet->setCellValue("B".$cell_index,($total_current_expense));
         $worksheet->setCellValue("C".$cell_index,($total_previous_expense));
+        $cellRange = "A".$cell_index.":C".$cell_index;
+        $worksheet->getStyle($cellRange)->applyFromArray($total_expenses);
         $cell_index++;
                 
-        $worksheet->setCellValue("A".$cell_index,"Total");
+        $worksheet->setCellValue("A".$cell_index,"Net Cashflow from Investing Activity");
         $worksheet->setCellValue("B".$cell_index,($total_current - $total_current_expense));
         $worksheet->setCellValue("C".$cell_index,($total_previous  - $total_previous_expense));
+        $cellRange = "A".$cell_index.":C".$cell_index;
+        $worksheet->getStyle($cellRange)->applyFromArray($total_expenses);
+        $cell_index++;
         $cell_index++;
 
         $net_increase_curr_year+=($total_current - $total_current_expense);
@@ -13186,6 +13579,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
         $net_increase_prev_year_1+=($total_previous_1  - $total_previous_expense_1);
 
         $worksheet->setCellValue("A".$cell_index,"Cashflow from Financing Activities");
+        $cellRange = "A".$cell_index.":C".$cell_index;
+        $worksheet->mergeCells($cellRange);
+        $worksheet->getStyle($cellRange)->applyFromArray($table_style_2);
         $cell_index++;
                     
         $index = 1;
@@ -13224,20 +13620,31 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                 $worksheet->setCellValue("A".$cell_index,$index.". ".ucwords(strtolower($value->category_name)));
                 $worksheet->setCellValue("B".$cell_index,($current_year));
                 $worksheet->setCellValue("C".$cell_index,($previous_year));
+                $cellRange = "A".$cell_index.":C".$cell_index;
+                $worksheet->getStyle($cellRange)->applyFromArray($just_border);
                 $cell_index++;
                 $index++;
             }
         }else{
             $worksheet->setCellValue("A".$cell_index,"No Financing Activity records!");
+            $cellRange = "A".$cell_index.":C".$cell_index;
+            $worksheet->mergeCells($cellRange);
+            $worksheet->getStyle($cellRange)->applyFromArray($error_border);
             $cell_index++;
         }
                 
         $worksheet->setCellValue("A".$cell_index,"Total");
         $worksheet->setCellValue("B".$cell_index,($total_current));
         $worksheet->setCellValue("C".$cell_index,($total_previous));
+        $cellRange = "A".$cell_index.":C".$cell_index;
+        $worksheet->getStyle($cellRange)->applyFromArray($total_expenses);
+        $cell_index++;
         $cell_index++;
         
         $worksheet->setCellValue("A".$cell_index,"Cashflow Used in Financing Activity");
+        $cellRange = "A".$cell_index.":C".$cell_index;
+        $worksheet->mergeCells($cellRange);
+        $worksheet->getStyle($cellRange)->applyFromArray($table_style_2);
         $cell_index++;
                     
         $index = 1;
@@ -13277,22 +13684,33 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                 $worksheet->setCellValue("A".$cell_index,$index.". ".$value);
                 $worksheet->setCellValue("B".$cell_index,($current_year));
                 $worksheet->setCellValue("C".$cell_index,($previous_year));
+                $cellRange = "A".$cell_index.":C".$cell_index;
+                $worksheet->getStyle($cellRange)->applyFromArray($just_border);
                 $cell_index++;
                 $index++;
             }
         }else{
             $worksheet->setCellValue("A".$cell_index,"No Financing Activity Expenses!");
+            $cellRange = "A".$cell_index.":C".$cell_index;
+            $worksheet->mergeCells($cellRange);
+            $worksheet->getStyle($cellRange)->applyFromArray($error_border);
             $cell_index++;
         }
                 
         $worksheet->setCellValue("A".$cell_index,"Total");
         $worksheet->setCellValue("B".$cell_index,($total_current_expense));
         $worksheet->setCellValue("C".$cell_index,($total_previous_expense));
+        $cellRange = "A".$cell_index.":C".$cell_index;
+        $worksheet->getStyle($cellRange)->applyFromArray($total_expenses);
+        $cell_index++;
         $cell_index++;
                 
         $worksheet->setCellValue("A".$cell_index,"Net Cashflow From Finacing Revenue");
         $worksheet->setCellValue("B".$cell_index,($total_current - $total_current_expense));
         $worksheet->setCellValue("C".$cell_index,($total_previous  - $total_previous_expense));
+        $cellRange = "A".$cell_index.":C".$cell_index;
+        $worksheet->getStyle($cellRange)->applyFromArray($total_expenses);
+        $cell_index++;
         $cell_index++;
 
         $net_increase_curr_year+=($total_current - $total_current_expense);
@@ -13302,10 +13720,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
         $worksheet->setCellValue("A".$cell_index,"Net increase/(decrease) in cash and cash equivalents");
         $worksheet->setCellValue("B".$cell_index,($net_increase_curr_year));
         $worksheet->setCellValue("C".$cell_index,($net_increase_prev_year));
+        $cellRange = "A".$cell_index.":C".$cell_index;
+        $worksheet->getStyle($cellRange)->applyFromArray($total_expenses);
+        $cell_index++;
         $cell_index++;
 
         $worksheet->setCellValue("A".$cell_index,"Cash and Cash Equivalents at the Beginning and End of the Period");
+        $cellRange = "A".$cell_index.":C".$cell_index;
+        $worksheet->mergeCells($cellRange);
+        $worksheet->getStyle($cellRange)->applyFromArray($table_style_2);
+        $cell_index++;
+                
+        $worksheet->setCellValue("A".$cell_index,"Cash and Cash Equivalents at the Beginning of the Period");
+        $worksheet->setCellValue("B".$cell_index,($net_increase_prev_year+$net_increase_prev_year_1));
+        $worksheet->setCellValue("C".$cell_index,($net_increase_prev_year_1));
+        $cellRange = "A".$cell_index.":C".$cell_index;
+        $worksheet->getStyle($cellRange)->applyFromArray($total_expenses_i);
+        $cell_index++;
         
+        $worksheet->setCellValue("A".$cell_index,"Cash and Cash Equivalents at the End of the Period");
+        $worksheet->setCellValue("B".$cell_index,($net_increase_prev_year_1+$net_increase_prev_year+$net_increase_curr_year));
+        $worksheet->setCellValue("C".$cell_index,($net_increase_prev_year_1+$net_increase_prev_year));
+        $cellRange = "A".$cell_index.":C".$cell_index;
+        $worksheet->getStyle($cellRange)->applyFromArray($total_expenses_i);
         $cell_index++;
         // set auto width
         foreach ($spreadsheet->getWorksheetIterator() as $worksheet) {
@@ -14378,8 +14815,8 @@ function getExpenses_report($arrayPeriod,$conn2){
     }
     return $termExp;
 }
-function getTermPeriods_report($conn2){
-    $date = date("Y");
+function getTermPeriods_report($conn2, $year = null){
+    $date = $year == null ? date("Y")."0101" : $year."0101";
     // $select = "SELECT  `term`,`start_time`,`end_time`,`closing_date` FROM `academic_calendar` WHERE 
     // (YEAR(`end_time`) >= ? AND `term` = 'TERM_1') 
     // OR (YEAR(`end_time`) >= ? AND `term` = 'TERM_2') 
@@ -14395,7 +14832,7 @@ function getTermPeriods_report($conn2){
     $result = $stmt->get_result();
     if ($result) {
         while($row = $result->fetch_assoc()){
-            array_push($period,$row['start_time'],$row['end_time']);
+            array_push($period,date("Y",strtotime($date)).substr($row['start_time'],4),date("Y",strtotime($date)).substr($row['end_time'],4));
         }
     }
     return $period;
@@ -14420,8 +14857,9 @@ function getTermPeriods_report_sms($conn2,$term = "TERM_1"){
     }
     return $period;
 }
-function getOtherRevenue_report($conn2){
-    $get_term_period = getTermPeriods_report($conn2);
+function getOtherRevenue_report($conn2, $year = null){
+    $year = $year == null ? date("Y") : $year;
+    $get_term_period = getTermPeriods_report($conn2, $year);
     $select = "SELECT SUM(`amount`) AS 'Total' FROM `school_revenue` WHERE `date_recorded` BETWEEN ? AND ?";
     $school_revenue = [];
     for ($index=0; $index < count($get_term_period)/2; $index++) {
