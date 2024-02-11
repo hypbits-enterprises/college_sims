@@ -104,8 +104,8 @@
                         <p class="my-1" id="loader_infor_teller_view"></p>
                         <span class="btn btn-primary w-100 btn-sm mx-auto my-1" id="update_departments"><i class="fas fa-save"></i> Update</span>
                     </div>
-                    <hr class="w-75 mx-auto my-2">
-                    <div class="col-md-9 mx-auto">
+                    <!-- <hr class="w-75 mx-auto my-2"> -->
+                    <div class="col-md-9 mx-auto hide">
                         <h6 class="text-center text-primary">Member List<img class="hide" src="images/ajax_clock_small.gif" id="members_dept_list_loader"></h6>
                         <span class="btn btn-secondary btn-sm" id="add_members_dept"><i class="fas fa-user-plus"></i> Add Members</span>
                         <p id="member_error_handlers"></p>
@@ -135,8 +135,8 @@
                             </tbody>
                         </table> -->
                     </div>
-                    <hr class="w-75 mx-auto my-2">
-                    <div class="col-md-9 mx-auto">
+                    <!-- <hr class="w-75 mx-auto my-2"> -->
+                    <div class="col-md-9 mx-auto hide">
                         <h6 class="text-center text-primary">Subject List<img class="hide" src="images/ajax_clock_small.gif" id="subject_dept_list_loader"></h6>
                         <span class="btn btn-secondary btn-sm" id="add_subject_dept"><i class="fas fa-plus"></i> Add Subject</span>
                         <p id="subject_error_handlers"></p>

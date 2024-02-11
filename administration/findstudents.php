@@ -145,8 +145,10 @@
                                         <p id="boarding_status_changer"></p>
                                         <p style="width: fit-content;" class="link my-2" id="prompt_delete_student"><i class="fas fa-trash"></i> Permanently Delete Student<img class="hide" src="images/ajax_clock_small.gif" id="delete_student_load"></p>
                                         <hr>
-                                        <p class="my-2">Boarding status: <span id="boarding_status"> <span style="background-color: green; color:white;" class="rounded p-1 ">Enrolled</span> || <span id="enroll_stud_boarding" class="link">Un - Enroll ?</span></span>
-                                        <img class="hide" src="images/ajax_clock_small.gif" id="boarding_status_load"></p>
+                                        <div class="hide">
+                                            <p class="my-2">Boarding status: <span id="boarding_status"> <span style="background-color: green; color:white;" class="rounded p-1 ">Enrolled</span> || <span id="enroll_stud_boarding" class="link">Un - Enroll ?</span></span>
+                                            <img class="hide" src="images/ajax_clock_small.gif" id="boarding_status_load"></p>
+                                        </div>
                                     </div>
                                     <div class="col-md-6 border-left-0" style="border-left: 1px solid gray;">
                                         <div class="cont">

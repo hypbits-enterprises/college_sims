@@ -599,7 +599,7 @@
             }elseif (isset($_GET['classes'])) {
                 $classenroled = $_GET['classes'];
                 if($classenroled != "others"){
-                    $course_chosen = $_GET['course_chosen'];
+                    $course_chosen = !isset($_GET['course_chosen']) ? "" : $_GET['course_chosen'];
                     $select = strlen(trim($course_chosen)) == 0 ? "SELECT * from `student_data` WHERE  `stud_class` = ? and `deleted` = 0 and activated =1" : "SELECT * from `student_data` WHERE `course_done` = '".$course_chosen."' AND `stud_class` = ? AND `deleted` = 0 AND activated =1";
                     $stmt=$conn2->prepare($select);
                     $stmt->bind_param("s",$classenroled);
@@ -745,6 +745,12 @@
             $stmt->bind_param("s",$staff_ids);
             if($stmt->execute()){
                 echo "<p class='text-success'>Staff data deleted successfully!</p>";
+
+                // log text
+                $log_text = "Staff \"".ucwords(strtolower($fullname))."\" information has been deleted successfully!";
+                log_administration($log_text);
+
+                // message name
                 $messageName = "Staff has been deleted";
                 $messagecontent = ucwords(strtolower($fullname))." has been deleted on ".date("dS M Y")." by ".$_SESSION['username'].".";
                 $notice_stat = 0;
@@ -942,6 +948,8 @@
             $stmt->bind_param("ssssssssssssssssssssssssssssss",$newYOS,$class,$bcnos,$index,$genders,$disabled,$describe,$address,$pnamed,$pcontacts,$prelation,$pemail,$parentname2,$parentcontact,$parentrelation,$pemails,$fnamed,$snamed,$lnamed,$occupation1,$occupation2,$medical_history,$clubs_in_sporters,$previous_schools,$doas,$reason_for_leaving,$course_chosen,$intake_year_edit,$intake_month_edit,$adminno);
             if($stmt->execute()){
                 echo "<p style='color:green;font-size:12px;'>Student  data updated successfully!</p>";
+                $log_text = $fnamed." ".$lnamed." - of Reg No. (".$adminno.") data has been updated successfully!";
+                log_administration($log_text);
             }else{
                 echo "<p style='color:red;font-size:12px;'>Error occured while updating<br>Try restarting your the system!</p>";
             }
@@ -987,6 +995,10 @@
                 $stmt = $conn2->prepare($update);
                 if($stmt->execute()){
                     echo "<p class='text-success'>The Sports House / Clubs has been successfully added!</p>";
+                    
+                    // log text
+                    $log_text = "The Sports House / Clubs \"".$_GET['club_name']."\" has been added successfully!";
+                    log_administration($log_text);
                 }else{
                     echo "<p class='text-danger'>The process has not been completed successfully please contact your administrator!!</p>";
                 }
@@ -1047,17 +1059,24 @@
                 $club_data = json_decode($clubs_sports);
                 $clubs_data = [];
                 $count = 0;
+                $club_name = "N/A";
                 for ($indexes=0; $indexes < count($club_data); $indexes++) { 
                     if ($club_data[$indexes]->id != $ids) {
                         $new_clubs = array("id" => $club_data[$indexes]->id,"Name" => $club_data[$indexes]->Name);
                         array_push($clubs_data,$new_clubs);
                         $count++;
                     }
+                    if($club_data[$indexes]->id == $ids){
+                        $club_name = $club_data[$indexes]->Name;
+                    }
                 }
                 $club_dt = ($count>0) ? json_encode($clubs_data):"";
                 $update = "UPDATE `settings` SET `valued` = '".$club_dt."' WHERE `sett` = 'clubs/sports_house'";
                 $stmt = $conn2->prepare($update);
                 if($stmt->execute()){
+                    // log text
+                    $log_text = "The Sports House / Clubs \"".$club_name."\" has been deleted successfully!";
+                    log_administration($log_text);
                     echo "<p class='text-success'>The Sports House / Clubs has been successfully deleted!</p>";
                 }else{
                     echo "<p class='text-danger'>The process has not been completed successfully please contact your administrator!!</p>";
@@ -1137,6 +1156,9 @@
                 $update = "UPDATE `settings` SET `valued` = '".$club_data."' WHERE `sett` = 'clubs/sports_house'";
                 $stmt = $conn2->prepare($update);
                 if($stmt->execute()){
+                    // log text
+                    $log_text = "The Sports House / Clubs \"".$_GET['club_name']."\" has been updated successfully!";
+                    log_administration($log_text);
                     echo "<p class='text-success'>The Sports House / Clubs has been successfully Updated!</p>";
                 }else{
                     echo "<p class='text-danger'>The process has not been completed successfully please contact your administrator!!</p>";
@@ -1404,6 +1426,8 @@
                         $reciever_auth = $authority;
                         insertNotice($conn2,$messageName,$messagecontent,$notice_stat,$reciever_id,$reciever_auth,$sender_ids);
                     }
+                    $log_text = "Registration of ".$fullname." as <b>".getAuthority($authority)."</b> has been done successfully";
+                    log_administration($log_text);
                     echo "<p style='color:green;'>"."Registration was completed successfull!!"."</p>";
             }else {
                 echo "<p style='color:red;'>"."An error occured during registration!"."</p>";
@@ -1524,6 +1548,12 @@
             }
 
             // the success message
+                    
+            // log text
+            $log_text = "Admission prefix has has been updated successfully!";
+            log_administration($log_text);
+
+            // the success message
             echo "<p class='text-success'>Admission prefix has been set successfully!</p>";
         }elseif(isset($_GET['get_admission_prefix_details'])){
             // get admission prefix details
@@ -1621,6 +1651,8 @@
                     $stmt->bind_param("s",$staffid);
                     if($stmt->execute()){
                         echo "<p style='color:green;'>Staff information updated successfully!</p>";
+                        $log_text = "Staff \"".$fullname."\" information has been updated successfully!";
+                        log_administration($log_text);
                     }else {
                         echo "<p style='color:red;'>Error occured during updating!</p>";
                     }
@@ -1790,6 +1822,9 @@
             $stmt->bind_param("ss",$password,$userid);
             if ($stmt->execute()) {
                 echo "<p style='color:green;'>Password update was successfull!</p>";
+                $staff_infor = getMyStaffIn4($conn,$userid);
+                $log_text = "Changed the password of ".(is_array($staff_infor) ? ucwords(strtolower($staff_infor['fullname'])) : "N/A")." successfully!";
+                log_administration($log_text);
             }else {
                 echo "<p style='color:red;'>Password update wasn`t successfull!</p>";
             }
@@ -2337,6 +2372,8 @@
                     $stmt->bind_param("s",$new_classes_list);
                     if($stmt->execute()){
                         echo "<p class='green_notice'>Class has been added succesfully!</p>";
+                        $log_text = "Class \"".$_GET['add_class']."\" added successfully";
+                        log_administration($log_text);
                     }else {
                         echo "<p class='red_notice'>An error has occured!</p>";
                     }
@@ -2467,6 +2504,9 @@
             $term = 3;
             $stmt->bind_param("ssss",$term_three_start,$term_three_end,$term_three_close,$term);
             $stmt->execute();
+            // log text
+            $log_text = "Academic calender has been updated successfully!";
+            log_administration($log_text);
         }elseif (isset($_GET['add_admission_ess'])) {
             $component = $_GET['component'];
             $select = "SELECT `valued` FROM `settings` WHERE `sett` = 'admissionessentials'";
@@ -2658,7 +2698,10 @@
                     $valued = json_encode($new_course_data);
                     $stmt->bind_param("ss",$valued,$sett);
                     $stmt->execute();
-                    
+
+                    // log text
+                    $log_text = "Course \"".$course_name."\" has been updated successfully!";
+                    log_administration($log_text);
                     echo "<p class='text-success'>Update has been done successfully!</p>";
                 }else{
                     echo "<p class='text-danger'>An error has occured!</p>";
@@ -2737,6 +2780,8 @@
                 }
 
                 // success message
+                $log_text = "Course \"".$_GET['course_name']."\" has been added successfully!";
+                log_administration($log_text);
                 echo "<p class='text-success'>Course has been added successfully!</p>";
             }else{
                 // error message
@@ -2859,8 +2904,10 @@
                     
                     // new_arrays to hold the new arrays
                     $new_array = [];
+                    $course_name = "N/A";
                     for($index = 0; $index < count($course_list); $index++){
                         if($course_list[$index]->id == $course_id){
+                            $course_name = $course_list[$index]->course_name;
                             continue;
                         }
 
@@ -2880,6 +2927,10 @@
                     $stmt->execute();
 
                     // echo
+                    
+                    // log text
+                    $log_text = "Course \"".$course_name."\" has been deleted successfully!";
+                    log_administration($log_text);
                     echo "<p class='text-success'>Update has been done successfully!</p>";
                 }else{
                     echo "<p class='text-danger'>An error has occured, Try again later!</p>";
@@ -3626,6 +3677,9 @@
             $stmt = $conn2->prepare($update);
             if($stmt->execute()){
                 echo "<p class='text-success'>Discount updates successfully!</p>";
+                $student_data = getStudentData($update_discounts, $conn2);
+                $log_text = ((is_array($student_data)) ? ucwords(strtolower($student_data['first_name']." ". $student_data['second_name'])) : "N/A") ." of Reg No (".$update_discounts.") discounts have been updated successfully";
+                log_administration($log_text);
             }else{
                 echo "<p class='text-danger'>An error occured during update!</p>";
             }
@@ -3923,6 +3977,10 @@
                 $stmt->execute();
                 echo "<p class='text-success'>\"".$_GET['category_name']."\" has been added successfully!</p>";
             }
+            
+            // log text
+            $log_text = "Revenue category \"".$_GET['category_name']."\" has been added successfully!";
+            log_administration($log_text);
         }elseif(isset($_GET['save_expense_category'])){
             $select = "SELECT * FROM `settings` WHERE `sett` = 'expense categories'";
             $category_name = trim(ucwords(strtolower($_GET['category_name'])));
@@ -3977,6 +4035,9 @@
                         $stmt->execute();
                     }
                 }
+                // log text
+                $log_text = "Expense category \"".$_GET['category_name']."\" added successfully!";
+                log_administration($log_text);
                 echo "<p class='text-success border border-success my-2 p-2'>Expense name added successfully!.</p>";
             }
         }elseif(isset($_GET['show_revenue_category'])){
@@ -4059,6 +4120,10 @@
                         $update = "UPDATE `expenses` SET `exp_category` = '".$new_exp_name."' WHERE `exp_category` = '".$old_exp_name."'";
                         $stmt = $conn2->prepare($update);
                         $stmt->execute();
+
+                        // log text
+                        $log_text = "Expense category \"".$_GET['new_exp_name']."\" updated successfully!";
+                        log_administration($log_text);
                     }
                 }
             }
@@ -4101,6 +4166,10 @@
                             $valued = json_encode($valued);
                             $stmt->bind_param("s",$valued);
                             $stmt->execute();
+
+                            // log text
+                            $log_text = "Revenue category \"".ucwords(strtolower($new_revenue_name))."\" updated successfully!";
+                            log_administration($log_text);
                             echo "<p class='text-success'>".ucwords(strtolower($new_revenue_name))." has been successfully updated!</p>";
                         }else{
                             // otherwise refuse
@@ -4158,6 +4227,10 @@
                         $update = "UPDATE `settings` SET `valued` = '".$new_exp_cats."' WHERE `sett` = 'expense categories'";
                         $stmt = $conn2->prepare($update);
                         $stmt->execute();
+
+                        // log text
+                        $log_text = "Expense category deleted successfully!";
+                        log_administration($log_text);
                     }
                 }
             }
@@ -5049,6 +5122,10 @@
                     $stmt->execute();
                 }
             }
+            
+            // log text
+            $log_text = "Class \"".$new_class_name."\" updated successfully";
+            log_administration($log_text);
             echo "<p class='text-success'>Class has been successfully changed!</p>";
         }elseif (isset($_GET['get_student_search'])) {
             $class_selected = $_GET['class_selected'];
@@ -5277,6 +5354,10 @@
                     }
                     $data.= "<input type='text' id='admnohold' value=".$admissionNumber." hidden> <input type='text' id='namehold' value='".$name."' hidden>";
                     echo $data;
+
+                    // proceed and log this event
+                    $log_text = $fname." ".$sname." has been admitted successfully";
+                    log_administration($log_text);
                 }else {
                     echo "Search for the latest students to see their admission number";
                 }
@@ -5287,11 +5368,14 @@
             $conn2->close();
         }elseif (isset($_POST['delete_student'])) {
             $std_id = $_POST['delete_student'];
+            $student_data = getStudentData($std_id, $conn2);
             $delete = "DELETE FROM `student_data` WHERE `adm_no` = ?";
             $stmt = $conn2->prepare($delete);
             $stmt->bind_param("s",$std_id);
             if($stmt->execute()){
-                echo "<p class='text-success'>You have succesffully deleted this student.</p>";
+                echo "<p class='text-success'>You have successfully deleted this student.</p>";
+                $log_text = ((is_array($student_data)) ? ucwords(strtolower($student_data['first_name']." ". $student_data['second_name'])) : "N/A") ." of Reg No (".$std_id.") discounts have been updated successfully";
+                log_administration($log_text);
             }else {
                 echo "<p class='text-danger'>An error occured while trying to delete the student. Try again later</p>";
             }
@@ -5777,6 +5861,8 @@
 
                         // course updates
                         echo "<p class='text-success'>Course updates have been done successfully!</p>";
+                        $log_text = ucwords(strtolower($row['first_name']." ".$row['second_name']))." - of Reg No. (".$row['adm_no'].") course data has been updated successfully!";
+                        log_administration($log_text);
                     }
                 }
             }
@@ -6012,6 +6098,9 @@
             // echo $update;
             // $stmt->bind_param("sssssssss",$expense_name,$expense_category,$unit_name,$expense_quantity,$unit_cost,$total_unit_cost,$edit_expense_record_date,$expense_cash_activity,$expense_ids_in);
             if($stmt->execute()){
+                // log text
+                $log_message = "Expense \"".$expense_name."\" updated successfully!";
+                log_administration($log_message);
                 echo "<p class='text-success p-2 border border-success rounded'>Data has been saved successfully!</p>";
             }else{
                 echo "<p class='text-danger p-2 border border-danger rounded'>An error occured!</p>";
@@ -6022,6 +6111,9 @@
             $delete = "DELETE FROM `expenses` WHERE `expid` = '".$exp_ids."'";
             $stmt = $conn2->prepare($delete);
             if($stmt->execute()){
+                // log text
+                $log_message = "Expense deleted successfully!";
+                log_finance($log_message);
                 echo "<p class='text-success p-2 border border-success rounded'>Data has been deleted!</p>";
             }else{
                 echo "<p class='text-danger p-2 border border-danger rounded'>An error occured!</p>";
@@ -6275,7 +6367,8 @@
                 $stmt->bind_param("s",$department_details);
                 $stmt->execute();
             }
-
+            $log_text = "Departments (".$department_name.") have been added successfully!";
+            log_administration($log_text);
             echo "<p class='text-success'>Departments (".$department_name.") have been added successfully!</p>";
         }elseif(isset($_POST['getData'])){
             // get the department data
@@ -6365,6 +6458,8 @@
                     }
                 }
             }
+            $log_text = "Departments (".$department_name.") with a code of (".$department_code.") have been updated successfully!";
+            log_administration($log_text);
 
             echo "<p class='text-success'>Update done successfully!</p>";
         }elseif(isset($_POST['getDepartments'])){
@@ -6698,6 +6793,8 @@
             $stmt->execute();
             $result = $stmt->get_result();
             $departments = [];
+            $department_name = "N/A";
+            $department_code = "N/A";
             if ($result) {
                 if($row = $result->fetch_assoc()){
                     if(isJson_report($row['valued'])){
@@ -6705,9 +6802,14 @@
                         $new_department = [];
                         for ($index=0; $index < count($departments); $index++) {
                             $id = $departments[$index]->id;
+                            if ($id == $delete_department) {
+                                $department_name = $departments[$index]->name;
+                                $department_code = $departments[$index]->code;
+                            }
                             if ($id != $delete_department) {
                                 array_push($new_department,$departments[$index]);
                             }
+                            
                         }
                         $departments = $new_department;
 
@@ -6721,6 +6823,10 @@
                     }
                 }
             }
+
+            // log text
+            $log_text = "Departments (".$department_name.") with a code of (".$department_code.") have been deleted successfully!";
+            log_administration($log_text);
             echo "<p class='text-success'>Department deleted successfully!</p>";
         }elseif(isset($_POST['delete_revenue_category'])){
             $delete_revenue_category = $_POST['delete_revenue_category'];
@@ -6732,10 +6838,14 @@
                 if($row = $result->fetch_assoc()){
                     $valued = $row['valued'];
                     $new_values = [];
+                    $revenue_name = "N/A";
                     if(isJson_report($valued)){
                         $valued = json_decode($valued);
                         for($index = 0; $index < count($valued); $index++){
-                            if($delete_revenue_category != $index){
+                            if($delete_revenue_category == $valued[$index]->category_id){
+                                $revenue_name = $valued[$index]->category_name;
+                            }
+                            if($delete_revenue_category != $valued[$index]->category_id){
                                 array_push($new_values,$valued[$index]);
                             }
                         }
@@ -6748,6 +6858,10 @@
                     $stmt->bind_param("s",$new_values);
                     $stmt->execute();
                     echo "<p class='text-success'>Revenue category has been deleted successfully!</p>";
+
+                    // log text
+                    $log_text = "Revenue category \"".$revenue_name."\" deleted successfully!";
+                    log_administration($log_text);
                 }else{
                     echo "<p class='text-danger'>An error has occured!</p>";
                 }
@@ -6807,13 +6921,12 @@ function isJson_report($string) {
         $stmt->bind_param("s",$userid);
         $stmt->execute();
         $result = $stmt->get_result();
-        $fullname = [];
         if ($result) {
             if ($row = $result->fetch_assoc()) {
                 return $row;
             }
         }
-        return $fullname;
+        return [];
     }
     function getmyClassName($userid,$conn){
         $select = "SELECT * FROM `student_data` WHERE `adm_no` = ?";
@@ -8754,7 +8867,7 @@ function isJson_report($string) {
                             // this means the the staff was registered year(s) last year
                             if($days_are_accrued == "Monthly"){
                                 // get the number of that were entitled to the staff in last year
-                                $start_year = addYears($calender[0],-1);
+                                $start_year = addYearsAdministration($calender[0],-1);
                                 $end_of_last_year = addDays($calender[0],-1);
 
                                 // days entitled last year
@@ -8828,7 +8941,7 @@ function isJson_report($string) {
                                 // echo $days_ent;
                                 return $days_ent;
                             }elseif($days_are_accrued == "Yearly"){
-                                $start_year = addYears($calender[0],-1);
+                                $start_year = addYearsAdministration($calender[0],-1);
                                 $end_of_last_year = addDays($calender[0],-1);
                                 
                                 $days_to_use_current_year = $max_days;
@@ -8877,7 +8990,7 @@ function isJson_report($string) {
                                 return $days_ent;
                             }elseif($days_are_accrued == "Weekly"){
                                 // get the number of that were entitled to the staff in last year
-                                $start_year = addYears($calender[0],-1);
+                                $start_year = addYearsAdministration($calender[0],-1);
                                 $end_of_last_year = addDays($calender[0],-1);
 
                                 // days entitled last year
@@ -11321,7 +11434,7 @@ function isJson_report($string) {
         date_add($date,date_interval_create_from_date_string($months." Month"));
         return date_format($date,"YmdHis");
     }
-    function addYears($date,$years){
+    function addYearsAdministration($date,$years){
         $date = date_create($date);
         date_add($date,date_interval_create_from_date_string($years." Years"));
         return date_format($date,"YmdHis");
@@ -11329,5 +11442,71 @@ function isJson_report($string) {
     function replaceDoubleQuotes($string) {
         $result = str_replace('"', "'", $string);
         return $result;
+    }
+    function log_administration($text){
+        $full_text = date("dS M Y H:i:sA")." : ".$text." - {".$_SESSION['username']."}\n";
+        $file_location = "../../ajax/logs/".$_SESSION['dbname']."/logs.txt";
+        if (file_exists($file_location)) {
+            $content = file_get_contents($file_location);
+
+            // Open the file for writing
+            $file = fopen($file_location, 'w');
+            
+            if ($file) {
+                fwrite($file, $full_text.$content);
+                fclose($file);
+            }else {
+                return "File not found!";
+            }
+        } else {
+            $directory = dirname($file_location);
+            if (!file_exists($directory)) {
+                $pwu_data = posix_getpwuid(posix_geteuid());
+                $username = $pwu_data['name'];
+                mkdir($directory, 0777, true);
+
+                // Change ownership of the directory to daemon
+                chown($directory, $username);
+            }
+    
+            // Open the file for writing
+            $file = fopen($file_location, 'w');
+            
+            if ($file){
+                fwrite($file, $full_text);
+                fclose($file);
+            }else {
+                return "File not found!";
+            }
+        }
+    }
+
+    function readFromFile($filename) {
+        if (file_exists($filename)) {
+            $content = file_get_contents($filename);
+            return $content;
+        } else {
+            return "File not found!";
+        }
+    }
+    
+    // Function to write content to a text file
+    function writeToFile($filename, $content) {
+        // Create directory if it doesn't exist
+        $directory = dirname($filename);
+        if (!file_exists($directory)) {
+            mkdir($directory, 0777, true);
+        }
+    
+        // Open the file for writing
+        $file = fopen($filename, 'w');
+        
+        if ($file) {
+            fwrite($file, $content);
+            fclose($file);
+            return "Content written to $filename successfully!";
+        } else {
+            return "Unable to open file!";
+        }
     }
 ?>

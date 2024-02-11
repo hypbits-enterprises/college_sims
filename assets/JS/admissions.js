@@ -5944,14 +5944,25 @@ cObj("add_role_btns2").onclick = function () {
     if (err < 1) {
         cObj("allowance_err4_handler").innerHTML = "";
         var role = getStaffRole2(role_index, valObj("role_name2"));
-        var datapass = "?edit_another_user=true&role_name=" + valObj("role_name2") + "&old_role_name=" + cObj("old_role_name").innerText + "&role_values=" + role;
-        sendData2("GET", "academic/academic.php", datapass, cObj("allowance_err4_handler"), cObj("add_user_roles_in2"));
+        var datapass = "edit_another_user=true&role_name=" + valObj("role_name2") + "&old_role_name=" + cObj("old_role_name").innerText + "&role_values=" + role;
+        sendDataPost("POST", "ajax/academic/academic.php", datapass, cObj("allowance_err4_handler"), cObj("add_user_roles_in2"));
         setTimeout(() => {
-            cObj("cancel_role_btn2").click();
-            cObj("allowance_err4_handler").innerHTML = "";
-            cObj("role_name2").value = "";
-            cObj("set_btns").click();
-        }, 1000);
+            var timeout = 0;
+            var ids = setInterval(() => {
+                timeout++;
+                //after two minutes of slow connection the next process wont be executed
+                if (timeout == 1200) {
+                    stopInterval(ids);
+                }
+                if (cObj("add_user_roles_in2").classList.contains("hide")) {
+                    cObj("cancel_role_btn2").click();
+                    cObj("allowance_err4_handler").innerHTML = "";
+                    cObj("role_name2").value = "";
+                    cObj("set_btns").click();
+                    stopInterval(ids);
+                }
+            }, 100);
+        }, 100);
 
     } else {
         cObj("allowance_err4_handler").innerHTML = "<p class='text-danger'>Fill all fields covered with red borders</p>";
@@ -6355,7 +6366,7 @@ function getClubHouses() {
 function delete_club() {
     // delete the clubs
     var its_id = this.id;
-    var suffix = its_id.substr(its_id.length - 1, its_id.length);
+    var suffix = its_id.substr(12);
     // pull the confirmation window
     cObj("delete_clubs_window").classList.remove("hide");
     cObj("clubs_ids_delete").innerText = suffix;
@@ -6406,7 +6417,8 @@ function working_onit(event) {
 
 function editClubData() {
     var its_id = this.id;
-    var suffix = its_id.substr(its_id.length - 1, its_id.length);
+    console.log(this.id);
+    var suffix = its_id.substr(10);
     cObj("edit_clubs_win").classList.remove("hide");
     var ids = "club_named" + suffix;
     cObj("clubs_ids").innerText = suffix;

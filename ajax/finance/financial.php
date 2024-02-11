@@ -94,12 +94,16 @@
                 if ($row = $result->fetch_assoc()) {
                     $transaction_id = $row['transaction_id'];
 
-                    echo "Updates";
+                    echo "Updated successfully!";
                     $updated = 1;
                     // update the current tranasctio
                     $update = "UPDATE `finance` SET `balance` = '".$student_balance."' WHERE `stud_admin` = '".$student_admission."'";
                     $stmt = $conn2->prepare($update);
                     $stmt->execute();
+
+                    $student_data = students_details($student_admission,$conn2);
+                    $log_text = (is_array($student_data) ? ucwords(strtolower($student_data['first_name']." ". $student_data['first_name'])): "N/A") . " of adm no ".$student_admission." last year academic balance has been updated successfully!";
+                    log_finance($log_text);
                 }
             }
 
@@ -123,6 +127,10 @@
                 $stmt->bind_param("sssssssssss",$student_admission,$time,$new_date,$code,$amount,$student_balance,$paymentfor,$_SESSION['userids'],$code,$status,$status);
                 $stmt->execute();
                 echo "<p class='text-success border border-success p-2 my-1'>Update done successfully!</p>";
+
+                $student_data = students_details($student_admission,$conn2);
+                $log_text = (is_array($student_data) ? ucwords(strtolower($student_data['first_name']." ". $student_data['second_name'])): "N/A") . " of adm no (".$student_admission.") last year academic balance has been updated successfully!";
+                log_finance($log_text);
             }
         }elseif (isset($_GET['findadmno'])) {
             $admnos = $_GET['findadmno'];
@@ -501,6 +509,10 @@
                         //end of sms
                     }
                 echo "<p style='color:green;font-size:13px;'>Transaction completed successfully!</p>";
+
+                // LOG TEXT
+                $log_text = "Transaction for \"".ucwords(strtolower($student_name))."\" Reg No \"".$studadmin."\" has been completed successfully!";
+                log_finance($log_text);
 
                 // if the credit note id is set get it and update the assignment status and the student getting the credit
                 if(isset($_GET['credit_id'])){
@@ -1099,6 +1111,9 @@
             $delete = "DELETE FROM `finance` WHERE `transaction_id` = '".$transactions_id."'";
             $stmt = $conn2->prepare($delete);
             if($stmt->execute()){
+                // transaction deleted successfully!
+                $log_text = "Transaction has been deleted successfully!";
+                log_finance($log_text);
                 echo "<p class='border border-success p-1 m-1 text-success'>Transaction deleted successfully!</p>";
             }else{
                 echo "<p class='border border-danger p-1 m-1 text-danger'>An error occured!</p>";
@@ -1382,6 +1397,9 @@
             $stmt = $conn2->prepare($insert);
             $stmt->bind_param("sssssss",$_GET['expense_name'],$_GET['term_one'],$_GET['term_two'],$_GET['term_three'],$_GET['course_level'],$_GET['roles'],$_GET['course']);
             if($stmt->execute()){
+                // log text
+                $log_message = "Fees structure has been modified. Votehead \"".ucwords(strtolower($_GET['expense_name']))."\" has been added successfully!";
+                log_finance($log_message);
                 echo "<p class='text-success'>Fees structure has been set successfully!</p>";
             }else{
                 echo "<p class='text-danger'>An error occured! Try again later</p>";
@@ -1392,6 +1410,10 @@
             $stmt = $conn2->prepare($delete);
             $stmt->bind_param("s",$fees_id);
             if($stmt->execute()){
+
+                // log text
+                $log_message = "Fees structure has been modified. Votehead deleted successfully!";
+                log_finance($log_message);
                 echo  "<p class = 'green_notice'>Deleted successfully!</p>";
             }else {
                 echo  "<p class = 'red_notice'>Action was not successfull!</p>";
@@ -1468,6 +1490,11 @@
                 $stmt->bind_param("ss",$expensename,$old_expense_name);
                 $stmt->execute();
                 echo "<p class = 'green_notice'>Update done successfully!</p>";
+                
+
+                // log text
+                $log_message = "Fees structure has been modified. Votehead \"".ucwords(strtolower($expensename))."\" changed successfully!";
+                log_finance($log_message);
             }else {
                 echo "<p class = 'red_notice'>An error occured during update!</p>";
             }
@@ -1499,6 +1526,9 @@
             $stmt = $conn2->prepare($insert);
             $stmt->bind_param("sssssssss",$exp_name,$exp_cat,$unit_name,$exp_quant,$exp_unit,$exp_totcost,$date,$time,$expense_cash_activity);
             if($stmt->execute()){
+                // log text
+                $log_message = "Expense \"".ucwords(strtolower($exp_name))."\" uploaded successfully!";
+                log_finance($log_message);
                 echo "<p class='green_notice'>Expense uploaded successfully!<span id='uploaded'></span></p>";
             }else {
                 echo "<p class='red_notice'>Error occured during upload!</p>";
@@ -4764,7 +4794,9 @@
             $stmt = $conn2->prepare($insert);
             $stmt->bind_param("sssssssss",$revenue_name,$revenue_amount,$revenue_date,$customer_name,$customer_contacts_revenue,$contact_person,$revenue_description,$revenue_categories,$revenue_cash_activity);
             $stmt->execute();
-
+            
+            $log_text = "Revenue \"".$revenue_name."\" has been added successfully!";
+            log_finance($log_text);
             echo "<p class='text-success'>Revenue has been successfully recorded!</p>";
         }elseif(isset($_POST['get_revenue'])){
             include("../../connections/conn1.php");
@@ -4860,17 +4892,36 @@
             $stmt->execute();
 
             // echo results
+            $log_text = "Revenue \"".$revenue_name."\" has been updated successfully!";
+            log_finance($log_text);
             echo "<p class='text-success'>Revenue records updated successfully!</p>";
         }elseif(isset($_POST['delete_revenue'])){
             include("../../connections/conn1.php");
             include("../../connections/conn2.php");
             $revenue_id = $_POST['revenue_id'];
+            // select the revenue name
+            $select = "SELECT * FROM school_revenue WHERE id = ?";
+            $stmt = $conn2->prepare($select);
+            $stmt->bind_param("s",$revenue_id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $revenue_name = "N/A";
+            if($result){
+                if($row = $result->fetch_assoc()){
+                    $revenue_name = ucwords(strtolower($row['name']));
+                }
+            }
+
+            // delete from school revenue
             $delete = "DELETE FROM `school_revenue` WHERE `id` = ?";
             $stmt = $conn2->prepare($delete);
             $stmt->bind_param("s",$revenue_id);
             $stmt->execute();
 
             echo "<p class='text-success'>Revenue record has been successfully deleted!</p>";
+            $log_text = "Revenue \"".$revenue_name."\" has been deleted successfully!";
+            log_finance($log_text);
+
         }elseif(isset($_POST['get_revenue_categories'])){
             include("../../connections/conn2.php");
             // get the expense categories
@@ -7949,4 +8000,41 @@
         return ((is_string($string) &&
                 (is_object(json_decode($string)) ||
                 is_array(json_decode($string))))) ? true : false;
+    }
+    function log_finance($text){
+        $full_text = date("dS M Y H:i:sA")." : ".$text." - {".$_SESSION['username']."}\n";
+        $file_location = "../../ajax/logs/".$_SESSION['dbname']."/logs.txt";
+        if (file_exists($file_location)) {
+            $content = file_get_contents($file_location);
+
+            // Open the file for writing
+            $file = fopen($file_location, 'w');
+            
+            if ($file) {
+                fwrite($file, $full_text.$content);
+                fclose($file);
+            }else {
+                return "File not found!";
+            }
+        } else {
+            $directory = dirname($file_location);
+            if (!file_exists($directory)) {
+                $pwu_data = posix_getpwuid(posix_geteuid());
+                $username = $pwu_data['name'];
+                mkdir($directory, 0777, true);
+
+                // Change ownership of the directory to daemon
+                chown($directory, $username);
+            }
+    
+            // Open the file for writing
+            $file = fopen($file_location, 'w');
+            
+            if ($file){
+                fwrite($file, $full_text);
+                fclose($file);
+            }else {
+                return "File not found!";
+            }
+        }
     }

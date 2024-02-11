@@ -1,0 +1,79 @@
+01st Feb 2024 22:25:35PM : Transaction for "Hillary  Ngige" Reg No "SW-ED-45" has been completed successfully! - {HILLARY NGIGE}
+01st Feb 2024 22:24:50PM : HILLARY  NGIGE has been admitted successfully - {HILLARY NGIGE}
+01st Feb 2024 22:21:50PM : Transaction for "Charles Khamala" Reg No "4" has been completed successfully! - {HILLARY NGIGE}
+01st Feb 2024 22:20:32PM : HILLARY NGIGE successfully logged into the system as System Administrator - {HILLARY NGIGE}
+31st Jan 2024 22:32:22PM : Transaction has been deleted successfully! - {HILLARY NGIGE}
+31st Jan 2024 20:11:43PM : HILLARY NGIGE successfully logged into the system as System Administrator - {HILLARY NGIGE}
+31st Jan 2024 19:29:32PM : Revenue category "Category 1" has been added successfully! - {HILLARY NGIGE}
+31st Jan 2024 19:25:49PM : Revenue category "Muskari Kombo"  updated successfully! - {HILLARY NGIGE}
+31st Jan 2024 19:24:10PM : Revenue category "N/A"  updated successfully! - {HILLARY NGIGE}
+31st Jan 2024 19:23:11PM : Revenue category "N/a" updated successfully! - {HILLARY NGIGE}
+31st Jan 2024 19:20:19PM : Revenue category "Mt Kenya Revenue Donations" updated successfully! - {HILLARY NGIGE}
+31st Jan 2024 19:16:19PM : Expense category deleted successfully! - {HILLARY NGIGE}
+31st Jan 2024 19:14:41PM : Expense category "Categorical" updated successfully! - {HILLARY NGIGE}
+31st Jan 2024 19:12:44PM : Expense "Categorical" added successfully! - {HILLARY NGIGE}
+31st Jan 2024 19:10:44PM : The Sports House / Clubs "Housing Levy" has been updated successfully! - {HILLARY NGIGE}
+31st Jan 2024 19:08:31PM : The Sports House / Clubs "" has been updated successfully! - {HILLARY NGIGE}
+31st Jan 2024 18:44:31PM : The Sports House / Clubs "Spot housess" has been updated successfully! - {HILLARY NGIGE}
+31st Jan 2024 18:41:10PM : The Sports House / Clubs "ICT department" has been updated successfully! - {HILLARY NGIGE}
+31st Jan 2024 18:40:40PM : The Sports House / Clubs "" has been updated successfully! - {HILLARY NGIGE}
+31st Jan 2024 18:36:49PM : The Sports House / Clubs "ICT department" has been updated successfully! - {HILLARY NGIGE}
+31st Jan 2024 18:35:19PM : The Sports House / Clubs "Spot houses" has been added successfully! - {HILLARY NGIGE}
+31st Jan 2024 18:34:27PM : The Sports House / Clubs has been added successfully! - {HILLARY NGIGE}
+31st Jan 2024 18:32:41PM : Role has been deleted successfully! - {HILLARY NGIGE}
+31st Jan 2024 18:30:08PM : Role "Librarians" has been updated successfully! - {HILLARY NGIGE}
+31st Jan 2024 18:29:18PM : Role "Sos" has been updated successfully! - {HILLARY NGIGE}
+31st Jan 2024 18:18:38PM : Ses has been added successfully! - {HILLARY NGIGE}
+31st Jan 2024 18:15:33PM : Academic calender has been updated successfully! - {HILLARY NGIGE}
+31st Jan 2024 18:14:15PM : Admission prefix has has been updated successfully! - {HILLARY NGIGE}
+31st Jan 2024 18:09:39PM : Course "Business Technology" has been deleted successfully! - {HILLARY NGIGE}
+31st Jan 2024 18:09:20PM : Course "Business Technology" has been updated successfully! - {HILLARY NGIGE}
+31st Jan 2024 18:06:39PM : Course "Business Technology" has been updated successfully! - {HILLARY NGIGE}
+31st Jan 2024 18:02:28PM : Course "Business IT"has been added successfully! - {HILLARY NGIGE}
+31st Jan 2024 17:52:05PM : School information changed successfully! - {HILLARY NGIGE}
+31st Jan 2024 17:47:32PM : Expense "JAMES MUGOH" updated successfully! - {HILLARY NGIGE}
+31st Jan 2024 17:42:40PM : Expense "Hillary Ngige" uploaded successfully! - {HILLARY NGIGE}
+31st Jan 2024 17:29:17PM : Fees structure has been modified. Votehead "Student I`ds" changed successfully! - {HILLARY NGIGE}
+31st Jan 2024 17:28:58PM : Fees structure has been modified. Votehead deleted successfully! - {HILLARY NGIGE}
+31st Jan 2024 17:28:01PM : Fees structure has been modified. Votehead "Admissions" changed successfully! - {HILLARY NGIGE}
+31st Jan 2024 17:26:59PM : Fees structure has been modified. Votehead changed to "Admissions" from "Admissions" successfully! - {HILLARY NGIGE}
+31st Jan 2024 17:22:14PM : Admissions has been deleted successfully! - {HILLARY NGIGE}
+31st Jan 2024 17:19:26PM : Transaction has been deleted successfully! - {HILLARY NGIGE}
+31st Jan 2024 17:14:35PM : Transaction for "Tracy Oundo" adm no "10" has been completed successfully! - {HILLARY NGIGE}
+31st Jan 2024 17:06:36PM : Revenue "Hillary Swimming" has been deleted successfully! - {HILLARY NGIGE}
+31st Jan 2024 17:05:54PM : Revenue "Hillary Test Revenue" has been updated successfully! - {HILLARY NGIGE}
+31st Jan 2024 17:01:14PM : Revenue "HILLARY SWIMMING" has been updated successfully! - {HILLARY NGIGE}
+31st Jan 2024 17:00:07PM : Revenue "HILLARY SWIMMING" has been added successfully! - {HILLARY NGIGE}
+31st Jan 2024 16:54:59PM : Staff "James Mugo" information has been deleted successfully! - {HILLARY NGIGE}
+31st Jan 2024 16:52:35PM : Staff "JAMES MUGO" information has been updated successfully! - {HILLARY NGIGE}
+31st Jan 2024 16:48:43PM : Departments (DEPARTMENT 1002) with a code of (DP-1002) have been deleted successfully! - {HILLARY NGIGE}
+31st Jan 2024 16:48:41PM : Departments (DEPARTMENT 1002) with a code of (DP-1002) have been updated successfully! - {HILLARY NGIGE}
+31st Jan 2024 16:48:36PM : Departments (DEPARTMENT 1002) have been added successfully! - {HILLARY NGIGE}
+31st Jan 2024 16:47:34PM : Departments (DEPARTMENT 1000) with a code of (DP-1000) have been added successfully! - {HILLARY NGIGE}
+31st Jan 2024 16:47:32PM : Departments (DEPARTMENT 1000) with a code of (DP-1000) have been added successfully! - {HILLARY NGIGE}
+31st Jan 2024 16:47:26PM : Departments (DEPARTMENT 1000) have been added successfully! - {HILLARY NGIGE}
+31st Jan 2024 16:45:45PM : Departments (DEPARTMENT 100) with a code of (3) have been added successfully! - {HILLARY NGIGE}
+31st Jan 2024 16:40:44PM : Departments (DEPARTMENT 100) have been added successfully! - {HILLARY NGIGE}
+31st Jan 2024 16:37:40PM : Updated the password of Juma Amanex - {HILLARY NGIGE}
+31st Jan 2024 16:31:12PM : Registration of JUMA AMANEX as <b>Hillary Tester</b> has been done successfully - {HILLARY NGIGE}
+31st Jan 2024 16:11:03PM : Mugo Karama of Reg No (SW-ED-40) discounts have been updated successfully - {HILLARY NGIGE}
+31st Jan 2024 16:10:43PM : Mugo Karama of Reg No (SW-ED-40) discounts have been updated successfully - {HILLARY NGIGE}
+31st Jan 2024 14:50:44PM : Hillary Ngige of Reg No (SW-ED-39) discounts have been updated successfully - {HILLARY NGIGE}
+31st Jan 2024 14:49:58PM : Hilla Ngige of Reg No () discounts have been updated successfully - {HILLARY NGIGE}
+31st Jan 2024 14:47:20PM : Hilla Hilla of adm no SW-ED-42 last year academic balance has been updated successfully! - {HILLARY NGIGE}
+31st Jan 2024 14:47:17PM : Hilla Ngige of Reg No (SW-ED-42) discounts have been updated successfully - {HILLARY NGIGE}
+31st Jan 2024 14:45:22PM : Hillary Ngige of Reg No (SW-ED-39) discounts have been updated successfully - {HILLARY NGIGE}
+31st Jan 2024 14:45:07PM : Hillary Hillary of adm no SW-ED-39 last year academic balance has been updated successfully! - {HILLARY NGIGE}
+31st Jan 2024 14:44:19PM : Hillary Ngige of Reg No (SW-ED-39) discounts have been updated successfully - {HILLARY NGIGE}
+31st Jan 2024 14:44:13PM : Hillary Ngige of adm no SW-ED-39 last year academic balance has been updated successfully! - {HILLARY NGIGE}
+31st Jan 2024 14:43:34PM : Hilla Ngige of Reg No (SW-ED-42) discounts have been updated successfully - {HILLARY NGIGE}
+31st Jan 2024 14:41:44PM : N/A of Reg No (SW-ED-42) discounts have been updated successfully - {HILLARY NGIGE}
+31st Jan 2024 14:39:50PM : N/A of Reg No (SW-ED-42) discounts have been updated successfully - {HILLARY NGIGE}
+31st Jan 2024 14:32:59PM : Hilla Hilla of adm no SW-ED-42 last year academic balance has been updated successfully! - {HILLARY NGIGE}
+31st Jan 2024 14:07:28PM : N/A of adm no SW-ED-42 last year academic balance has been updated successfully! - {HILLARY NGIGE}
+31st Jan 2024 13:57:50PM Hilla Ngige - of Reg No. (SW-ED-42) course data has been updated successfully! - {HILLARY NGIGE}
+31st Jan 2024 13:46:29PM Hilla Ngige - of Reg No. (SW-ED-42) data has been updated successfully! - {HILLARY NGIGE}
+31st Jan 2024 13:45:45PM Hilla Ngige - of Reg No. (SW-ED-42) data has been updated successfully! - {HILLARY NGIGE}
+31st Jan 2024 13:45:16PM Hilla Ngige - (SW-ED-42) data has been updated successfully! - {HILLARY NGIGE}
+31st Jan 2024 13:44:23PM Hilla Ngige data has been updated successfully! - {HILLARY NGIGE}
+31st Jan 2024 13:35:39PM MUGOH KIAMA has been admitted successfully - {HILLARY NGIGE}

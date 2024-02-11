@@ -2663,17 +2663,17 @@ function checkPresnt($array, $string){
             <div class="changesubwindow addsubject animate">
                 <div class="conts">
                     <p class="funga" id="close_add_class_win">&times</p>
-                    <h6>Add Class</h6>
+                    <h6>Add Course</h6>
                 </div>
                 <div class="conts" id="">
                     <div class="add_expenses">
                         <label class="form-control-label" for="input_text">Enter class name: <br></label>
-                        <input class="form-control" type="text" name="input_text" id="input_text" placeholder="Class name">
+                        <input class="form-control" type="text" name="input_text" id="input_text" placeholder="Course name">
                         <img src="images/ajax_clock_small.gif" class="hide" id="add_class_clock">
                         <p id="add_class_outputtxt"></p>
                     </div>
                     <div class="btns">
-                        <button type="button" id="add_class_btn">Add Class</button>
+                        <button type="button" id="add_class_btn">Add Course</button>
                         <button type="button" id="close_add_cl_win">Close</button>
                     </div>
                 </div>

@@ -148,30 +148,50 @@ require("../../assets/encrypt/functions.php");
             if($rnums>0){
                 $data = "<p style = 'color:green;'>Correct credentials <br>Access granted as:";
                 $auth = $_SESSION['authority'];
+                $this_authority = "NULL";
                 if ($auth == 0) {
                     $data .= "<br>". "System Administrator </p>";
+                    $this_authority = "System Administrator";
                 } else if ($auth == "1") {
                     $data .= "<br>". "Principal </p>";
+                    $this_authority = "Principal";
                 } else if ($auth == "2") {
                     $data .= "<br>". "Deputy Principal Academics </p>";
+                    $this_authority = "Deputy Principal Academics";
                 } else if ($auth == "3") {
                     $data .= "<br>". "Deputy Principal Administration </p>";
+                    $this_authority = "Deputy Principal Administration";
                 } else if ($auth == "4") {
                     $data .= "<br>". "Dean of Students </p>";
+                    $this_authority = "Dean of Students";
                 } else if ($auth == "5") {
                     $data .= "<br>". "Finance Office </p>";
+                    $this_authority = "Finance Office";
                 } else if ($auth == "6") {
                     $data .= "<br>". "Human Resource Officer </p>";
+                    $this_authority = "Human Resource Officer";
                 } else if ($auth == "7") {
                     $data .= "<br>". "Head of Department </p>";
+                    $this_authority = "Head of Department";
                 } else if ($auth == "8") {
                     $data .= "<br>". "Trainer/Lecturer </p>";
+                    $this_authority = "Trainer/Lecturer";
                 } else if ($auth == "9") {
                     $data .= "<br>". "Admissions </p>";
+                    $this_authority = "Admissions";
                 }  else {
                     $data .= "<br>". ucwords(strtolower($auth))."</p>";
+                    $this_authority = ucwords(strtolower($auth));
                 }
                 echo $data;
+                $stmt->execute();
+                $result = $stmt->get_result();
+                if ($result) {
+                    if($row = $result->fetch_assoc()){
+                        $log_text = $row['fullname']." successfully logged into the system as ".$this_authority;
+                        log_login($log_text);
+                    }
+                }
             }else {
                 echo "<p style = 'color:red;'>Inorrect credentials <br>Access denied</p>";
             }
@@ -200,6 +220,9 @@ require("../../assets/encrypt/functions.php");
             $stmt = $conn->prepare($update);
             $stmt->bind_param("ssssssssssssss",$school_name,$school_message,$school_motto,$school_admin,$school_admin_contact,$school_mail,$school_vission,$sch_box_no,$postalcode,$sch_county,$sch_country,$physicall_address,$school_website,$_SESSION['schoolcode']);
             if($stmt->execute()){
+                // school information changed successfully!
+                $log_text = "School information changed successfully!";
+                log_login($log_text);
                 echo "<p class='green_notice fa-sm'>Update has been done sucessfully<br>The changes will take effect next time you login!</p>";
             }else {
                 echo "<p class='red_notice fa-xs'>An error has occured during update!</p>";
@@ -430,6 +453,43 @@ require("../../assets/encrypt/functions.php");
             return true;
         }else {
             return false;
+        }
+    }
+    function log_login($text){
+        $full_text = date("dS M Y H:i:sA")." : ".$text." - {".$_SESSION['username']."}\n";
+        $file_location = "../../ajax/logs/".$_SESSION['dbname']."/logs.txt";
+        if (file_exists($file_location)) {
+            $content = file_get_contents($file_location);
+
+            // Open the file for writing
+            $file = fopen($file_location, 'w');
+            
+            if ($file) {
+                fwrite($file, $full_text.$content);
+                fclose($file);
+            }else {
+                return "File not found!";
+            }
+        } else {
+            $directory = dirname($file_location);
+            if (!file_exists($directory)) {
+                $pwu_data = posix_getpwuid(posix_geteuid());
+                $username = $pwu_data['name'];
+                mkdir($directory, 0777, true);
+
+                // Change ownership of the directory to daemon
+                chown($directory, $username);
+            }
+    
+            // Open the file for writing
+            $file = fopen($file_location, 'w');
+            
+            if ($file){
+                fwrite($file, $full_text);
+                fclose($file);
+            }else {
+                return "File not found!";
+            }
         }
     }
 ?>

@@ -132,6 +132,9 @@
                     }
                 }
             }
+            // create the log text
+            $log_text = "Role \"".ucwords(strtolower($role_name))."\" has been added successfully!";
+            log_academic($log_text);
         }elseif (isset($_GET['staff_roles'])) {
             $select = "SELECT * FROM `settings` WHERE `sett` = 'user_roles'";
             $stmt= $conn2->prepare($select);
@@ -141,29 +144,6 @@
                 if ($row = $result->fetch_assoc()) {
                     echo "".$row['valued']."";
                 }
-            }
-        }elseif (isset($_GET['edit_another_user'])) {
-            include("../../connections/conn1.php");
-            $role_name = $_GET['role_name'];
-            $role_values = $_GET['role_values'];
-            $update = "UPDATE `settings` set `valued` = ? WHERE `sett` = 'user_roles'";
-            $stmt = $conn2->prepare($update);
-            $stmt->bind_param("s",$role_values);
-            if($stmt->execute()){
-                // update everywhere to the school users where the role is available
-                $schcodes = $_SESSION['schcode'];
-                $update = "UPDATE `user_tbl` SET `auth` = ? WHERE `auth` = ? AND `school_code` = ?";
-                $stmt = $conn->prepare($update);
-                $role_name = $_GET['role_name'];
-                $old_role_name = $_GET['old_role_name'];
-                $stmt->bind_param("sss",$role_name,$old_role_name,$schcodes);
-                if($stmt->execute()){
-                    echo "<p class='text-success'>You have successfully updated information!</p>";
-                }else{
-                    echo "<p class='text-danger'>An error has occured during update out</p>";
-                }
-            }else{
-                echo "<p class='text-danger'>An error has occured during update</p>";
             }
         }
         elseif (isset($_GET['get_user_roles'])) {
@@ -3444,6 +3424,33 @@
             }else{
                 echo "<p class='text-danger'>We cannot save the timetable at the moment because of lack of enough information accompanied with it.</p>";
             }
+        }elseif (isset($_POST['edit_another_user'])) {
+            include("../../connections/conn1.php");
+            include("../../connections/conn2.php");
+            $role_name = $_POST['role_name'];
+            $role_values = $_POST['role_values'];
+            $update = "UPDATE `settings` set `valued` = ? WHERE `sett` = 'user_roles'";
+            $stmt = $conn2->prepare($update);
+            $stmt->bind_param("s",$role_values);
+            if($stmt->execute()){
+                // update everywhere to the school users where the role is available
+                $schcodes = $_SESSION['schcode'];
+                $update = "UPDATE `user_tbl` SET `auth` = ? WHERE `auth` = ? AND `school_code` = ?";
+                $stmt = $conn->prepare($update);
+                $role_name = $_POST['role_name'];
+                $old_role_name = $_POST['old_role_name'];
+                $stmt->bind_param("sss",$role_name,$old_role_name,$schcodes);
+                if($stmt->execute()){
+                    // create the log text
+                    $log_text = "Role \"".(($role_name))."\" has been updated successfully!";
+                    log_academic($log_text);
+                    echo "<p class='text-success'>You have successfully updated information!</p>";
+                }else{
+                    echo "<p class='text-danger'>An error has occured during update out</p>";
+                }
+            }else{
+                echo "<p class='text-danger'>An error has occured during update</p>";
+            }
         }elseif (isset($_POST['delete_roles'])) {
             include("../../connections/conn1.php");
             include("../../connections/conn2.php");
@@ -3464,6 +3471,10 @@
                 $stmt->bind_param("s",$raw_data);
                 if($stmt->execute()){
                     echo "<p class='text-success'>Updates done successfully!</p>";
+                    
+                    // create the log text
+                    $log_text = "Role has been deleted successfully!";
+                    log_academic($log_text);
                 }else {
                     echo "<p class='text-danger'>An error occured during update!</p>";
                 }
@@ -3887,6 +3898,43 @@
             }
         }
         return "Null";
+    }
+    function log_academic($text){
+        $full_text = date("dS M Y H:i:sA")." : ".$text." - {".$_SESSION['username']."}\n";
+        $file_location = "../../ajax/logs/".$_SESSION['dbname']."/logs.txt";
+        if (file_exists($file_location)) {
+            $content = file_get_contents($file_location);
+
+            // Open the file for writing
+            $file = fopen($file_location, 'w');
+            
+            if ($file) {
+                fwrite($file, $full_text.$content);
+                fclose($file);
+            }else {
+                return "File not found!";
+            }
+        } else {
+            $directory = dirname($file_location);
+            if (!file_exists($directory)) {
+                $pwu_data = posix_getpwuid(posix_geteuid());
+                $username = $pwu_data['name'];
+                mkdir($directory, 0777, true);
+
+                // Change ownership of the directory to daemon
+                chown($directory, $username);
+            }
+    
+            // Open the file for writing
+            $file = fopen($file_location, 'w');
+            
+            if ($file){
+                fwrite($file, $full_text);
+                fclose($file);
+            }else {
+                return "File not found!";
+            }
+        }
     }
     function className($data){
         $datas = "Grade  ".$data;
