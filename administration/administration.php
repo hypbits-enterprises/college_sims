@@ -16,15 +16,27 @@
             </div>
         </div>
         <div class="middle1 ">
-            <div class="top">
-                <p style="text-align: center; font-size:16px;"><strong>Instructions</strong></p>
-                <p>1. Fill all the required fields to complete the student registration</p>
-                <p>2. The Important field fields are marked with <span style = 'color:red;'>*</span>, the rest are optional</p>
-                <p>3. After filling all the fields click the submit button to save the information to the database</p>
-                <p>4. The reset button on the left clears the whole form letting you fill it afresh</p>
-                <p>5. Examples are given on every field on how to fill it.</p>
-                <p><br><strong>NOTE:</strong> After submitting the information the students admission number will be automatically generated<br>Its highly recomended that the students remember their admission number.</p>
-                <p> <strong>Do not admit the student twice!</strong> </p>
+            <div class="row">
+                <div class="col-md-9">
+                    <div class="top">
+                        <p style="text-align: center; font-size:16px;"><strong>Instructions</strong></p>
+                        <p>1. Fill all the required fields to complete the student registration</p>
+                        <p>2. The Important field fields are marked with <span style = 'color:red;'>*</span>, the rest are optional</p>
+                        <p>3. After filling all the fields click the submit button to save the information to the database</p>
+                        <p>4. The reset button on the left clears the whole form letting you fill it afresh</p>
+                        <p>5. Examples are given on every field on how to fill it.</p>
+                        <p><br><strong>NOTE:</strong> After submitting the information the students admission number will be automatically generated<br>Its highly recomended that the students remember their admission number.</p>
+                        <p> <strong>Do not admit the student twice!</strong> </p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <!-- upload documents -->
+                    <p style="text-align: center; font-size:16px;"><strong>Upload Students</strong></p>
+                    <input style="font-size: 12px;" type="file"  accept=".csv, .xslx, .xls" class="form-control text-sm my-2" name="new_student_uploads" id="new_student_uploads">
+                    <progress class="form-control my-1 hide" id="upload_new_students" value="0" max="100"></progress>
+                    <p id="error_message_holder_new_student"></p>
+                    <button type="button" id="upload_new_students_button" class="">Upload</button>
+                </div>
             </div>
             <form class="body row" id="admitform">
                 <div class="col-md-6">

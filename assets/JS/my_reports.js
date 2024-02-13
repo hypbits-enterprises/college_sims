@@ -96,6 +96,7 @@ cObj("staff_options").onchange = function () {
 cObj("select_student_option").onchange = function () {
     var stud_option = this.value;
     // console.log(stud_option);
+    cObj("gender_option").classList.remove("hide");
     if (stud_option == "all_students") {
         cObj("student_status_selector").classList.remove("hide");
         var ctrl = document.getElementsByClassName("ctrl");
@@ -232,7 +233,7 @@ cObj("finance_entity").onchange = function () {
 
         cObj("staff_list_windoweds").classList.remove("hide");
         var datapass = "get_me_staff=true";
-        sendDataPost("POST","/sims/ajax/administration/admissions.php",datapass,cObj("mystaff_lists"),cObj("staff_list_windoweds_load"));
+        sendDataPost("POST","/college_sims/ajax/administration/admissions.php",datapass,cObj("mystaff_lists"),cObj("staff_list_windoweds_load"));
     }else if (my_val == "expenses") {
         var student_opt = document.getElementsByClassName("student_opt");
         for (let index = 0; index < student_opt.length; index++) {
@@ -249,7 +250,7 @@ cObj("finance_entity").onchange = function () {
         cObj("expense_cats_windows").classList.remove("hide");
         cObj("time_period").classList.remove("hide");
         var datapass = "getExpenseCategory=true";
-        sendDataPost("POST","/sims/ajax/administration/admissions.php",datapass,cObj("exp_cat_select_holder"),cObj("expense_cats_loaders"));
+        sendDataPost("POST","/college_sims/ajax/administration/admissions.php",datapass,cObj("exp_cat_select_holder"),cObj("expense_cats_loaders"));
     }
 }
 cObj("period_selection").onchange = function () {

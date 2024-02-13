@@ -72,7 +72,8 @@ cObj("save_revenue").onclick = function () {
 
     if (err == 0) {
         cObj("error_handler_revenue_collection").innerHTML = "<p class='text-danger'></p>";
-        let datapass = "add_revenue=true&revenue_name="+valObj("revenue_name")+"&revenue_amount="+valObj("revenue_amount")+"&revenue_date="+valObj("revenue_date")+"&customer_name="+valObj("customer_name")+"&customer_contacts_revenue="+valObj("customer_contacts_revenue")+"&contact_person="+valObj("contact_person")+"&revenue_description="+valObj("revenue_description")+"&revenue_categories="+valObj("revenue_category")+"&revenue_cash_activity="+valObj("revenue_cash_activity");
+        let datapass = "add_revenue=true&revenue_name="+valObj("revenue_name")+"&revenue_amount="+valObj("revenue_amount")+"&revenue_date="+valObj("revenue_date")+"&customer_name="+valObj("customer_name")+"&customer_contacts_revenue="+valObj("customer_contacts_revenue")+"&contact_person="+valObj("contact_person")+"&revenue_description="+valObj("revenue_description")+"&revenue_categories="+valObj("revenue_category")+"&revenue_cash_activity="+valObj("revenue_cash_activity")+"&reportable_status="+valObj("reportable_status");
+        datapass += "&mode_of_revenue_payment="+valObj("mode_of_revenue_payment")+"&payment_code="+valObj("payment_code");
         sendDataPost("POST","ajax/finance/financial.php",datapass,cObj("error_handler_revenue_collection"),cObj("save_revenue_loader"));
         setTimeout(() => {
             var ids = setInterval(() => {
@@ -131,7 +132,7 @@ function display_revenue(data,start_from) {
     var data_to_display = "<br><h4 class='text-center'><u>Revenue List</u></h4><table class='table'><thead><tr><th>No.</th><th>Name</th><th>Amount</th><th>Date Recorded.</th><th>Revenue Name.</th><th>Contact Person</th><th>Customer Contact</th><th>Action</th></tr></thead><tbody id='revenue_lists_all_display'>";
     for (let index = 0; index < data.length; index++) {
         const element = data[index];
-        data_to_display+="<tr><td><input hidden value='"+JSON.stringify(element)+"' id='revenue_values_"+element.id+"'>"+(start_from+index+1)+"</td><td>"+element.name+"</td><td>Kes "+comma3(element.amount)+"</td><td>"+formatDate_1(element.date_recorded+"000000")+"</td><td>"+element.revenue_category_name+"</td><td>"+element.contact_person+"</td><td>"+element.customer_contact+"</td><td><span style='font-size:12px;' class='link edit_revenue_window' id='edit_revenue_window_"+element.id+"'><i class='fa fa-pen-fancy'></i> Edit </span> <span style='font-size:12px;' class='link delete_revenue_window' id='delete_revenue_window_"+element.id+"'><i class='fa fa-trash'></i> Delete</span></td></tr>";
+        data_to_display+="<tr><td><input hidden value='"+JSON.stringify(element)+"' id='revenue_values_"+element.id+"'>"+(start_from+index+1)+"</td><td>"+element.name+"</td><td>Kes "+comma3(element.amount)+"</td><td>"+formatDate_1(element.date_recorded+"000000")+"</td><td>"+element.revenue_category_name+"</td><td>"+element.contact_person+"</td><td>"+element.customer_contact+"</td><td><span style='font-size:12px;' class='link edit_revenue_window' id='edit_revenue_window_"+element.id+"'><i class='fa fa-pen-fancy'></i> Edit </span> <span style='font-size:12px;' class='link delete_revenue_window' id='delete_revenue_window_"+element.id+"'><i class='fa fa-trash'></i> Delete</span> <br> <a target='_blank' href='/college_sims/reports/reports.php?revenue_receipt=true&revenue_details="+JSON.stringify(element)+"'><span style='font-size:12px;'><i class='fa fa-print'></i> Print</span></a></td></tr>";
     }
     data_to_display+="</tbody></table>";
 
@@ -300,6 +301,28 @@ function edit_revenues() {
         }
     }
 
+    // set the reportable status
+    var reportable_status_edit = cObj("reportable_status_edit").children;
+    reportable_status_edit[0].selected = true;
+    for (let index = 0; index < reportable_status_edit.length; index++) {
+        const element = reportable_status_edit[index];
+        if (element.value == row_value.reportable_status) {
+            element.selected = true;
+        }
+    }
+
+    // set the mode of payment
+    var mode_of_revenue_payment_edit = cObj("mode_of_revenue_payment_edit").children;
+    mode_of_revenue_payment_edit[0].selected = true;
+    for (let index = 0; index < mode_of_revenue_payment_edit.length; index++) {
+        const element = mode_of_revenue_payment_edit[index];
+        if (element.value == row_value.mode_of_payment) {
+            element.selected = true;
+        }
+    }
+
+    cObj("payment_code_edit").value = row_value.payment_code;
+
     // fill all fields with the row data
     cObj("revenue_name_edit").value = row_value.name;
     cObj("revenue_amount_edit").value = row_value.amount;
@@ -324,6 +347,7 @@ cObj("save_revenue_edit").onclick = function () {
     err += checkBlank("customer_name_edit");
     err += checkBlank("customer_contacts_revenue_edit");
     err += checkBlank("contact_person_edit");
+    err += checkBlank("reportable_status");
     err += checkBlank("edit_revenue_cash_activity");
     // err += checkBlank("revenue_description_edit");
 
@@ -333,7 +357,8 @@ cObj("save_revenue_edit").onclick = function () {
 
     if (err == 0) {
         cObj("error_handler_revenue_collection_edit").innerHTML = "<p class='text-danger'></p>";
-        let datapass = "update_revenue=true&revenue_name="+valObj("revenue_name_edit")+"&revenue_amount="+valObj("revenue_amount_edit")+"&revenue_date="+valObj("revenue_date_edit")+"&customer_name="+valObj("customer_name_edit")+"&customer_contacts_revenue="+valObj("customer_contacts_revenue_edit")+"&contact_person="+valObj("contact_person_edit")+"&revenue_description="+valObj("revenue_description_edit")+"&revenue_id="+valObj("revenue_ids")+"&revenue_category="+valObj("edit_revenue_category")+"&edit_revenue_cash_activity="+valObj("edit_revenue_cash_activity");
+        let datapass = "update_revenue=true&revenue_name="+valObj("revenue_name_edit")+"&revenue_amount="+valObj("revenue_amount_edit")+"&revenue_date="+valObj("revenue_date_edit")+"&customer_name="+valObj("customer_name_edit")+"&customer_contacts_revenue="+valObj("customer_contacts_revenue_edit")+"&contact_person="+valObj("contact_person_edit")+"&revenue_description="+valObj("revenue_description_edit")+"&revenue_id="+valObj("revenue_ids")+"&revenue_category="+valObj("edit_revenue_category")+"&edit_revenue_cash_activity="+valObj("edit_revenue_cash_activity")+"&reportable_status_edit="+valObj("reportable_status_edit");
+        datapass += "&mode_of_revenue_payment_edit="+valObj("mode_of_revenue_payment_edit")+"&payment_code_edit="+valObj("payment_code_edit");
         sendDataPost("POST","ajax/finance/financial.php",datapass,cObj("error_handler_revenue_collection_edit"),cObj("update_revenue_loader"));
         setTimeout(() => {
             var ids = setInterval(() => {
@@ -710,68 +735,60 @@ cObj("confirmyes").onclick = function () {
         cObj("confirmpayments").classList.add("hide");
         setTimeout(() => {
             var ids = setInterval(() => {
-                if (cObj("geterrorpay").innerText.length > 0) {
-                    var text = cObj("geterrorpay").innerText.substr(0, 11);
-                    if (text == "Transaction") {
-                        cObj("payforms").reset();
-                        cObj("mpesad").classList.add("hide");
-                        cObj("banksd").classList.add("hide");
-                        cObj("cash").classList.add("hide");
-                        cObj("show_date_time").classList.add("hide");
-                        cObj("makepayments").classList.add("hide");
-                        cObj("studids").value = cObj("students_id_ddds").innerText;
-                        cObj("searchfin1").click();
-                        
-                        // reset the supporting document
-                        cObj("supporting_documents_list").value = "[]";
-                        displaySupportingDocuments();
-                        cObj("edit_supporting_documents").classList.add("hide");
-                        setTimeout(() => {
-                            var timeout = 0;
-                            var idsf = setInterval(() => {
-                                timeout++;
-                                //after two minutes of slow connection the next process wont be executed
-                                if (timeout == 1200) {
-                                    stopInterval(idsf);
-                                }
-                                if (cObj("loadings").classList.contains("hide")) {
-                                    if (amount > 0 && valObj("reprint") == "false") {
-                                        //set the values of the payment reciept
-                                        cObj("student_adm_no").innerText = ": " + cObj("students_id_ddds").innerText;
-                                        cObj("students_jina").innerText = ": " + cObj("std_names").innerText;
-                                        cObj("transaction_codeds").innerText = cObj("transaction_code") != null ? cObj("transaction_code").innerText : "no-code";
-                                        cObj("mode_of_payment").innerText = cObj("mode_use_pay") != null ? cObj("mode_use_pay").innerText : "no-code";
-                                        cObj("cash_recieved").innerText = "Kes " + comma3((cObj("amount_recieved") != null ? cObj("amount_recieved").innerText : "0"));
-                                        cObj("closing_balance").innerText = "Kes " + comma3(cObj("closed_balance").innerText);
-                                        cObj("purpose_in_p").innerText = purpose_p;
-                                        cObj("sch_logods").src = cObj("sch_logos").src;
-                                        // values to submit for reciept printing
-                                        cObj("students_names").value = cObj("std_names").innerText;
-                                        cObj("student_admission_no").value = cObj("students_id_ddds").innerText;
-                                        cObj("amount_paid_by_student").value = "Kes " + comma3(cObj("amount_recieved").innerText);
-                                        cObj("new_student_balance").value = "Kes " + comma3(cObj("closed_balance").innerText);
-                                        cObj("mode_of_payments").value = cObj("mode_use_pay") != null ? cObj("mode_use_pay").innerText : "no-code";
-                                        cObj("transaction_codes").value = cObj("transaction_code") != null ? cObj("transaction_code").innerText : "no-code";
-                                        cObj("payments_for").value = purpose_p;
-        
-                                        cObj("submit_receipt_printing").click();
-                                    }
+                setTimeout(() => {
+                    var timeout = 0;
+                    var idsf = setInterval(() => {
+                        timeout++;
+                        //after two minutes of slow connection the next process wont be executed
+                        if (timeout == 1200) {
+                            stopInterval(idsf);
+                        }
+                        if (cObj("loadings").classList.contains("hide")) {
+                            var text = cObj("geterrorpay").innerText.substr(0, 11);
+                            if (text == "Transaction"){
+                                cObj("payforms").reset();
+                                cObj("mpesad").classList.add("hide");
+                                cObj("banksd").classList.add("hide");
+                                cObj("cash").classList.add("hide");
+                                cObj("show_date_time").classList.add("hide");
+                                cObj("makepayments").classList.add("hide");
+                                cObj("studids").value = cObj("students_id_ddds").innerText;
+                                cObj("searchfin1").click();
+                                
+                                // reset the supporting document
+                                cObj("supporting_documents_list").value = "[]";
+                                displaySupportingDocuments();
+                                cObj("edit_supporting_documents").classList.add("hide");
+                                if (amount > 0 && valObj("reprint") == "false") {
+                                    //set the values of the payment reciept
+                                    cObj("student_adm_no").innerText = ": " + cObj("students_id_ddds").innerText;
+                                    cObj("students_jina").innerText = ": " + cObj("std_names").innerText;
+                                    cObj("transaction_codeds").innerText = cObj("transaction_code") != null ? cObj("transaction_code").innerText : "no-code";
+                                    cObj("mode_of_payment").innerText = cObj("mode_use_pay") != null ? cObj("mode_use_pay").innerText : "no-code";
+                                    cObj("cash_recieved").innerText = "Kes " + comma3((cObj("amount_recieved") != null ? cObj("amount_recieved").innerText : "0"));
+                                    cObj("closing_balance").innerText = "Kes " + comma3(cObj("closed_balance").innerText);
+                                    cObj("purpose_in_p").innerText = purpose_p;
+                                    cObj("sch_logods").src = cObj("sch_logos").src;
+                                    // values to submit for reciept printing
+                                    cObj("students_names").value = cObj("std_names").innerText;
+                                    cObj("student_admission_no").value = cObj("students_id_ddds").innerText;
+                                    cObj("amount_paid_by_student").value = "Kes " + comma3(cObj("amount_recieved").innerText);
+                                    cObj("new_student_balance").value = "Kes " + comma3(cObj("closed_balance").innerText);
+                                    cObj("mode_of_payments").value = cObj("mode_use_pay") != null ? cObj("mode_use_pay").innerText : "no-code";
+                                    cObj("transaction_codes").value = cObj("transaction_code") != null ? cObj("transaction_code").innerText : "no-code";
+                                    cObj("payments_for").value = purpose_p;
     
-                                    // stop the other windows used for reciepts
-                                    // hideWindow();
-                                    // unselectbtns();
-                                    // cObj("printer_page").classList.remove("hide");
-                                    stopInterval(idsf);
-                                    // console.log("we are here");
+                                    cObj("submit_receipt_printing").click();
                                 }
-                            }, 100);
-                        }, 200);
-    
-                        stopInterval(ids);
-                    } else {
-                    }
-                }
-                cObj("geterrorpay").innerHTML = "<p></p>";
+                                setTimeout(() => {
+                                    cObj("geterrorpay").innerText = "";
+                                }, 1000);
+                            }
+                            stopInterval(idsf);
+                        }
+                    }, 100);
+                }, 200);
+                stopInterval(ids);
             }, 100);
         }, 200);
     }else{
@@ -1416,24 +1433,21 @@ function addExpense() {
         //check for errors
         var err = checkBlank("exp_named");
         err += checkBlank("exp_cat");
-        err += checkBlank("exp_quant");
-        err += checkBlank("exp_amnt");
         err += checkBlank("exp_total_amt");
-        err += checkBlank("exp_cat");
-        err += checkBlank("exp_cat");
+        err += checkBlank("expense_cash_activity");
         if (err == 0) {
             cObj("err_hndler_expenses").innerHTML = "<p class='green_notice'></p>";
             err = 0;
-            if (cObj("exp_amnt").value == "0" || cObj("exp_quant").value == "0") {
-                redBorder(cObj("exp_amnt"));
-                cObj("err_hndler_expenses").innerHTML = "<p class='red_notice'>Amount or Quantity can`t be zero</p>";
+            if (cObj("exp_total_amt").value == "0" || cObj("exp_quant").value == "0") {
+                redBorder(cObj("exp_total_amt"));
+                cObj("err_hndler_expenses").innerHTML = "<p class='red_notice'>Amount can`t be zero</p>";
                 err++;
             } else {
-                grayBorder(cObj("exp_amnt"));
+                grayBorder(cObj("exp_total_amt"));
                 cObj("err_hndler_expenses").innerHTML = "<p class='green_notice'></p>";
             }
             if (err == 0) {
-                var datapass = "?addExpenses=true&exp_name=" + cObj("exp_named").value + "&expensecat=" + cObj("exp_cat").value + "&quantity=" + cObj("exp_quant").value + "&unitcost=" + cObj("exp_amnt").value + "&total=" + cObj("exp_total_amt").value + "&unit_name=" + cObj("unit_name").value+"&expense_cash_activity="+valObj("expense_cash_activity")+"&expense_record_date="+valObj("expense_record_date");
+                var datapass = "?addExpenses=true&exp_name=" + cObj("exp_named").value + "&expensecat=" + cObj("exp_cat").value + "&quantity=" + cObj("exp_quant").value + "&unitcost=" + cObj("exp_amnt").value + "&total=" + cObj("exp_total_amt").value + "&unit_name=" + cObj("unit_name").value+"&expense_cash_activity="+valObj("expense_cash_activity")+"&expense_record_date="+valObj("expense_record_date")+"&document_number="+valObj("document_number")+"&new_expense_description="+valObj("new_expense_description");
                 sendData1("GET", "finance/financial.php", datapass, cObj("err_hndler_expenses"));
                 setTimeout(() => {
                     var timeout = 0;
@@ -1452,6 +1466,8 @@ function addExpense() {
                                 cObj("exp_total_amt").value = "0";
                                 cObj("main_sele").selected = true;
                                 cObj("unit_name").value = "";
+                                cObj("new_expense_description").value = "";
+                                cObj("document_number").value = "";
                                 displayTodaysExpense();
                             }
                             setTimeout(() => {
@@ -1468,17 +1484,6 @@ function addExpense() {
     }else {
         cObj("err_hndler_expenses").innerHTML = "<p class='red_notice'>Set up expense categories</p>";
     }
-}
-cObj("exp_quant").addEventListener("change", changeValue);
-cObj("exp_quant").addEventListener("keyup", changeValue);
-
-cObj("exp_amnt").addEventListener("change", changeValue);
-cObj("exp_amnt").addEventListener("keyup", changeValue);
-function changeValue() {
-    var quantity = cObj("exp_quant").value;
-    var amount = cObj("exp_amnt").value;
-    var total = quantity * amount;
-    cObj("exp_total_amt").value = total;
 }
 
 //display todays expenses
@@ -1543,6 +1548,28 @@ function displayTodaysExpense() {
 function getExpense_Cats() {
     var datapass = "?get_expense_cats=true";
     sendData2("GET","administration/admissions.php",datapass,cObj("expense_categories_holders"),cObj("load_expense_categs"));
+    setTimeout(() => {
+        var timeout = 0;
+        var ids = setInterval(() => {
+            timeout++;
+            //after two minutes of slow connection the next process wont be executed
+            if (timeout == 1200) {
+                stopInterval(ids);
+            }
+            if (cObj("load_expense_categs").classList.contains("hide")) {
+                cObj("exp_total_amt").addEventListener("keyup",activate_amount);
+                cObj("exp_cat").addEventListener("change",change_expense_category);
+                stopInterval(ids);
+            }
+        }, 100);
+    }, 200);
+}
+
+function change_expense_category() {
+    if (this.value.length > 0) {
+        cObj("error_message_expenses").innerHTML = "";
+        cObj("add_expenseed").classList.remove("hide");
+    }
 }
 
 cObj("done_adding_exp").onclick = function () {
@@ -4012,57 +4039,30 @@ cObj("edit_expense_windows_2").onclick = function () {
     cObj("edit_expense_windows").classList.add("hide");
 }
 
-cObj("edit_expense_quantity").onchange = function () {
-    showCalculation();
-}
-
-cObj("edit_expense_quantity").onkeyup = function () {
-    showCalculation();
-}
-cObj("edit_expense_unit_cost").onkeyup = function () {
-    showCalculation();
-}
-cObj("edit_expense_unit_cost").onkeyup = function () {
-    showCalculation();
-}
-function showCalculation() {
-    var err = checkBlank("edit_expense_quantity");
-    err+=checkBlank("edit_expense_unit_cost");
-    if (err == 0) {
-        var edit_expense_quantity = valObj("edit_expense_quantity");
-        var edit_expense_unit_cost = valObj("edit_expense_unit_cost");
-        var product = edit_expense_quantity*edit_expense_unit_cost;
-        cObj("total_unit_cost").value = product.toFixed(2);
-        cObj("show_total_unit_costs").innerText = product.toFixed(2);
-    }else{
-        cObj("total_unit_cost").value = 0;
-        cObj("show_total_unit_costs").innerText = "Undefined!";
-    }
-}
 
 cObj("save_expense_details").onclick = function () {
     var err = checkBlank("edit_expense_name");
     if (cObj("edit_expense_category") != undefined && cObj("edit_expense_category") != null) {
         err+=checkBlank("edit_expense_category");
-        err+=checkBlank("edit_expense_quantity");
-        err+=checkBlank("edit_expense_unit_cost");
+        // err+=checkBlank("edit_document_number");
+        err+=checkBlank("total_unit_cost");
         err+=checkBlank("edit_expense_cash_activity");
         err+=checkBlank("edit_expense_record_date");
+        err+=checkBlank("edit_expense_description");
         
         if (err == 0) {
             cObj("error_handlers_expenses").innerHTML = "";
             var edit_expense_name = valObj("edit_expense_name");
             var edit_expense_category = valObj("edit_expense_category");
-            var edit_expense_quantity = valObj("edit_expense_quantity");
-            var edit_expense_unit_cost = valObj("edit_expense_unit_cost");
-            var edit_expense_unit_name = valObj("edit_expense_unit_name");
+            var edit_document_number = valObj("edit_document_number");
+            var edit_expense_description = valObj("edit_expense_description");
             var total_unit_cost = valObj("total_unit_cost");
             var expense_ids_in = valObj("expense_ids_in");
             var edit_expense_cash_activity = valObj("edit_expense_cash_activity");
             var edit_expense_record_date = valObj("edit_expense_record_date");
     
     
-            var datapass = "update_expense=true&expense_name="+edit_expense_name+"&expense_category="+edit_expense_category+"&expense_quantity="+edit_expense_quantity+"&unit_cost="+edit_expense_unit_cost+"&unit_name="+edit_expense_unit_name+"&total_unit_cost="+total_unit_cost+"&expense_ids_in="+expense_ids_in+"&expense_cash_activity="+edit_expense_cash_activity+"&edit_expense_record_date="+edit_expense_record_date;
+            var datapass = "update_expense=true&expense_name="+edit_expense_name+"&expense_category="+edit_expense_category+"&document_number="+edit_document_number+"&expense_description="+edit_expense_description+"&total_unit_cost="+total_unit_cost+"&expense_ids_in="+expense_ids_in+"&expense_cash_activity="+edit_expense_cash_activity+"&edit_expense_record_date="+edit_expense_record_date;
             sendDataPost("POST","ajax/administration/admissions.php",datapass,cObj("error_handlers_expenses"),cObj("expense_editor_loader"));
             setTimeout(() => {
                 var timeout = 0;
@@ -4134,7 +4134,7 @@ cObj("upload_supporting_documents").onclick = function () {
         formData.append("student_admission", customFileName);
       
         var xhr = new XMLHttpRequest();
-        xhr.open("POST", "../../ajax/finance/financial.php", true);
+        xhr.open("POST", "/college_sims/ajax/finance/financial.php", true);
         
         xhr.upload.onprogress = function (e) {
           if (e.lengthComputable) {

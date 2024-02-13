@@ -263,6 +263,10 @@
                                                     <td><input hidden id='course_value_finance' value='".$student_data['course_done']."'>" . ucwords(strtolower($course_name)) . "</td>
                                                 </tr>
                                                 <tr>
+                                                    <td><b>Term Currently Enrolled</b></td>
+                                                    <td>" . $term_enrolled . "</td>
+                                                </tr>
+                                                <tr>
                                                     <td><b>Discount</b> </td>
                                                     <td>" . $discount . "</td>
                                                 </tr>
@@ -1520,11 +1524,13 @@
             $unit_name = $_GET['unit_name'];
             $expense_cash_activity = $_GET['expense_cash_activity'];
             $expense_record_date = $_GET['expense_record_date'];
+            $document_number = $_GET['document_number'];
+            $new_expense_description = $_GET['new_expense_description'];
             $date = date("Y-m-d",strtotime($expense_record_date));
             $time = date("H:i:s");
-            $insert = "INSERT INTO `expenses` (`expid`,`exp_name`,`exp_category`,`unit_name`,`exp_quantity`,`exp_unit_cost`,`exp_amount`,`expense_date`,`exp_time`,`exp_active`,`expense_categories`)VALUES (null,?,?,?,?,?,?,?,?,0,?)";
+            $insert = "INSERT INTO `expenses` (`expid`,`exp_name`,`exp_category`,`unit_name`,`exp_quantity`,`exp_unit_cost`,`exp_amount`,`expense_date`,`exp_time`,`exp_active`,`expense_categories`,`document_number`,`expense_description`)VALUES (null,?,?,?,?,?,?,?,?,0,?,?,?)";
             $stmt = $conn2->prepare($insert);
-            $stmt->bind_param("sssssssss",$exp_name,$exp_cat,$unit_name,$exp_quant,$exp_unit,$exp_totcost,$date,$time,$expense_cash_activity);
+            $stmt->bind_param("sssssssssss",$exp_name,$exp_cat,$unit_name,$exp_quant,$exp_unit,$exp_totcost,$date,$time,$expense_cash_activity,$document_number,$expense_description);
             if($stmt->execute()){
                 // log text
                 $log_message = "Expense \"".ucwords(strtolower($exp_name))."\" uploaded successfully!";
@@ -1536,7 +1542,7 @@
 
         }elseif (isset($_GET['todays_expense'])) {
             // $select = "SELECT `exp_name`,`exp_category`,`unit_name`,`exp_quantity`,`exp_unit_cost`,`exp_amount`,`expense_date`,`exp_time` FROM `expenses` WHERE `expense_date` = ?";
-            $select = "SELECT * FROM `expenses` ORDER BY `expid` DESC";
+            $select = "SELECT * FROM `expenses` ORDER BY `expid` DESC LIMIT 1000";
             $stmt = $conn2->prepare($select);
             $date = date("Y-m-d");
             // $stmt->bind_param("s",$date);
@@ -1561,9 +1567,10 @@
                                         $total_pay = 0;
                 while($rows = $result->fetch_assoc()){
                     $xs++;
+                    $expense_name = get_expense($rows['exp_category'],$conn2);
                     $data_to_display.="<tr>
                                         <td>".$xs."</td>
-                                        <td>".$rows['exp_name']."</td>
+                                        <td>".($expense_name != null ? $expense_name['expense_name'] : $rows['exp_name'])."</td>
                                         <td>".$rows['exp_category']."</td>
                                         <td>".$rows['exp_quantity']." ".$rows['unit_name']."</td>
                                         <td>Ksh ".$rows['exp_unit_cost']."</td>
@@ -1575,6 +1582,7 @@
                                     $rows['exp_quantity'] = trim($rows['exp_quantity']);
                                     $rows['date'] = $rows['expense_date'];
                                     $rows['expense_date'] = date("D dS M Y",strtotime($rows['expense_date']));
+                                    $rows['expense_name'] = ucwords(strtolower($expense_name != null ? $expense_name['expense_name'] : $rows['exp_category']));
                                     $json_2.=json_encode($rows).",";
                     // $json_2.="{\"exp_name\":\"".trim(ucwords(strtolower($rows['exp_name'])))."\",\"exp_category\":\"".trim(ucwords(strtolower($rows['exp_category'])))."\",\"exp_quantity\":".trim($rows['exp_quantity']).",\"exp_unit_cost\":".trim($rows['exp_unit_cost']).",\"exp_amount\":".trim($rows['exp_amount']).",\"expense_date\":\"".trim(date("dS M Y",strtotime($rows['expense_date'])))."\",\"exp_time\":\"".$rows['exp_time']."\",\"unit_name\":\"".ucwords(strtolower($rows['unit_name']))."\",\"exp_ids\":\"".trim($rows['expid'])."\"},";
                 }
@@ -1610,13 +1618,14 @@
                                         $myjson = "{";
                     while ($row = $result->fetch_assoc()) {
                         $xs++;
+                        $expense_name = get_expense($row['exp_category'],$conn2);
                         $data_to_display.="<tr>
                                             <td>".$xs." .</td>
-                                            <td>".$row['exp_category']."</td>
+                                            <td>".($expense_name != null ? $expense_name['expense_name'] : $row['exp_category'])."</td>
                                             <td>Kes ".comma($row['Total'])."</td>
                                             <td>".$row['Record']."</td>
                                         </tr>";
-                        $myjson.="\"".trim($row['exp_category'])."\":\"".trim($row['Total'])."\",";
+                        $myjson.="\"".($expense_name != null ? $expense_name['expense_name'] : $row['exp_category'])."\":\"".trim($row['Total'])."\",";
                     }
                     $myjson = substr($myjson,0,strlen($myjson)-1);
                     $myjson.="}";
@@ -1808,7 +1817,7 @@
             }
 
             // start with operating activities
-            $select = "SELECT `revenue_category` ,COUNT(*) AS 'Records', SUM(`amount`) AS 'Total' FROM `school_revenue` WHERE `cash_flow_activities` = '1' AND `date_recorded` BETWEEN ? AND ? GROUP BY `revenue_category`;";
+            $select = "SELECT `revenue_category` ,COUNT(*) AS 'Records', SUM(`amount`) AS 'Total' FROM `school_revenue` WHERE `cash_flow_activities` = '1' AND `reportable_status` = '1' AND `date_recorded` BETWEEN ? AND ? GROUP BY `revenue_category`;";
             
             // current year operating activities
             $stmt = $conn2->prepare($select);
@@ -1958,7 +1967,7 @@
             // echo $fees_id;
 
             // start with investing activities
-            $select = "SELECT `revenue_category` ,COUNT(*) AS 'Records', SUM(`amount`) AS 'Total' FROM `school_revenue` WHERE `cash_flow_activities` = '2' AND `date_recorded` BETWEEN ? AND ? GROUP BY `revenue_category`;";
+            $select = "SELECT `revenue_category` ,COUNT(*) AS 'Records', SUM(`amount`) AS 'Total' FROM `school_revenue` WHERE `cash_flow_activities` = '2' AND `reportable_status` = '1' AND `date_recorded` BETWEEN ? AND ? GROUP BY `revenue_category`;";
             
             // current year investing activities
             $stmt = $conn2->prepare($select);
@@ -2034,7 +2043,7 @@
             }
 
             // start with financing activities
-            $select = "SELECT `revenue_category` ,COUNT(*) AS 'Records', SUM(`amount`) AS 'Total' FROM `school_revenue` WHERE `cash_flow_activities` = '3' AND `date_recorded` BETWEEN ? AND ? GROUP BY `revenue_category`;";
+            $select = "SELECT `revenue_category` ,COUNT(*) AS 'Records', SUM(`amount`) AS 'Total' FROM `school_revenue` WHERE `cash_flow_activities` = '3' AND `reportable_status` = '1' AND `date_recorded` BETWEEN ? AND ? GROUP BY `revenue_category`;";
             
             // current year financing activities
             $stmt = $conn2->prepare($select);
@@ -2415,11 +2424,12 @@
                                         $total_previous_expense_1+=$previous_year_1;
                                     }
                                 }
+                                $expense_name = get_expense($value,$conn2);
     
                                 // set the display values
                                 $data_to_display.="<div class='finance_body'>
                                                     <div class='col-md-6'>
-                                                        <p class=''>".$index.". ".$value."</p></div>";
+                                                        <p class=''>".$index.". ".ucwords(strtolower(($expense_name != null ? $expense_name['expense_name'] : $value)))."</p></div>";
                                 $data_to_display.="<div class='col-md-3 text-center'>
                                                         <p>Ksh ".number_format($current_year)."</p>
                                                     </div>";
@@ -2576,11 +2586,13 @@
                                         $total_previous_expense_1+=$previous_year_1;
                                     }
                                 }
+                                // expense name
+                                $expense_name = get_expense($value,$conn2);
     
                                 // set the display values
                                 $data_to_display.="<div class='finance_body'>
                                                     <div class='col-md-6'>
-                                                        <p class=''>".$index.". ".$value."</p></div>";
+                                                        <p class=''>".$index.". ". (($expense_name != null) ? $expense_name['expense_name'] : $value) ."</p></div>";
                                 $data_to_display.="<div class='col-md-3 text-center'>
                                                         <p>Ksh ".number_format($current_year)."</p>
                                                     </div>";
@@ -2737,11 +2749,14 @@
                                         $total_previous_expense_1+=$previous_year_1;
                                     }
                                 }
+                                
+                                // expense name
+                                $expense_name = get_expense($value,$conn2);
     
                                 // set the display values
                                 $data_to_display.="<div class='finance_body'>
                                                     <div class='col-md-6'>
-                                                        <p class=''>".$index.". ".$value."</p></div>";
+                                                        <p class=''>".$index.". ".(($expense_name != null) ? $expense_name['expense_name'] : $value)."</p></div>";
                                 $data_to_display.="<div class='col-md-3 text-center'>
                                                         <p>Ksh ".number_format($current_year)."</p>
                                                     </div>";
@@ -2985,8 +3000,9 @@
             }
 
             for ($indexes=0; $indexes < count($all_expenses); $indexes++) { 
+                $expense_name = get_expense($all_expenses[$indexes],$conn2);
                 $data_to_display.="<div class='finance_body'>
-                                        <p class='name_title'>".$all_expenses[$indexes]."</p>
+                                        <p class='name_title'>". ($expense_name != null ? $expense_name['expense_name'] : $all_expenses[$indexes]) ."</p>
                                         <div class='t1'>
                                             <p>Ksh ".comma($expenses_val[$all_expenses[$indexes]][0])."</p>
                                         </div>
@@ -3249,9 +3265,10 @@
             }
 
 
-            for ($indexes=0; $indexes < count($all_expenses); $indexes++) { 
+            for ($indexes=0; $indexes < count($all_expenses); $indexes++) {
+                $expense_name = get_expense($all_expenses[$indexes],$conn2);
                 $data_to_display.="<div class='finance_body'>
-                                        <p class='name_title'>".$all_expenses[$indexes]."</p>
+                                        <p class='name_title'>".($expense_name != null ? $expense_name['expense_name'] : $all_expenses[$indexes])."</p>
                                         <div class='t1'>
                                             <p>Ksh ".comma($expenses_val[$all_expenses[$indexes]][0])."</p>
                                         </div>
@@ -4788,11 +4805,14 @@
             $revenue_description = $_POST['revenue_description'];
             $revenue_categories = $_POST['revenue_categories'];
             $revenue_cash_activity = $_POST['revenue_cash_activity'];
+            $reportable_status = $_POST['reportable_status'];
+            $mode_of_revenue_payment = $_POST['mode_of_revenue_payment'];
+            $payment_code = $_POST['payment_code'];
 
             // SAVE THE DATA TO THE DATABASE
-            $insert = "INSERT INTO `school_revenue` (`name`,`amount`,`date_recorded`,`customer_name`,`customer_contact`,`contact_person`,`revenue_description`,`revenue_category`,`cash_flow_activities`) VALUES (?,?,?,?,?,?,?,?,?)";
+            $insert = "INSERT INTO `school_revenue` (`name`,`amount`,`mode_of_payment`,`payment_code`,`date_recorded`,`customer_name`,`customer_contact`,`contact_person`,`revenue_description`,`revenue_category`,`cash_flow_activities`,`reportable_status`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
             $stmt = $conn2->prepare($insert);
-            $stmt->bind_param("sssssssss",$revenue_name,$revenue_amount,$revenue_date,$customer_name,$customer_contacts_revenue,$contact_person,$revenue_description,$revenue_categories,$revenue_cash_activity);
+            $stmt->bind_param("ssssssssssss",$revenue_name,$revenue_amount,$mode_of_revenue_payment,$payment_code,$revenue_date,$customer_name,$customer_contacts_revenue,$contact_person,$revenue_description,$revenue_categories,$revenue_cash_activity,$reportable_status);
             $stmt->execute();
             
             $log_text = "Revenue \"".$revenue_name."\" has been added successfully!";
@@ -4883,12 +4903,15 @@
             $contact_person = $_POST['contact_person'];
             $revenue_description = $_POST['revenue_description'];
             $edit_revenue_cash_activity = $_POST['edit_revenue_cash_activity'];
+            $reportable_status_edit = $_POST['reportable_status_edit'];
             $revenue_category = $_POST['revenue_category'];
+            $mode_of_revenue_payment_edit = $_POST['mode_of_revenue_payment_edit'];
+            $payment_code_edit = $_POST['payment_code_edit'];
 
-            // UPDATE THE DATABASES ACCORDINGLY
-            $update = "UPDATE `school_revenue` SET `name` = ?, `amount` = ?, `date_recorded` = ?, `customer_name` = ?, `customer_contact` = ?, `contact_person` = ?, `revenue_description` = ?, `revenue_category` = ?, `cash_flow_activities` = ? WHERE `id` = ?";
+            // UPDATE THE DATABASES ACCORDINGLY 
+            $update = "UPDATE `school_revenue` SET `name` = ?, `amount` = ?, `date_recorded` = ?, `customer_name` = ?, `customer_contact` = ?, `contact_person` = ?, `revenue_description` = ?, `revenue_category` = ?, `cash_flow_activities` = ?, `reportable_status` = ?, `mode_of_payment` = ?, `payment_code` = ? WHERE `id` = ?";
             $stmt = $conn2->prepare($update);
-            $stmt->bind_param("ssssssssss",$revenue_name,$revenue_amount,$revenue_date,$customer_name,$customer_contacts_revenue,$contact_person,$revenue_description,$revenue_category,$edit_revenue_cash_activity,$revenue_id);
+            $stmt->bind_param("sssssssssssss",$revenue_name,$revenue_amount,$revenue_date,$customer_name,$customer_contacts_revenue,$contact_person,$revenue_description,$revenue_category,$edit_revenue_cash_activity, $reportable_status_edit, $mode_of_revenue_payment_edit, $payment_code_edit, $revenue_id);
             $stmt->execute();
 
             // echo results
@@ -5674,7 +5697,7 @@
         }
 
 
-        $select = "SELECT SUM(`amount`) AS 'Total' FROM `school_revenue` WHERE `date_recorded` BETWEEN ? AND ?";
+        $select = "SELECT SUM(`amount`) AS 'Total' FROM `school_revenue` WHERE  `reportable_status` = '1' AND  `date_recorded` BETWEEN ? AND ?";
         $school_revenue = [];
         for ($index=0; $index < count($annual_quaters); $index++) {
             $term_start = $annual_quaters[$index][0];
@@ -5702,7 +5725,7 @@
     function getOtherRevenue($conn2, $year = null){
         $year = $year == null ? date("Y") : $year;
         $get_term_period = getTermPeriods($conn2, $year);
-        $select = "SELECT SUM(`amount`) AS 'Total' FROM `school_revenue` WHERE `date_recorded` BETWEEN ? AND ?";
+        $select = "SELECT SUM(`amount`) AS 'Total' FROM `school_revenue` WHERE `reportable_status` = '1' AND `date_recorded` BETWEEN ? AND ?";
         $school_revenue = [];
         for ($index=0; $index < count($get_term_period)/2; $index++) {
             $time_period = $index == 0 ? [$get_term_period[0],$get_term_period[1]] : ($index == 1 ? [$get_term_period[2],$get_term_period[3]] : [$get_term_period[4],$get_term_period[5]]);
@@ -6442,6 +6465,19 @@
             return 0;
         }
         return 0;
+    }
+    function get_expense($expense_id,$conn2){
+        $select = "SELECT * FROM `expense_category` WHERE `expense_id` = ?";
+        $stmt = $conn2->prepare($select);
+        $stmt->bind_param("s",$expense_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if($result){
+            if($row = $result->fetch_assoc()){
+                return $row;
+            }
+        }
+        return null;
     }
     function check_revenue_category($array,$id){
         foreach ($array as $key => $value) {

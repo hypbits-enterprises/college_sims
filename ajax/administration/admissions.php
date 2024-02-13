@@ -1609,7 +1609,8 @@
                     $data.="\"".$rows['kin_fullname']."\",";
                     $data.="\"".$rows['kin_contact']."\",";
                     $data.="\"".$rows['kin_relation']."\",";
-                    $data.="\"".$rows['kin_location']."\"";
+                    $data.="\"".$rows['kin_location']."\",";
+                    $data.="\"".$rows['reason_inactive']."\"";
                 }
                 // $data = strlen($data) > 1 ? substr($data,0,strlen($data)-1) : $data;
                 $data.="]";
@@ -1639,11 +1640,12 @@
             $kin_relationship_edit = $_GET['kin_relationship_edit'];
             $kin_contacts_edit = $_GET['kin_contacts_edit'];
             $kin_location_edit = $_GET['kin_location_edit'];
+            $reason_inactive = ($activated == "0") ? $_GET['reason_inactive'] : "";
             include("../../connections/conn1.php");
 
-            $update = "UPDATE `user_tbl` SET `fullname` = ?,`dob` = ?,`phone_number` = ?,`gender` =?,`address` = ?,`nat_id`=?,`tsc_no`=?,`username` =?,`deleted`=?,`auth`=?,`email`=?,`activated` =?, `nssf_number` = ?, `nhif_number` = ?,`doe` = ?, `job_title` = ?, `job_number` = ?, `employees_type` = ?,`kin_fullname` = ?,`kin_contact` = ?, `kin_relation` = ?, `kin_location` = ? WHERE `user_id` = ?";
+            $update = "UPDATE `user_tbl` SET `fullname` = ?,`dob` = ?,`phone_number` = ?,`gender` =?,`address` = ?,`nat_id`=?,`tsc_no`=?,`username` =?,`deleted`=?,`auth`=?,`email`=?,`activated` =?, `nssf_number` = ?, `nhif_number` = ?,`doe` = ?, `job_title` = ?, `job_number` = ?, `employees_type` = ?,`kin_fullname` = ?,`kin_contact` = ?, `kin_relation` = ?, `kin_location` = ?, `reason_inactive` = ? WHERE `user_id` = ?";
             $stmt = $conn->prepare($update);
-            $stmt->bind_param('sssssssssssssssssssssss',$fullname,$dob,$phonenumber,$genders,$address,$natids,$tscno,$username,$deleted,$authorities,$emails,$activated,$nssf_numbers,$nhif_numbers,$d_o_e_input,$job_title,$job_number,$employees_type,$kin_fullnames,$kin_contacts_edit,$kin_relationship_edit,$kin_location_edit,$staffid);
+            $stmt->bind_param('ssssssssssssssssssssssss',$fullname,$dob,$phonenumber,$genders,$address,$natids,$tscno,$username,$deleted,$authorities,$emails,$activated,$nssf_numbers,$nhif_numbers,$d_o_e_input,$job_title,$job_number,$employees_type,$kin_fullnames,$kin_contacts_edit,$kin_relationship_edit,$kin_location_edit,$reason_inactive,$staffid);
             if($stmt->execute()){
                 if ($authorities != "5") {
                     $delete = "DELETE FROM `class_teacher_tbl` WHERE `class_teacher_id` = ?";
@@ -3982,64 +3984,22 @@
             $log_text = "Revenue category \"".$_GET['category_name']."\" has been added successfully!";
             log_administration($log_text);
         }elseif(isset($_GET['save_expense_category'])){
-            $select = "SELECT * FROM `settings` WHERE `sett` = 'expense categories'";
-            $category_name = trim(ucwords(strtolower($_GET['category_name'])));
-            $stmt = $conn2->prepare($select);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            $present = 0;
-            $expense_cats = "";
-            $prsnt = 0;
-            if ($result) {
-                if($row = $result->fetch_assoc()){
-                    $exp_cat = trim($row['valued']);
-                    $expense_cats = $exp_cat;
-                    $prsnt = 1;
-                    if(isJson_report($exp_cat)){
-                        // get if the name is used before
-                        $exp_cats = json_decode($exp_cat);
-                        for ($index=0; $index < count($exp_cats); $index++) { 
-                            if(strtolower($exp_cats[$index]) == strtolower($category_name)){
-                                $present = 1;
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
+            $category_name = $_GET['category_name'];
+            $expense_category_budget = $_GET['expense_category_budget'];
+            $budget_start_time = $_GET['budget_start_time'];
+            $budget_end_date = $_GET['budget_end_date'];
 
-            if($present == 1){
-                echo "<p class='text-danger border border-danger my-2 p-2'>Expense name is already present.<br>Kindly use another name.</p>";
-            }else{
-                // add the expense category
-                $expense_cat_json = "";
-                if(isJson_report($expense_cats)){
-                    // add the new expense category
-                    $expense_cats = json_decode($expense_cats);
-                    array_push($expense_cats,$category_name);
-                    $expense_cat_json = json_encode($expense_cats);
-                    
-                    $update = "UPDATE `settings` SET `valued` = '".$expense_cat_json."' WHERE `sett` = 'expense categories'";
-                    $stmt = $conn2->prepare($update);
-                    $stmt->execute();
-                }else{
-                    $expense_cat_json = json_encode([$category_name]);
-                    
-                    if ($prsnt == 0) {
-                        $insert = "INSERT INTO `settings` (`sett`,`valued`) VALUES ('expense categories','".$expense_cat_json."')";
-                        $stmt = $conn2->prepare($insert);
-                        $stmt->execute();
-                    }else{
-                        $update = "UPDATE `settings` SET `valued` = '".$expense_cat_json."' WHERE `sett` = 'expense categories'";
-                        $stmt = $conn2->prepare($update);
-                        $stmt->execute();
-                    }
-                }
-                // log text
-                $log_text = "Expense category \"".$_GET['category_name']."\" added successfully!";
-                log_administration($log_text);
-                echo "<p class='text-success border border-success my-2 p-2'>Expense name added successfully!.</p>";
-            }
+
+            $insert = "INSERT INTO `expense_category` (`expense_name`,`expense_budget`,`start_date`,`end_date`,`created_at`,`updated_at`) VALUES (?,?,?,?,?,?)";
+            $stmt = $conn2->prepare($insert);
+            $date = date("YmdHis");
+            $stmt->bind_param("ssssss",$category_name,$expense_category_budget,$budget_start_time,$budget_end_date,$date,$date);
+            $stmt->execute();
+
+            // log text
+            $log_text = "Expense category \"".$_GET['category_name']."\" added successfully!";
+            log_administration($log_text);
+            echo "<p class='text-success border border-success my-2 p-2'>Expense name added successfully!.</p>";
         }elseif(isset($_GET['show_revenue_category'])){
             $select = "SELECT * FROM `settings` WHERE `sett` = 'revenue_categories'";
             $stmt = $conn2->prepare($select);
@@ -4065,68 +4025,53 @@
             }
             echo $data_to_display;
         }elseif(isset($_GET['show_expense_cat'])){
-            $select = "SELECT * FROM `settings` WHERE `sett` = 'expense categories'";
+            $select = "SELECT * FROM `expense_category`";
             $stmt = $conn2->prepare($select);
             $stmt->execute();
             $result = $stmt->get_result();
-            $present = 0;
-            $expense_cats = "";
             $data_to_display = "<p class='text-danger border border-danger my-2 p-2'>Add expense categories, they will appear here.</p>";
-            if ($result) {
-                if($row = $result->fetch_assoc()){
-                    $exp_cat = trim($row['valued']);
-                    $expense_cats = $exp_cat;
-                    if(isJson_report($exp_cat)){
-                        $data_to_display = "<table class='table'><tr><th>No.</th><th>Expense Category</th><th>Actions.</th></tr>";
-                        // get if the name is used before
-                        $exp_cats = json_decode($exp_cat);
-                        for ($index=0; $index < count($exp_cats); $index++) {
-                            $data_to_display.="<tr><td>".($index+1).". </td><td id='exp_name_".$index."'>".$exp_cats[$index]."</td><td><p><span class='mx-1 link edit_exp_cat' id='edit_exp_cat_".$index."'><i class='fas fa-pen-fancy'></i></span> <span class='mx-1 link delete_exp_cat' id = 'delete_exp_cat_".$index."'><i class='fas fa-trash'></i></span></p></td></tr>";
+            if($result){
+                $data_to_display = "<table class='table'><tr><th>No.</th><th>Expense Category</th><th>Maximum Budget</th><th>Used Budget (%)</th><th>Actions.</th></tr>";
+                $index = 1;
+                while($row = $result->fetch_assoc()){
+                    $selected = "SELECT SUM(`exp_amount`) AS 'expense_amount' FROM `expenses` WHERE `exp_category` = '".$row['expense_id']."' AND `expense_date` BETWEEN '".$row['start_date']."' AND '".$row['end_date']."'";
+                    $statement = $conn2->prepare($selected);
+                    $statement->execute();
+                    $res = $statement->get_result();
+                    $used_amount = 0;
+                    if($res){
+                        if($inner_row = $res->fetch_assoc()){
+                            $used_amount = $inner_row['expense_amount']*1;
                         }
-                        $data_to_display .= "</div>";
                     }
+
+                    // start date and end date
+                    $row['start_date'] = date("Y-m-d",strtotime($row['start_date']));
+                    $row['end_date'] = date("Y-m-d",strtotime($row['end_date']));
+
+                    // get the used budget from the expense record table
+                    $percentage = ($used_amount > 0 && ($row['expense_budget']*1) > 0) ? round((($used_amount/$row['expense_budget']) * 100),1)."%" : "0%";
+                    $data_to_display.="<tr><td>".($index).". </td><td><input type='hidden' value='".json_encode($row)."' id='exp_name_".$row['expense_id']."'>".$row['expense_name']."</td><td>Kes ".(number_format($row['expense_budget']))."</td><td>Kes ".number_format($used_amount)." (".$percentage.")</td><td><p><span class='mx-1 link edit_exp_cat' id='edit_exp_cat_".$row['expense_id']."'><i class='fas fa-pen-fancy'></i></span> <span class='mx-1 link delete_exp_cat' id = 'delete_exp_cat_".$row['expense_id']."'><i class='fas fa-trash'></i></span></p></td></tr>";
+                    $index++;
                 }
+                $data_to_display .= "</table></div>";
             }
             echo $data_to_display;
         }elseif(isset($_GET['change_expense_categories'])){
             $new_exp_name = ($_GET['new_exp_name']);
             $exp_indexes = $_GET['exp_indexes'];
+            $budget_start_time_edit = date("Ymd",strtotime($_GET['budget_start_time_edit']));
+            $budget_end_date_edit = date("Ymd",strtotime($_GET['budget_end_date_edit']));
+            $expense_category_budget_edit = $_GET['expense_category_budget_edit'];
+            $change_date = date("YmdHis");
 
-            $select = "SELECT * FROM `settings` WHERE `sett` = 'expense categories'";
-            $stmt = $conn2->prepare($select);
+            // update
+            $update = "UPDATE `expense_category` SET `expense_name` = ?, `expense_budget` = ?, `start_date` = ?, `end_date` = ?, `updated_at` = ? WHERE `expense_id` = ?";
+            $stmt = $conn2->prepare($update);
+            $stmt->bind_param("ssssss",$new_exp_name,$expense_category_budget_edit,$budget_start_time_edit,$budget_end_date_edit,$change_date,$exp_indexes);
             $stmt->execute();
-            $result = $stmt->get_result();
-            if ($result) {
-                if($row = $result->fetch_assoc()){
-                    $exp_cat = $row['valued'];
-                    if(isJson_report($exp_cat)){
-                        $exp_cats = json_decode($exp_cat);
-                        $old_exp_name = "";
-                        for ($index=0; $index < count($exp_cats); $index++) { 
-                            if ($index."" == $exp_indexes) {
-                                $old_exp_name = $exp_cats[$index];
-                                $exp_cats[$index] = $new_exp_name;
-                            }
-                        }
-
-                        // update that setting
-                        $exp_cats = json_encode($exp_cats);
-                        echo $exp_cats;
-                        $update = "UPDATE `settings` SET `valued` = '".$exp_cats."' WHERE `sett` = 'expense categories'";
-                        $stmt = $conn2->prepare($update);
-                        $stmt->execute();
-
-                        // update the expense table
-                        $update = "UPDATE `expenses` SET `exp_category` = '".$new_exp_name."' WHERE `exp_category` = '".$old_exp_name."'";
-                        $stmt = $conn2->prepare($update);
-                        $stmt->execute();
-
-                        // log text
-                        $log_text = "Expense category \"".$_GET['new_exp_name']."\" updated successfully!";
-                        log_administration($log_text);
-                    }
-                }
-            }
+            
+            // display success message
             echo "<p class='text-success border border-success my-2 p-2'>Expense has been updated successfully!</p>";
         }elseif(isset($_GET['change_revenue_categories'])){
             $change_revenue_categories = ($_GET['change_revenue_categories']);
@@ -4183,58 +4128,50 @@
             }
             // echo "<p class='text-success border border-success my-2 p-2'>Expense has been updated successfully!</p>";
         }elseif(isset($_GET['get_expense_cats'])){
-            $select = "SELECT * FROM `settings` WHERE `sett` = 'expense categories'";
+            $select = "SELECT * FROM `expense_category`";
             $stmt = $conn2->prepare($select);
             $stmt->execute();
             $result = $stmt->get_result();
             $data_to_display = "<p class='text-danger border border-danger my-2 p-2'>Set expense categories in the settings before proceeding!.</p>";
-            if ($result) {
-                if ($row = $result->fetch_assoc()) {
-                    $expense_categories = $row['valued'];
-                    // echo $expense_categories;
-                    if(isJson_report($expense_categories)){
-                        $data_to_display = "<select class='form-control w-100' name='exp_cat' id='exp_cat'><option value='' id='main_sele' hidden >Select..</option>";
-                        $expense_lists = json_decode($expense_categories);
-                        for ($index=0; $index < count($expense_lists); $index++) { 
-                            $data_to_display .= "<option value='".$expense_lists[$index]."'>".$expense_lists[$index]."</option>";
+            if($result){
+                $data_to_display = "<select class='form-control w-100' name='exp_cat' id='exp_cat'><option value='' id='main_sele' hidden >Select..</option>";
+                $expenses = [];
+                while($row = $result->fetch_assoc()){
+                    // get how much is left in the budget
+                    // if its less that zero you cant user it.
+                    $selected = "SELECT SUM(`exp_amount`) AS 'expense_amount' FROM `expenses` WHERE `exp_category` = '".$row['expense_id']."' AND `expense_date` BETWEEN '".$row['start_date']."' AND '".$row['end_date']."'";
+                    $statement = $conn2->prepare($selected);
+                    $statement->execute();
+                    $res = $statement->get_result();
+                    $used_amount = 0;
+                    if($res){
+                        if($inner_row = $res->fetch_assoc()){
+                            $used_amount = $inner_row['expense_amount']*1;
                         }
-                        $data_to_display.="</select>";
+                    }
+                    // get the used budget from the expense record table
+                    $percentage = ($used_amount > 0 && ($row['expense_budget']*1) > 0) ? round((($used_amount/$row['expense_budget']) * 100),2) : 0;
+                    $percentage = 100 - $percentage;
+                    if($percentage != 0){
+                        $row['running_balance'] = $row['expense_budget'] - $used_amount;
+                        array_push($expenses,$row);
+                        $data_to_display .= "<option value='".$row['expense_id']."'>".ucwords(strtolower($row['expense_name']))." - | Kes ".number_format($row['expense_budget'] - $used_amount)." | (".$percentage."%)</option>";
                     }
                 }
+                $data_to_display.="</select><input type='hidden' value='".json_encode($expenses)."' id='expense_categories_value'>";
             }
             echo $data_to_display;
         }elseif(isset($_GET['delete_expense_category'])){
             $index_id = $_GET['index_id'];
-            // echo $index_id;
-            $select = "SELECT * FROM `settings` WHERE `sett` = 'expense categories'";
-            $stmt = $conn2->prepare($select);
+            $delete = "DELETE FROM `expense_category` WHERE `expense_id` = '".$index_id."'";
+            $stmt = $conn2->prepare($delete);
             $stmt->execute();
             $result = $stmt->get_result();
-            if ($result) {
-                if ($row = $result->fetch_assoc()) {
-                    $exp_cats = $row['valued'];
-                    if (isJson_report($exp_cats)) {
-                        $expense_categories = json_decode($exp_cats);
-                        $new_categories = [];
-                        for ($index=0; $index < count($expense_categories); $index++) {
-                            if ($index."" == $index_id) {
-                                continue;
-                            }
-                            array_push($new_categories,$expense_categories[$index]);
-                        }
-                        $new_exp_cats = count($new_categories) > 0? json_encode($new_categories) : "";
-
-                        $update = "UPDATE `settings` SET `valued` = '".$new_exp_cats."' WHERE `sett` = 'expense categories'";
-                        $stmt = $conn2->prepare($update);
-                        $stmt->execute();
-
-                        // log text
-                        $log_text = "Expense category deleted successfully!";
-                        log_administration($log_text);
-                    }
+            if($result){
+                if($row = $result->fetch_assoc()){
+                    echo "<p class='text-success border border-success my-2 p-2'>Expense has been removed successfully!.</p>";
                 }
             }
-            echo "<p class='text-success border border-success my-2 p-2'>Expense has been removed successfully!.</p>";
         }elseif (isset($_GET['get_leave_balance'])) {
             include("../../connections/conn1.php");
             // get if the users doe is set
@@ -6038,62 +5975,45 @@
             }
             echo $data_to_display;
         }elseif(isset($_POST['getExpenseCategory'])){
-            $select = "SELECT * FROM `settings` WHERE `sett` = 'expense categories'";
+            $select = "SELECT * FROM `expense_category`";
             $stmt = $conn2->prepare($select);
             $stmt->execute();
             $result = $stmt->get_result();
             $data_to_display = "<p class='text-danger border border-danger my-2 p-2'>Set expense categories in the settings before proceeding!.</p>";
-            if ($result) {
-                if ($row = $result->fetch_assoc()) {
-                    $expense_categories = $row['valued'];
-                    // echo $expense_categories;
-                    if(isJson_report($expense_categories)){
-                        $data_to_display = "<select class='form-control ' name='expense_category' id='expense_category'><option value='' id='main_sele' hidden >Select..</option><option value='All'>All</option>";
-                        $expense_lists = json_decode($expense_categories);
-                        for ($index=0; $index < count($expense_lists); $index++) { 
-                            $data_to_display .= "<option value='".$expense_lists[$index]."'>".$expense_lists[$index]."</option>";
-                        }
-                        $data_to_display.="</select>";
-                    }
+            if($result){
+                $data_to_display = "<select class='form-control ' name='expense_category' id='expense_category'><option value='' id='main_sele' hidden >Select..</option><option value='All'>All</option>";
+                while($row = $result->fetch_assoc()){
+                    $data_to_display .= "<option value='".$row['expense_id']."'>".$row['expense_name']."</option>";
                 }
+                $data_to_display.="</select>";
             }
             echo $data_to_display;
-
         }elseif(isset($_POST['getExpenseCategories'])){
-            $select = "SELECT * FROM `settings` WHERE `sett` = 'expense categories'";
+            $select = "SELECT * FROM `expense_category`;";
             $stmt = $conn2->prepare($select);
             $stmt->execute();
             $result = $stmt->get_result();
             $data_to_display = "<p class='text-danger border border-danger my-2 p-2'>Set expense categories in the settings before proceeding!.</p>";
-            if ($result) {
-                if ($row = $result->fetch_assoc()) {
-                    $expense_categories = $row['valued'];
-                    // echo $expense_categories;
-                    if(isJson_report($expense_categories)){
-                        $data_to_display = "<select class='form-control ' name='edit_expense_category' id='edit_expense_category'><option value='' id='main_sele' hidden >Select..</option>";
-                        $expense_lists = json_decode($expense_categories);
-                        for ($index=0; $index < count($expense_lists); $index++) { 
-                            $data_to_display .= "<option class='exp_cats_exp' value='".$expense_lists[$index]."'>".$expense_lists[$index]."</option>";
-                        }
-                        $data_to_display.="</select>";
-                    }
+            if($result){
+                $data_to_display = "<select class='form-control ' name='edit_expense_category' id='edit_expense_category'><option value='' id='main_sele' hidden >Select..</option>";
+                while($row = $result->fetch_assoc()){
+                    $data_to_display .= "<option class='exp_cats_exp' value='".$row['expense_id']."'>".ucwords(strtolower($row['expense_name']))."</option>";
                 }
+                $data_to_display.="</select>";
             }
             echo $data_to_display;
-
         }elseif(isset($_POST['update_expense'])){
             // echo $_POST['expense_name'];
             $expense_name = $_POST['expense_name'];
             $expense_category = $_POST['expense_category'];
-            $expense_quantity = $_POST['expense_quantity'];
-            $unit_cost = $_POST['unit_cost'];
-            $unit_name = $_POST['unit_name'];
+            $document_number = $_POST['document_number'];
+            $expense_description = $_POST['expense_description'];
             $total_unit_cost = $_POST['total_unit_cost'];
             $expense_ids_in = $_POST['expense_ids_in'];
             $expense_cash_activity = $_POST['expense_cash_activity'];
             $edit_expense_record_date = $_POST['edit_expense_record_date'];
 
-            $update = "UPDATE `expenses` SET `exp_name` = '".$expense_name."' , `exp_category` = '".$expense_category."', `unit_name` = '".$unit_name."', `exp_quantity` = '".$expense_quantity."', `exp_unit_cost` = '".$unit_cost."', `exp_amount` = '".$total_unit_cost."', `expense_date` = '".$edit_expense_record_date."', `expense_categories` = '".$expense_cash_activity."' WHERE `expid` = '".$expense_ids_in."'";
+            $update = "UPDATE `expenses` SET `exp_name` = '".$expense_name."' , `exp_category` = '".$expense_category."', `document_number` = '".$document_number."', `expense_description` = '".$expense_description."', `exp_amount` = '".$total_unit_cost."', `expense_date` = '".$edit_expense_record_date."', `expense_categories` = '".$expense_cash_activity."' WHERE `expid` = '".$expense_ids_in."'";
             $stmt = $conn2->prepare($update);
             // echo $update;
             // $stmt->bind_param("sssssssss",$expense_name,$expense_category,$unit_name,$expense_quantity,$unit_cost,$total_unit_cost,$edit_expense_record_date,$expense_cash_activity,$expense_ids_in);

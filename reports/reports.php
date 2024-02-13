@@ -1277,9 +1277,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                 }
                 // get the class the student is selected
                 if (strlen($select_report_class) > 0) {
-                    $select = "SELECT * FROM `student_data` ";
+                    $select = "SELECT * FROM `student_data`";
                     $add_course = strlen(trim($course_names)) > 0 ? " AND `course_done` = '".$course_names."' " : "";
                     $condition = $select_report_class != "all" ? " WHERE `stud_class` = '$select_report_class' ".$add_course."" : " WHERE `stud_class` != '-1' AND `stud_class` != '-2'";
+                    
+                    $select_gender_option = $_POST['select_gender_option'];
+                    $gender_option = $select_gender_option == "all" ? "" : "AND `gender` = '".$select_gender_option."'";
+                    $condition .= $gender_option;
 
                     // add the intake condition
                     $intake_condition = (strlen($intake_year_reports) > 0 && strlen($intake_months_reports) > 0) ? " AND `intake_year` = '".$intake_year_reports."' AND `intake_month` = '".$intake_months_reports."' " : "";
@@ -1340,6 +1344,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                             $parent_name2 = ucwords(strtolower($row['parent_name2']));
                             $parent_contact2 = $row['parent_contact2'];
                             $address = $row['address'];
+                            $intake = $row['intake_month'].":".$row['intake_year'];
 
                             // show departments
                             $course_id = $row['course_done'];
@@ -1397,24 +1402,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                                 $push = true;
                             }
                             // echo json_encode($student_data);
-
                             if($push){
                                 if ($gender == "Male") {
                                     $boys++;
-                                    $gender = "M";
                                 } else {
                                     $girls++;
-                                    $gender = "F";
                                 }
                                 // course level
-                                $each_stud = array($number, $student_name, $adm_no, $gender, $course_name, $level_name, $department_name, $dob, $doa, $address,$status);
+                                $each_stud = array($number, $student_name, $adm_no, $gender, $course_name, $intake, $department_name, $dob, $doa, $address,$status);
                                 array_push($student_data, $each_stud);
                                 $number++;
                             }
                         }
                         $pdf = new PDF('L', 'mm', 'A4');
                         // Column headings
-                        $header = array('No', 'Student Name', 'Reg no', 'Sex', 'Course', 'Level', 'Department', 'D.O.B', 'D.O.A', 'Address',"Status");
+                        $header = array('No', 'Student Name', 'Reg no', 'Sex', 'Course', 'Intake', 'Department', 'D.O.B', 'D.O.A', 'Address',"Status");
                         // Data loading
                         // $data = $pdf->LoadData('countries.txt');
 
@@ -1447,12 +1449,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                         $pdf->Cell(40, 10, "Population", 0, 0, 'L', false);
                         $pdf->Ln();
                         $pdf->SetFont('Times', 'I', 9);
-                        $pdf->Cell(20, 5, "Male :", 0, 0, 'L', false);
-                        $pdf->Cell(20, 5, $boys . " Student(s)", 0, 0, 'L', false);
-                        $pdf->Ln();
-                        $pdf->Cell(20, 5, "Female :", 0, 0, 'L', false);
-                        $pdf->Cell(20, 5, $girls . " Student(s)", 0, 0, 'L', false);
-                        $pdf->Ln();
+                        if($select_gender_option == "all" || $select_gender_option == "male"){
+                            $pdf->Cell(20, 5, "Male :", 0, 0, 'L', false);
+                            $pdf->Cell(20, 5, $boys . " Student(s)", 0, 0, 'L', false);
+                            $pdf->Ln();
+                        }
+                        if($select_gender_option == "all" || $select_gender_option == "female"){
+                            $pdf->Cell(20, 5, "Female :", 0, 0, 'L', false);
+                            $pdf->Cell(20, 5, $girls . " Student(s)", 0, 0, 'L', false);
+                            $pdf->Ln();
+                        }
                         $pdf->Cell(20, 5, "Total :", 'T', 0, 'L', false);
                         $pdf->Cell(20, 5, ($girls + $boys) . " Student(s)", 'T', 0, 'L', false);
                         $pdf->Ln();
@@ -1492,7 +1498,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                             $tittle = $select_report_class != "all" ? "List for " . classNameReport($select_report_class) . "" : "Student List for Whole School";
                             $intake_title = (strlen($intake_year_reports) > 0 && strlen($intake_months_reports) > 0) ? " : Intake ".$intake_months_reports." ".$intake_year_reports."" : "";
                             $tittle.=$intake_title;
-                            $STATUS_TITLE = $student_status == 1 ? " : Active" : ($student_status == 2 ? " :In-Actve" : "");
+                            $STATUS_TITLE = $student_status == 1 ? " : Active" : ($student_status == 2 ? "" : " : In-Active");
                             $tittle.=$STATUS_TITLE;
                             $pdf->set_document_title($tittle);
                             $pdf->setSchoolLogo("../../" . schoolLogo($conn));
@@ -1503,6 +1509,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
 
                             // select statement
                             $select = $select . " WHERE `stud_class` = ?";
+
+                            // add gender option
+                            $select_gender_option = $_POST['select_gender_option'];
+                            $gender_option = $select_gender_option == "all" ? "" : " AND `gender` = '".$select_gender_option."'";
+                            $select .= $gender_option;
+
+
                             $select .=  (strlen($intake_year_reports) > 0 && strlen($intake_months_reports) > 0) ? " AND `intake_year` = '".$intake_year_reports."' AND `intake_month` = '".$intake_months_reports."' " : "";
                             for ($index = 0; $index < count($school_classes); $index++) {
                                 $stmt = $conn2->prepare($select);
@@ -1535,6 +1548,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                                     $parent_name2 = ucwords(strtolower($row['parent_name2']));
                                     $parent_contact2 = $row['parent_contact2'];
                                     $address = $row['address'];
+                                    $intake = $row['intake_month'].":".$row['intake_year'];
 
                                     // show departments
                                     $course_id = $row['course_done'];
@@ -1593,21 +1607,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
         
                                     if($push){
                                         if ($gender == "Male") {
-                                            $boys++;
-                                            $gender = "M";
+                                            // $boys++;
+                                            // $gender = "M";
                                         } else {
-                                            $girls++;
-                                            $gender = "F";
+                                            // $girls++;
+                                            // $gender = "F";
                                         }
                                         // course level
-                                        $each_stud = array($number, $student_name, $adm_no, $gender, $course_name, $level_name, $department_name, $dob, $doa, $address,$status);
+                                        $each_stud = array($number, $student_name, $adm_no, $gender, $course_name, $intake, $department_name, $dob, $doa, $address,$status);
                                         array_push($student_data, $each_stud);
                                         $number++;
                                     }
                                 }
 
                                 // Column headings
-                                $header = array('No', 'Student Name', 'Reg no', 'Sex', 'Course', 'Level', 'Department', 'D.O.B', 'D.O.A', 'Address');
+                                $header = array('No', 'Student Name', 'Reg no', 'Sex', 'Course', 'Intake', 'Department', 'D.O.B', 'D.O.A', 'Address','Status');
                                 // Data loading
                                 // $data = $pdf->LoadData('countries.txt');
                                 $data = $student_data;
@@ -1615,12 +1629,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                                 $pdf->Cell(40, 10, "Population", 0, 0, 'L', false);
                                 $pdf->Ln();
                                 $pdf->SetFont('Times', 'I', 9);
-                                $pdf->Cell(20, 5, "Male :", 0, 0, 'L', false);
-                                $pdf->Cell(20, 5, $boys . " Student(s)", 0, 0, 'L', false);
-                                $pdf->Ln();
-                                $pdf->Cell(20, 5, "Female :", 0, 0, 'L', false);
-                                $pdf->Cell(20, 5, $girls . " Student(s)", 0, 0, 'L', false);
-                                $pdf->Ln();
+                                if($select_gender_option == "all" || $select_gender_option == "male"){
+                                    $pdf->Cell(20, 5, "Male :", 0, 0, 'L', false);
+                                    $pdf->Cell(20, 5, $boys . " Student(s)", 0, 0, 'L', false);
+                                    $pdf->Ln();
+                                }
+                                if($select_gender_option == "all" || $select_gender_option == "female"){
+                                    $pdf->Cell(20, 5, "Female :", 0, 0, 'L', false);
+                                    $pdf->Cell(20, 5, $girls . " Student(s)", 0, 0, 'L', false);
+                                    $pdf->Ln();
+                                }
                                 $pdf->Cell(20, 5, "Total :", 'T', 0, 'L', false);
                                 $pdf->Cell(20, 5, ($girls + $boys) . " Student(s)", 'T', 0, 'L', false);
                                 $pdf->Ln();
@@ -1643,6 +1661,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
             } elseif ($select_student_option == "students_admitted") {
                 if (strlen($select_report_class) > 0 && strlen($select_date) > 0) {
                     $select = "SELECT * FROM `student_data` WHERE `D_O_A` = ? AND `stud_class` = ?";
+
+                    // add gender option
+                    $select_gender_option = $_POST['select_gender_option'];
+                    $gender_option = $select_gender_option == "all" ? "" : " AND `gender` = '".$select_gender_option."'";
+                    $select .= $gender_option;
+
                     if ($select_report_class != "all") {
                         // display the student data per class
                         $tittle = classNameReport($select_report_class) . " admitted on " . date("dS M Y", strtotime($select_date));
@@ -1747,12 +1771,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                             $pdf->Cell(40, 10, "Population", 0, 0, 'L', false);
                             $pdf->Ln();
                             $pdf->SetFont('Times', 'I', 9);
-                            $pdf->Cell(20, 5, "Male :", 0, 0, 'L', false);
-                            $pdf->Cell(20, 5, $boys . " Student(s)", 0, 0, 'L', false);
-                            $pdf->Ln();
-                            $pdf->Cell(20, 5, "Female :", 0, 0, 'L', false);
-                            $pdf->Cell(20, 5, $girls . " Student(s)", 0, 0, 'L', false);
-                            $pdf->Ln();
+                            if($select_gender_option == "all" || $select_gender_option == "male"){
+                                $pdf->Cell(20, 5, "Male :", 0, 0, 'L', false);
+                                $pdf->Cell(20, 5, $boys . " Student(s)", 0, 0, 'L', false);
+                                $pdf->Ln();
+                            }
+                            if($select_gender_option == "all" || $select_gender_option == "female"){
+                                $pdf->Cell(20, 5, "Female :", 0, 0, 'L', false);
+                                $pdf->Cell(20, 5, $girls . " Student(s)", 0, 0, 'L', false);
+                                $pdf->Ln();
+                            }
                             $pdf->Cell(20, 5, "Total :", 'T', 0, 'L', false);
                             $pdf->Cell(20, 5, ($girls + $boys) . " Student(s)", 'T', 0, 'L', false);
                             $pdf->Ln();
@@ -1762,10 +1790,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                             $pdf->FancyTable($header, $data, $width);
                             $pdf->Output("I", str_replace(" ", "_", $pdf->school_document_title) . ".pdf");
                         } else {
-                            echo "Please set the student class and the date of admission to view the students information";
+                            echo "Please set the student course details and the date of admission to view the students information";
                         }
                     } else {
                         $select = "SELECT * FROM `student_data` WHERE `D_O_A` = '" . $select_date . "' AND `stud_class` != '-1'";
+
+                        // add gender option
+                        $select_gender_option = $_POST['select_gender_option'];
+                        $gender_option = $select_gender_option == "all" ? "" : " AND `gender` = '".$select_gender_option."'";
+                        $select .= $gender_option;
+
                         // echo $select_report_class;
                         $tittle = "Students registered on " . date("dS M Y", strtotime($select_date));
                         $stmt = $conn2->prepare($select);
@@ -1866,12 +1900,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                             $pdf->Cell(40, 10, "Population", 0, 0, 'L', false);
                             $pdf->Ln();
                             $pdf->SetFont('Times', 'I', 9);
-                            $pdf->Cell(20, 5, "Male :", 0, 0, 'L', false);
-                            $pdf->Cell(20, 5, $boys . " Student(s)", 0, 0, 'L', false);
-                            $pdf->Ln();
-                            $pdf->Cell(20, 5, "Female :", 0, 0, 'L', false);
-                            $pdf->Cell(20, 5, $girls . " Student(s)", 0, 0, 'L', false);
-                            $pdf->Ln();
+                            if($select_gender_option == "all" || $select_gender_option == "male"){
+                                $pdf->Cell(20, 5, "Male :", 0, 0, 'L', false);
+                                $pdf->Cell(20, 5, $boys . " Student(s)", 0, 0, 'L', false);
+                                $pdf->Ln();
+                            }
+                            if($select_gender_option == "all" || $select_gender_option == "female"){
+                                $pdf->Cell(20, 5, "Female :", 0, 0, 'L', false);
+                                $pdf->Cell(20, 5, $girls . " Student(s)", 0, 0, 'L', false);
+                                $pdf->Ln();
+                            }
                             $pdf->Cell(20, 5, "Total :", 'T', 0, 'L', false);
                             $pdf->Cell(20, 5, ($girls + $boys) . " Student(s)", 'T', 0, 'L', false);
                             $pdf->Ln();
@@ -1881,11 +1919,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                             $pdf->FancyTable($header, $data, $width);
                             $pdf->Output("I", str_replace(" ", "_", $pdf->school_document_title) . ".pdf");
                         } else {
-                            echo "<p style='color:red;'><b>Note:</b><br>Please set the student class and the date of admission to view the students information";
+                            echo "<p style='color:red;'><b>Note:</b><br>Please set the student course details and the date of admission to view the students information";
                         }
                     }
                 } else {
-                    echo "<p style='color:red;'><b>Note:</b><br>Please set the student class and the date of admission to view the students information";
+                    echo "<p style='color:red;'><b>Note:</b><br>Please set the student course details and the date of admission to view the students information";
                 }
             } elseif ($select_student_option == "school_in_attendance") {
                 // check if the class and the dates are set so that we can display the students present and the ones absent
@@ -2086,7 +2124,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                     echo "<p style='color:red;'><b>Note:</b><br>Please select the student course level to display the students information</p>";
                 }
             } elseif ($select_student_option == "show_alumni") {
-                $select = "SELECT * FROM `student_data` WHERE `stud_class` = '-1';";
+                $select = "SELECT * FROM `student_data` WHERE `stud_class` = '-1'";
+
+                // add gender option
+                $select_gender_option = $_POST['select_gender_option'];
+                $gender_option = $select_gender_option == "all" ? "" : " AND `gender` = '".$select_gender_option."'";
+                $select .= $gender_option;
+
                 $stmt = $conn2->prepare($select);
                 $stmt->execute();
                 $result = $stmt->get_result();
@@ -2495,6 +2539,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                     $intake_condition = (strlen($intake_year_reports) > 0 && strlen($intake_months_reports) > 0) ? " AND `intake_year` = '".$intake_year_reports."' AND `intake_month` = '".$intake_months_reports."' " : "";
                     $condition.=$intake_condition;
 
+                    // gender select option
+                    $select_gender_option = $_POST['select_gender_option'];
+                    $gender_option = $select_gender_option == "all" ? "" : "AND `gender` = '".$select_gender_option."'";
+                    $condition .= $gender_option;
+
                     // get for specific class
                     if ($select_report_class != "all") {
                         $select = $select . $condition;
@@ -2639,6 +2688,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                             // select statment
                             $select = $select . " WHERE `stud_class` = ?";
 
+                            // gender select option
+                            $select_gender_option = $_POST['select_gender_option'];
+                            $gender_option = $select_gender_option == "all" ? "" : " AND `gender` = '".$select_gender_option."'";
+                            $condition .= $gender_option;
+
                             $select .=  (strlen($intake_year_reports) > 0 && strlen($intake_months_reports) > 0) ? " AND `intake_year` = '".$intake_year_reports."' AND `intake_month` = '".$intake_months_reports."' " : "";
 
                             // Create new Spreadsheet object
@@ -2741,7 +2795,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                                 }else{
                                     // Add data
                                     $worksheet = $spreadsheet->createSheet();
-                                    $worksheet->setTitle(classNameReport($school_classes[$index]));
+                                    $worksheet->setTitle(substr(classNameReport($school_classes[$index]),0,31));
                                     // set the statistics
                                     $worksheet->setCellValue("A1", "Population");
                                     $worksheet->setCellValue("A2", "Male");
@@ -2815,6 +2869,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                 }
                 if (strlen($select_report_class) > 0 && strlen($select_date) > 0) {
                     $select = "SELECT * FROM `student_data` WHERE `D_O_A` = ? AND `stud_class` = ?";
+
+                    // gender select option
+                    $select_gender_option = $_POST['select_gender_option'];
+                    $gender_option = $select_gender_option == "all" ? "" : " AND `gender` = '".$select_gender_option."'";
+                    $select .= $gender_option;
+
                     if ($select_report_class != "all") {
                         // display the student data per class
                         $tittle = classNameReport($select_report_class) . " admitted on " . date("dS M Y", strtotime($select_date));
@@ -2946,10 +3006,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                             $writer->save('php://output');
                             exit;
                         } else {
-                            echo "Please set the student class and the date of admission to view the students information";
+                            echo "Please set the student course details and the date of admission to view the students information";
                         }
                     } else {
                         $select = "SELECT * FROM `student_data` WHERE `D_O_A` = '" . $select_date . "' AND `stud_class` != '-1'";
+                    
+                        // gender select option
+                        $select_gender_option = $_POST['select_gender_option'];
+                        $gender_option = $select_gender_option == "all" ? "" : " AND `gender` = '".$select_gender_option."'";
+                        $condition .= $gender_option;
+                        
                         // echo $select_report_class;
                         $tittle = "Students registered on " . date("dS M Y", strtotime($select_date));
                         $stmt = $conn2->prepare($select);
@@ -3070,11 +3136,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                             $writer->save('php://output');
                             exit;
                         } else {
-                            echo "<p style='color:red;'><b>Note:</b><br>Please set the student class and the date of admission to view the students information";
+                            echo "<p style='color:red;'><b>Note:</b><br>Please set the student course details and the date of admission to view the students information";
                         }
                     }
                 } else {
-                    echo "<p style='color:red;'><b>Note:</b><br>Please set the student class and the date of admission to view the students information";
+                    echo "<p style='color:red;'><b>Note:</b><br>Please set the student course details and the date of admission to view the students information";
                 }
             } elseif ($select_student_option == "school_in_attendance") {
                 // check if the class and the dates are set so that we can display the students present and the ones absent
@@ -5391,6 +5457,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                 $pdf2->Output("I", str_replace(" ", "_", $pdf2->school_document_title) . ".pdf");
             }
         } elseif ($finance_entity == "expenses") {
+            require_once "../ajax/finance/financial.php";
             $expense_data = [];
             $total_expense = 0;
             if ($expense_category != "All") {
@@ -5401,8 +5468,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                 $result = $stmt->get_result();
                 if ($result) {
                     while($row = $result->fetch_assoc()){
+                        // expense name
+                        $expense_name = get_expense($row['exp_category'],$conn2);
+                        $expense_category = $expense_name != null ? $expense_name['expense_name'] : $row['exp_category'];
+
                         // create the expense data
-                        $row_data = array($row['exp_name'],$row['exp_category'],$row['exp_quantity']." ".$row['unit_name'],$row['exp_unit_cost'],$row['exp_amount'],$row['expense_date']." ".$row['exp_time']);
+                        $row_data = array($row['exp_name'],$expense_category,$row['document_number'],$row['exp_amount'],$row['expense_date']." ".$row['exp_time']);
                         array_push($expense_data,$row_data);
                         $total_expense+=$row['exp_amount'];
                     }
@@ -5415,8 +5486,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                 $result = $stmt->get_result();
                 if ($result) {
                     while($row = $result->fetch_assoc()){
+                        // expense name
+                        $expense_name = get_expense($row['exp_category'],$conn2);
+                        $expense_category = $expense_name != null ? $expense_name['expense_name'] : $row['exp_category'];
+
                         // create the expense data
-                        $row_data = array($row['exp_name'],$row['exp_category'],$row['exp_quantity']." ".$row['unit_name'],$row['exp_unit_cost'],$row['exp_amount'],$row['expense_date']." ".$row['exp_time']);
+                        $row_data = array($row['exp_name'],$expense_category,$row['document_number'],$row['exp_amount'],$row['expense_date']." ".$row['exp_time']);
                         array_push($expense_data,$row_data);
                         $total_expense+=$row['exp_amount'];
                     }
@@ -5454,6 +5529,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                 $pdf->Ln();
 
                 // display the data in tables
+                // echo json_encode($expense_data);
                 $width = array(8, 40, 40, 20, 25, 25, 35);
                 $pdf->Ln();
                 $pdf->SetFont('Helvetica', 'B', 8);
@@ -11239,6 +11315,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
     }elseif(isset($_POST['generate_income_statement'])){
         include_once("../connections/conn1.php");
         include_once("../connections/conn2.php");
+        require_once "../ajax/finance/financial.php";
         $year = $_POST['year'];
         // echo json_encode($student_data);
         $pdf = new PDF('P', 'mm', 'A4');
@@ -11252,7 +11329,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
         $pdf->set_school_contact($_SESSION['school_contact']);
         $pdf->AddPage();
         $pdf->SetFont('Times', '', 10);
-        $pdf->Cell(275, 8, "Date Generated : ".date("l dS M Y"), 0, 0, 'L', false);
+        $pdf->Cell(275, 8, "Date Generated : ".date("l dS M Y : h:i:sA"), 0, 0, 'L', false);
         $pdf->ln();
         // $pdf->SetFont('Times', 'B', 10);
         $pdf->Cell(40, 10, "", 0, 0, 'C', false);
@@ -11359,7 +11436,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
         $pdf->ln();
 
         for ($indexes=0; $indexes < count($all_expenses); $indexes++) {
-            $pdf->Cell(40, 6, "".$all_expenses[$indexes]."", 0, 0, 'L', false);
+            // expense name
+            $expense_name = get_expense($all_expenses[$indexes],$conn2);
+
+            // expense name
+            $pdf->Cell(40, 6, "". ($expense_name != null ? $expense_name['expense_name'] : $all_expenses[$indexes]) ."", 0, 0, 'L', false);
             $pdf->Cell(50, 6, "Kes ".number_format($expenses_val[$all_expenses[$indexes]][0]), 1, 0, 'C', false);
             $pdf->Cell(50, 6, "Kes ".number_format($expenses_val[$all_expenses[$indexes]][1]), 1, 0, 'C', false);
             $pdf->Cell(50, 6, "Kes ".number_format($expenses_val[$all_expenses[$indexes]][2]), 1, 0, 'C', false);
@@ -11373,12 +11454,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
         $pdf->Cell(50, 6, "Kes ".number_format($totalExpenses[2]), 1, 0, 'C', false);
         $pdf->ln();
         
-            //deduct term expenses from term income
+        //deduct term expenses from term income
         $before_taxes = [];
         for ($index=0; $index < count($term_income); $index++) {
-            // add other revenue
-            $term_income[$index] += $revenue[$index];
-
             // add before tx
             $befo_taxes = $term_income[$index] - $totalExpenses[$index];
             array_push($before_taxes,$befo_taxes);
@@ -11448,7 +11526,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
         $pdf->set_school_contact($_SESSION['school_contact']);
         $pdf->AddPage();
         $pdf->SetFont('Times', '', 10);
-        $pdf->Cell(275, 8, "Date Generated : ".date("l dS M Y"), 0, 0, 'L', false);
+        $pdf->Cell(275, 8, "Date Generated : ".date("l dS M Y : h:i:sA"), 0, 0, 'L', false);
         $pdf->ln();
         // annual quater array
         $year_1 = ($year*1)-1;
@@ -11566,8 +11644,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
             $totalExpenses[$intex]+=$salaries[$intex];
         }
 
-        for ($indexes=0; $indexes < count($all_expenses); $indexes++) { 
-            $pdf->Cell(40,7,$all_expenses[$indexes],0,0);
+        for ($indexes=0; $indexes < count($all_expenses); $indexes++) {
+            // expense name
+            $expense_name = get_expense($all_expenses[$indexes],$conn2);
+
+            $pdf->Cell(40,7,($expense_name != null ? $expense_name['expense_name'] : $all_expenses[$indexes]),0,0);
             $pdf->Cell(38,7,"Ksh ".number_format($expenses_val[$all_expenses[$indexes]][0])."",1,0);
             $pdf->Cell(38,7,"Ksh ".number_format($expenses_val[$all_expenses[$indexes]][1])."",1,0);
             $pdf->Cell(38,7,"Ksh ".number_format($expenses_val[$all_expenses[$indexes]][2])."",1,0);
@@ -11587,7 +11668,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
         $before_taxes = [];
         for ($index=0; $index < count($term_income); $index++) {
             // add other revenue
-            $term_income[$index] += $revenue[$index];
 
             // add before tx
             $befo_taxes = $term_income[$index] - $totalExpenses[$index];
@@ -11723,7 +11803,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
         }
 
         // start with operating activities
-        $select = "SELECT `revenue_category` ,COUNT(*) AS 'Records', SUM(`amount`) AS 'Total' FROM `school_revenue` WHERE `cash_flow_activities` = '1' AND `date_recorded` BETWEEN ? AND ? GROUP BY `revenue_category`;";
+        $select = "SELECT `revenue_category` ,COUNT(*) AS 'Records', SUM(`amount`) AS 'Total' FROM `school_revenue` WHERE `reportable_status` = '1' AND `cash_flow_activities` = '1' AND `date_recorded` BETWEEN ? AND ? GROUP BY `revenue_category`;";
         
         // current year operating activities
         $stmt = $conn2->prepare($select);
@@ -11873,7 +11953,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
         // echo $fees_id;
 
         // start with investing activities
-        $select = "SELECT `revenue_category` ,COUNT(*) AS 'Records', SUM(`amount`) AS 'Total' FROM `school_revenue` WHERE `cash_flow_activities` = '2' AND `date_recorded` BETWEEN ? AND ? GROUP BY `revenue_category`;";
+        $select = "SELECT `revenue_category` ,COUNT(*) AS 'Records', SUM(`amount`) AS 'Total' FROM `school_revenue` WHERE `reportable_status` = '1' AND `cash_flow_activities` = '2' AND `date_recorded` BETWEEN ? AND ? GROUP BY `revenue_category`;";
         
         // current year investing activities
         $stmt = $conn2->prepare($select);
@@ -11949,7 +12029,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
         }
 
         // start with financing activities
-        $select = "SELECT `revenue_category` ,COUNT(*) AS 'Records', SUM(`amount`) AS 'Total' FROM `school_revenue` WHERE `cash_flow_activities` = '3' AND `date_recorded` BETWEEN ? AND ? GROUP BY `revenue_category`;";
+        $select = "SELECT `revenue_category` ,COUNT(*) AS 'Records', SUM(`amount`) AS 'Total' FROM `school_revenue` WHERE `reportable_status` = '1' AND `cash_flow_activities` = '3' AND `date_recorded` BETWEEN ? AND ? GROUP BY `revenue_category`;";
         
         // current year financing activities
         $stmt = $conn2->prepare($select);
@@ -12184,7 +12264,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
         $pdf->SetFont('Times', '', 10);
         // $pdf->Cell(275, 10, "Date Generated : ".date("l dS M Y"), 0, 0, 'L', false);
         $pdf->ln();
-        $pdf->Cell(190, 8, "Date Generated : ".date("l dS M Y"), 0, 1, 'L',false);
+        $pdf->Cell(190, 8, "Date Generated : ".date("l dS M Y : h:i:sA"), 0, 1, 'L',false);
 
         // create the table header
         $pdf->SetFillColor(0, 112, 192);
@@ -12295,8 +12375,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                         $total_previous_expense_1+=$previous_year_1;
                     }
                 }
+                
+                // expense name
+                $expense_name = get_expense($value,$conn2);
 
-                $pdf->Cell(100, 6, $index.". ".$value, 1, 0, 'L',$fill);
+                $pdf->Cell(100, 6, $index.". ".($expense_name != null ? $expense_name['expense_name'] : $value), 1, 0, 'L',$fill);
                 $pdf->Cell(45, 6, "Ksh ".number_format($current_year), 1, 0, 'L',$fill);
                 $pdf->Cell(45, 6, "Ksh ".number_format($previous_year), 1, 1, 'L',$fill);
                 $index++;
@@ -12316,7 +12399,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
         $pdf->Cell(45, 6, "Ksh ".number_format($total_previous  - $total_previous_expense), 1, 1, 'L',false);
 
         $pdf->SetFont('Times', 'B', 10);
-        $pdf->Cell(190, 6, "Cashflow from Investing Activities", 1, 1, 'L',false);
+        $pdf->Cell(190, 6, "Cashflow From Investing Activities", 1, 1, 'L',false);
 
         $net_increase_curr_year+=($total_current - $total_current_expense);
         $net_increase_prev_year+=($total_previous  - $total_previous_expense);
@@ -12408,8 +12491,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                         $total_previous_expense_1+=$previous_year_1;
                     }
                 }
+                                
+                // expense name
+                $expense_name = get_expense($value,$conn2);
                 
-                $pdf->Cell(100, 6, $index.". ".$value, 1, 0, 'L',$fill);
+                $pdf->Cell(100, 6, $index.". ".($expense_name != null ? $expense_name['expense_name'] : $value), 1, 0, 'L',$fill);
                 $pdf->Cell(45, 6, "Ksh ".number_format($current_year), 1, 0, 'L',$fill);
                 $pdf->Cell(45, 6, "Ksh ".number_format($previous_year), 1, 1, 'L',$fill);
                 $index++;
@@ -12523,8 +12609,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                         $total_previous_expense_1+=$previous_year_1;
                     }
                 }
+                                
+                // expense name
+                $expense_name = get_expense($value,$conn2);
                 
-                $pdf->Cell(100, 6, $index.". ".$value, 1, 0, 'L',$fill);
+                $pdf->Cell(100, 6, $index.". ".($expense_name != null ? $expense_name['expense_name'] : $value), 1, 0, 'L',$fill);
                 $pdf->Cell(45, 6, "Ksh ".number_format($current_year), 1, 0, 'L',$fill);
                 $pdf->Cell(45, 6, "Ksh ".number_format($previous_year), 1, 1, 'L',$fill);
                 $index++;
@@ -12539,7 +12628,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
         $pdf->Cell(45, 6, "Ksh ".number_format($total_current_expense), 1, 0, 'L',false);
         $pdf->Cell(45, 6, "Ksh ".number_format($total_previous_expense), 1, 1, 'L',false);
 
-        $pdf->Cell(100, 6, "Net Cashflow From Finacing Revenue", 1, 0, 'L',false);
+        $pdf->Cell(100, 6, "Net Cashflow From Financing Revenue", 1, 0, 'L',false);
         $pdf->Cell(45, 6, "Ksh ".number_format($total_current - $total_current_expense), 1, 0, 'L',false);
         $pdf->Cell(45, 6, "Ksh ".number_format($total_previous  - $total_previous_expense), 1, 1, 'L',false);
 
@@ -12813,7 +12902,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
         }
 
         // start with operating activities
-        $select = "SELECT `revenue_category` ,COUNT(*) AS 'Records', SUM(`amount`) AS 'Total' FROM `school_revenue` WHERE `cash_flow_activities` = '1' AND `date_recorded` BETWEEN ? AND ? GROUP BY `revenue_category`;";
+        $select = "SELECT `revenue_category` ,COUNT(*) AS 'Records', SUM(`amount`) AS 'Total' FROM `school_revenue` WHERE `reportable_status` = '1' AND `cash_flow_activities` = '1' AND `date_recorded` BETWEEN ? AND ? GROUP BY `revenue_category`;";
         
         // current year operating activities
         $stmt = $conn2->prepare($select);
@@ -12963,7 +13052,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
         // echo $fees_id;
 
         // start with investing activities
-        $select = "SELECT `revenue_category` ,COUNT(*) AS 'Records', SUM(`amount`) AS 'Total' FROM `school_revenue` WHERE `cash_flow_activities` = '2' AND `date_recorded` BETWEEN ? AND ? GROUP BY `revenue_category`;";
+        $select = "SELECT `revenue_category` ,COUNT(*) AS 'Records', SUM(`amount`) AS 'Total' FROM `school_revenue` WHERE `reportable_status` = '1' AND `cash_flow_activities` = '2' AND `date_recorded` BETWEEN ? AND ? GROUP BY `revenue_category`;";
         
         // current year investing activities
         $stmt = $conn2->prepare($select);
@@ -13039,7 +13128,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
         }
 
         // start with financing activities
-        $select = "SELECT `revenue_category` ,COUNT(*) AS 'Records', SUM(`amount`) AS 'Total' FROM `school_revenue` WHERE `cash_flow_activities` = '3' AND `date_recorded` BETWEEN ? AND ? GROUP BY `revenue_category`;";
+        $select = "SELECT `revenue_category` ,COUNT(*) AS 'Records', SUM(`amount`) AS 'Total' FROM `school_revenue` WHERE `reportable_status` = '1' AND `cash_flow_activities` = '3' AND `date_recorded` BETWEEN ? AND ? GROUP BY `revenue_category`;";
         
         // current year financing activities
         $stmt = $conn2->prepare($select);
@@ -13402,8 +13491,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                         $total_previous_expense_1+=$previous_year_1;
                     }
                 }
+                                
+                // expense name
+                $expense_name = get_expense($value,$conn2);
                 
-                $worksheet->setCellValue("A".$cell_index,$index.". ".$value);
+                $worksheet->setCellValue("A".$cell_index,$index.". ". ($expense_name != null ? $expense_name['expense_name'] : $value));
                 $worksheet->setCellValue("B".$cell_index,($current_year));
                 $worksheet->setCellValue("C".$cell_index,($previous_year));
                 $cellRange = "A".$cell_index.":C".$cell_index;
@@ -13542,8 +13634,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                         $total_previous_expense_1+=$previous_year_1;
                     }
                 }
+                                
+                // expense name
+                $expense_name = get_expense($value,$conn2);
                 
-                $worksheet->setCellValue("A".$cell_index,$index.". ".$value);
+                $worksheet->setCellValue("A".$cell_index,$index.". ".($expense_name != null ? $expense_name['expense_name'] : $value));
                 $worksheet->setCellValue("B".$cell_index,($current_year));
                 $worksheet->setCellValue("C".$cell_index,($previous_year));
                 $cellRange = "A".$cell_index.":C".$cell_index;
@@ -13705,7 +13800,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
         $cell_index++;
         $cell_index++;
                 
-        $worksheet->setCellValue("A".$cell_index,"Net Cashflow From Finacing Revenue");
+        $worksheet->setCellValue("A".$cell_index,"Net Cashflow From Financing Revenue");
         $worksheet->setCellValue("B".$cell_index,($total_current - $total_current_expense));
         $worksheet->setCellValue("C".$cell_index,($total_previous  - $total_previous_expense));
         $cellRange = "A".$cell_index.":C".$cell_index;
@@ -14201,6 +14296,410 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
         $header = array("#", "Staff Name", "NHIF No", "Gross Salary", "NHIF Contribution", "NHIF Relief", "Final NHIF Contribution", "Deduct NHIF", "Relief");
         $pdf->NHIF_TABLE($header, $data, $width);
         $pdf->Output();
+    }elseif (isset($_GET['revenue_receipt'])){
+        include("../connections/conn1.php");
+        include("../connections/conn2.php");
+
+        if(!isset($_GET['revenue_details'])){
+            echo "<p style='color:red;'>Invalid revenue details!</p>";
+            return 0;
+        }
+
+        // check if the revenue details are valid
+        $revenue_details = $_GET['revenue_details'];
+        if(!isJson_report($revenue_details)){
+            echo "<p style='color:red;'>Invalid revenue details. Contact your administrator!</p>";
+            return 0;
+        }
+
+        // revenue details
+        $revenue_details = json_decode($revenue_details, true);
+
+        $students_names = $revenue_details['customer_name'];
+        $student_admission_no = "Nan";
+        $amount_paid_by_student = "Kes ". number_format($revenue_details['amount']);
+        $new_student_balance = 0;
+        $mode_of_payments = $revenue_details['mode_of_payment'] == 1 ? "M-Pesa" : ($revenue_details['mode_of_payment'] == 2 ? "Cash" : ($revenue_details['mode_of_payment'] == 3 ? "Bank" : "Not-Defined"));
+        $transaction_codes = $revenue_details['payment_code'];
+        $payments_for = $revenue_details['name'];
+        $fees_payment_receipt = "Nan";
+        $reciept_size = "Nan";
+        $fees_payment_opt_holder = "Nan";
+        $last_receipt_id_take = $revenue_details['id'];
+        $date_of_payments_fees = date("D dS-M-Y", strtotime($revenue_details['date_recorded']));
+        $time_of_payment_fees = date("H:i:s");
+        
+        // echo $fees_payment_opt_holder;
+        include("fees_reminder.php");
+        // create the pdf file
+        $pdf = new PDF2('P', 'mm', 'A4');
+        $pdf->setHeaderPos(200);
+        $tittle = $students_names . " Fees Receipt.";
+        $pdf->set_document_title($tittle);
+        $pdf->setSchoolLogo("../../" . schoolLogo($conn));
+        $pdf->set_school_name($_SESSION['schname']);
+        $pdf->set_school_po($_SESSION['po_boxs']);
+        $pdf->set_school_box_code($_SESSION['box_codes']);
+        $pdf->set_school_contact($_SESSION['school_contact']);
+        $pdf->AddPage();
+        $pdf->SetMargins(5, 5);
+
+        // get the school information
+        $school_info = getSchoolInfo($conn);
+        $school_name = ucwords(strtoupper($school_info['school_name']));
+        $school_motto = ucwords(strtolower($school_info['school_motto']));
+        $school_admin_name = $school_info['school_admin_name'];
+        $school_mail = $school_info['school_mail'];
+        $county = $school_info['county'];
+        $physicall_address = $school_info['physicall_address'];
+        $country = $school_info['country'];
+        $school_profile_image = "../" . $school_info['school_profile_image'];
+        $po_box = $school_info['po_box'];
+        $box_code = $school_info['box_code'];
+        $school_contact = $school_info['school_contact'];
+        $website_name = $school_info['website_name'];
+
+        $pdf->Image($school_profile_image, 5, 10, 20, 20);
+        $pdf->Image($pdf->arm_of_gov, 100, 15, 12, 12);
+        $pdf->SetFont('Helvetica', 'B', 14);
+        $pdf->SetFillColor(100, 100, 100);
+        $pdf->SetTitle("Receipt for ".$students_names." Reg No. ".$student_admission_no.".");
+        $pdf->Cell(15, 10, "", 0, 0, "L", false);
+
+        $X = $pdf->GetX();
+        $y = $pdf->GetY();
+        $pdf->SetXY($X, $y + 5);
+
+        $pdf->Cell(100, 6, $school_name, 0, 0, "L", false);
+        $pdf->SetFont('Helvetica', '', 8);
+
+        $X = $pdf->GetX();
+        $y = $pdf->GetY();
+        $pdf->SetXY($X, $y - 5);
+
+        $pdf->Cell(80, 4, "P.O Box " . $po_box . " - " . $box_code . " " . $county . " " . $country, 0, 1, "R", false);
+
+
+        $X = $pdf->GetX();
+        $y = $pdf->GetY();
+        $pdf->SetXY($X, $y + 5);
+
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(20, 10, "", 0, 0, "L", false);
+        $pdf->Cell(100, 10, $school_motto, 0, 0, "L", false);
+
+        $X = $pdf->GetX();
+        $y = $pdf->GetY();
+        $pdf->SetXY($X, $y - 5);
+        $pdf->SetFont('Helvetica', '', 8);
+        $pdf->Cell(80, 4, $physicall_address, 0, 1, "R", false);
+
+
+        $X = $pdf->GetX();
+        $y = $pdf->GetY();
+        $pdf->SetXY($X, $y + 5);
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(20, 5, "", 0, 0, "L", false);
+        $pdf->Cell(100, 5, "", 0, 0, "L", false);
+
+        $X = $pdf->GetX();
+        $y = $pdf->GetY();
+        $pdf->SetXY($X, $y - 5);
+        $pdf->SetFont('Helvetica', '', 8);
+        $pdf->Cell(80, 4, "Tel: " . $school_contact, 0, 1, "R", false);
+
+
+        $X = $pdf->GetX();
+        $y = $pdf->GetY();
+        $pdf->SetXY($X, $y + 5);
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(20, 5, "", 0, 0, "L", false);
+        $pdf->Cell(100, 5, "", 0, 0, "L", false);
+        $pdf->SetFont('Helvetica', '', 8);
+        $X = $pdf->GetX();
+        $y = $pdf->GetY();
+        $pdf->SetXY($X, $y - 5);
+        $pdf->Cell(80, 4, "Email : " . $school_mail, 0, 1, "R", false);
+
+
+        $X = $pdf->GetX();
+        $y = $pdf->GetY();
+        $pdf->SetXY($X, $y + 5);
+
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(20, 5, "", 0, 0, "L", false);
+        $pdf->Cell(100, 5, "", 0, 0, "L", false);
+        $pdf->SetFont('Helvetica', '', 8);
+        $X = $pdf->GetX();
+        $y = $pdf->GetY();
+        $pdf->SetXY($X, $y - 5);
+        $pdf->Cell(80, 4, "Website : " . $website_name, 0, 1, "R", false);
+        // divider strip
+        $pdf->SetFillColor(220, 220, 220);
+        $pdf->Ln(5);
+        $pdf->Cell(200, 2, "", 0, 1, 0, true);
+        $pdf->SetFillColor(240, 240, 240);
+
+        // start the receipt details
+        $pdf->SetFont('Helvetica', '', 10);
+        $pdf->Cell(65, 10, "CLIENT PAYMENT RECEIPT", 0, 0, "C", false);
+        $pdf->Cell(65, 10, "** SCHOOL COPY **", 0, 0, "C", false);
+        $pdf->Cell(65, 10, "** ORIGINAL **", 0, 1, "C", false);
+
+        // RECEIPT DETAILS
+        // row 1
+        $pdf->SetFont('Helvetica', 'B', 9);
+        $pdf->Cell(25, 6, "Receipt No. : ", 1, 0, "L",true);
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(60, 6, $last_receipt_id_take, 1, 0, "L");
+        $pdf->SetFont('Helvetica', 'B', 9);
+        $pdf->Cell(20, 6, "Date : ", 1, 0, "L",true);
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(30, 6, $date_of_payments_fees , 1, 0, "L",false);
+        
+        $pdf->SetFont('Helvetica', 'B', 9);
+        $pdf->Cell(25, 6, "Time : ", 1, 0, "L",true);
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(40, 6, $time_of_payment_fees , "RTB", 1, "L",false);
+        // $pdf->Cell(53, 6, "", "RBT", 1, "L");
+
+        // row 2
+        $pdf->SetFont('Helvetica', 'B', 9);
+        $pdf->Cell(30, 6, "Client Name. : ", 1, 0, "L",true);
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(170, 6, $students_names, 1, 1, "L");
+        // $pdf->SetFont('Helvetica', 'B', 9);
+        // $pdf->Cell(25, 6, "Adm No. : ", 1, 0, "L",true);
+        // $pdf->SetFont('Helvetica', '', 9);
+        // $pdf->Cell(75, 6, $student_admission_no, 1, 1, "L");
+
+        // THIRD ROW
+        $pdf->SetFont('Helvetica', 'B', 9);
+        $pdf->Cell(22, 6, "Amount", 1, 0, "L",true);
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(30, 6, $amount_paid_by_student, 1, 0, "L");
+        $new_numbers = new NUmbers();
+        $new_number = returnNumbers($amount_paid_by_student);
+        $my_number = $new_number< 0 ? $new_numbers->convert_number($new_number*-1):$new_numbers->convert_number($new_number);
+        $prefix = $new_number < 0? "Negative ":"";
+
+        $text_width = $pdf->GetStringWidth("** ".$prefix." ".$my_number." Kenya Shillings Only **");
+        $font_size = round((148*100*9) / ($text_width * 100),3)-1;
+        $font_size = $font_size > 9 ? 9 : $font_size;
+        $pdf->SetFont('Helvetica', 'B', $font_size);
+        $pdf->Cell(148, 6, "** ".$prefix." ".$my_number." Kenya Shillings Only **", "BR", 1, "L");
+
+        // voteheads paid for
+        $pdf->SetFillColor(240, 240, 240);
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(200,7,"VOTEHEAD","TBLR",1,"C",true);
+
+        // another row
+        $pdf->Cell(155,7,$payments_for,1,0,"L",false);
+        $pdf->Cell(45,7,$amount_paid_by_student,"BR",1,"L",false);
+
+        // another row
+        $pdf->SetFont('Helvetica', 'B', 9);
+        $pdf->Cell(30,7,"Payment Mode : ",1,0,"L",true);
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(35,7,$mode_of_payments,1,0,"L",false);
+        $pdf->SetFont('Helvetica', 'B', 9);
+        $pdf->Cell(30,7,"Transaction Code:",1,0,"L",true);
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(60,7,"".$transaction_codes."",1,0,"L",false);
+        $pdf->SetFont('Helvetica', 'B', 9);
+        $pdf->Cell(15,7,"Total:",1,0,"L",false);
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(30,7,"".$amount_paid_by_student."",1,1,"L",false);
+
+        // ANOTHER ROW
+        $pdf->SetFont('Helvetica', 'B', 9);
+        $pdf->Cell(30,7,"Served By : ",1,0,"L",true);
+        $pdf->SetFont('Helvetica', '', 9);
+        $staff_infor = getStaffInformations_report($conn,$_SESSION['userids']);
+        $pdf->Cell(170,7,explode(" ",ucwords(strtolower($staff_infor['fullname'])))[0],1,1,"L",false);
+
+        // DISCLAIMER
+        $pdf->SetFont('Helvetica', 'I', 9);
+        $pdf->Cell(200,7,"** Receipts are not valid unless signed OR Stamped with the Official School Stamp  **","",1,"C",false);
+        // $pdf->Ln(5);
+        
+        $remaining_lines = 6;
+
+        for($i = 0; $i < $remaining_lines; $i++){
+            $pdf->Ln();
+        }
+        $pdf->Cell(200,0,"",1,1);
+        $pdf->Ln(5);
+        
+        // space between
+        $y = $pdf->GetY();
+        $pdf->Image($school_profile_image, 5, $y, 20, 20);
+        $pdf->Image($pdf->arm_of_gov, 100, $y+5, 12, 12);
+        $pdf->SetFont('Helvetica', 'B', 14);
+        $pdf->SetFillColor(100, 100, 100);
+        $pdf->Cell(20, 10, "", 0, 0, "L", false);
+
+        $X = $pdf->GetX();
+        $y = $pdf->GetY();
+        $pdf->SetXY($X, $y + 5);
+
+        $pdf->Cell(100, 6, $school_name, 0, 0, "L", false);
+        $pdf->SetFont('Helvetica', '', 8);
+
+        $X = $pdf->GetX();
+        $y = $pdf->GetY();
+        $pdf->SetXY($X, $y - 5);
+
+        $pdf->Cell(80, 4, "P.O Box " . $po_box . " - " . $box_code . " " . $county . " " . $country, 0, 1, "R", false);
+
+
+        $X = $pdf->GetX();
+        $y = $pdf->GetY();
+        $pdf->SetXY($X, $y + 5);
+
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(20, 10, "", 0, 0, "L", false);
+        $pdf->Cell(100, 10, $school_motto, 0, 0, "L", false);
+
+        $X = $pdf->GetX();
+        $y = $pdf->GetY();
+        $pdf->SetXY($X, $y - 5);
+        $pdf->SetFont('Helvetica', '', 8);
+        $pdf->Cell(80, 4, $physicall_address, 0, 1, "R", false);
+
+
+        $X = $pdf->GetX();
+        $y = $pdf->GetY();
+        $pdf->SetXY($X, $y + 5);
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(20, 5, "", 0, 0, "L", false);
+        $pdf->Cell(100, 5, "", 0, 0, "L", false);
+
+        $X = $pdf->GetX();
+        $y = $pdf->GetY();
+        $pdf->SetXY($X, $y - 5);
+        $pdf->SetFont('Helvetica', '', 8);
+        $pdf->Cell(80, 4, "Tel: " . $school_contact, 0, 1, "R", false);
+
+
+        $X = $pdf->GetX();
+        $y = $pdf->GetY();
+        $pdf->SetXY($X, $y + 5);
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(20, 5, "", 0, 0, "L", false);
+        $pdf->Cell(100, 5, "", 0, 0, "L", false);
+        $pdf->SetFont('Helvetica', '', 8);
+        $X = $pdf->GetX();
+        $y = $pdf->GetY();
+        $pdf->SetXY($X, $y - 5);
+        $pdf->Cell(80, 4, "Email : " . $school_mail, 0, 1, "R", false);
+
+
+        $X = $pdf->GetX();
+        $y = $pdf->GetY();
+        $pdf->SetXY($X, $y + 5);
+
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(20, 5, "", 0, 0, "L", false);
+        $pdf->Cell(100, 5, "", 0, 0, "L", false);
+        $pdf->SetFont('Helvetica', '', 8);
+        $X = $pdf->GetX();
+        $y = $pdf->GetY();
+        $pdf->SetXY($X, $y - 5);
+        $pdf->Cell(80, 4, "Website : " . $website_name, 0, 1, "R", false);
+        // divider strip
+        $pdf->SetFillColor(220, 220, 220);
+        $pdf->Ln(5);
+        $pdf->Cell(200, 2, "", 0, 1, 0, true);
+        $pdf->SetFillColor(240, 240, 240);
+
+        // start the receipt details
+        $pdf->SetFont('Helvetica', '', 10);
+        $pdf->Cell(65, 10, "CLIENT PAYMENT RECEIPT", 0, 0, "C", false);
+        $pdf->Cell(65, 10, "** CLIENT COPY **", 0, 0, "C", false);
+        $pdf->Cell(65, 10, "** ORIGINAL **", 0, 1, "C", false);
+
+        // RECEIPT DETAILS
+        // row 1
+        $pdf->SetFont('Helvetica', 'B', 9);
+        $pdf->Cell(25, 6, "Receipt No. : ", 1, 0, "L",true);
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(60, 6, $last_receipt_id_take, 1, 0, "L");
+        $pdf->SetFont('Helvetica', 'B', 9);
+        $pdf->Cell(20, 6, "Date : ", 1, 0, "L",true);
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(30, 6, $date_of_payments_fees , 1, 0, "L",false);
+        
+        $pdf->SetFont('Helvetica', 'B', 9);
+        $pdf->Cell(25, 6, "Time : ", 1, 0, "L",true);
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(40, 6, $time_of_payment_fees , "RTB", 1, "L",false);
+        // $pdf->Cell(53, 6, "", "RBT", 1, "L");
+
+        // row 2
+        $pdf->SetFont('Helvetica', 'B', 9);
+        $pdf->Cell(30, 6, "Client Name. : ", 1, 0, "L",true);
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(170, 6, $students_names, 1, 1, "L");
+        // $pdf->SetFont('Helvetica', 'B', 9);
+        // $pdf->Cell(25, 6, "Adm No. : ", 1, 0, "L",true);
+        // $pdf->SetFont('Helvetica', '', 9);
+        // $pdf->Cell(75, 6, $student_admission_no, 1, 1, "L");
+
+        // THIRD ROW
+        $pdf->SetFont('Helvetica', 'B', 9);
+        $pdf->Cell(22, 6, "Amount", 1, 0, "L",true);
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(30, 6, $amount_paid_by_student, 1, 0, "L");
+        $new_numbers = new NUmbers();
+        $new_number = returnNumbers($amount_paid_by_student);
+        $my_number = $new_number< 0 ? $new_numbers->convert_number($new_number*-1):$new_numbers->convert_number($new_number);
+        $prefix = $new_number < 0? "Negative ":"";
+
+        $text_width = $pdf->GetStringWidth("** ".$prefix." ".$my_number." Kenya Shillings Only **");
+        $font_size = round((148*100*9) / ($text_width * 100),3)-1;
+        $font_size = $font_size > 9 ? 9 : $font_size;
+        $pdf->SetFont('Helvetica', 'B', $font_size);
+        $pdf->Cell(148, 6, "** ".$prefix." ".$my_number." Kenya Shillings Only **", "BR", 1, "L");
+
+        // voteheads paid for
+        $pdf->SetFillColor(240, 240, 240);
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(200,7,"VOTEHEAD","TBLR",1,"C",true);
+
+        // another row
+        $pdf->Cell(155,7,$payments_for,1,0,"L",false);
+        $pdf->Cell(45,7,$amount_paid_by_student,"BR",1,"L",false);
+
+        // another row
+        $pdf->SetFont('Helvetica', 'B', 9);
+        $pdf->Cell(30,7,"Payment Mode : ",1,0,"L",true);
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(35,7,$mode_of_payments,1,0,"L",false);
+        $pdf->SetFont('Helvetica', 'B', 9);
+        $pdf->Cell(30,7,"Transaction Code:",1,0,"L",true);
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(60,7,"".$transaction_codes."",1,0,"L",false);
+        $pdf->SetFont('Helvetica', 'B', 9);
+        $pdf->Cell(15,7,"Total:",1,0,"L",false);
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(30,7,"".$amount_paid_by_student."",1,1,"L",false);
+
+        // ANOTHER ROW
+        $pdf->SetFont('Helvetica', 'B', 9);
+        $pdf->Cell(30,7,"Served By : ",1,0,"L",true);
+        $pdf->SetFont('Helvetica', '', 9);
+        $staff_infor = getStaffInformations_report($conn,$_SESSION['userids']);
+        $pdf->Cell(170,7,explode(" ",ucwords(strtolower($staff_infor['fullname'])))[0],1,1,"L",false);
+
+        // DISCLAIMER
+        $pdf->SetFont('Helvetica', 'I', 9);
+        $pdf->Cell(200,7,"** Receipts are not valid unless signed OR Stamped with the Official School Stamp  **","",1,"C",false);
+        // $pdf->Ln(5);
+
+        $pdf->Output();
+    
     }
 }
 
@@ -14860,7 +15359,7 @@ function getTermPeriods_report_sms($conn2,$term = "TERM_1"){
 function getOtherRevenue_report($conn2, $year = null){
     $year = $year == null ? date("Y") : $year;
     $get_term_period = getTermPeriods_report($conn2, $year);
-    $select = "SELECT SUM(`amount`) AS 'Total' FROM `school_revenue` WHERE `date_recorded` BETWEEN ? AND ?";
+    $select = "SELECT SUM(`amount`) AS 'Total' FROM `school_revenue` WHERE  `reportable_status` = '1' AND `date_recorded` BETWEEN ? AND ?";
     $school_revenue = [];
     for ($index=0; $index < count($get_term_period)/2; $index++) {
         $time_period = $index == 0 ? [$get_term_period[0],$get_term_period[1]] : ($index == 1 ? [$get_term_period[2],$get_term_period[3]] : [$get_term_period[4],$get_term_period[5]]);
@@ -15740,7 +16239,7 @@ class NUmbers{
         // Ones
         $result = "";
         if ($giga) {
-            $result .= $this->convert_number($giga) .  "Million";
+            $result .= $this->convert_number($giga) .  " Million";
         }
         if ($kilo) {
             $result .= (empty($result) ? "" : " ") . $this->convert_number($kilo) . " Thousand";

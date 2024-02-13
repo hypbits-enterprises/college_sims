@@ -89,6 +89,19 @@
                         <input type="number" name="revenue_amount" id="revenue_amount" class="form-control w-100" placeholder="e.g, 1000">
                     </div>
                     <div class="col-md-4 form-group">
+                        <label for="mode_of_revenue_payment" class="form-control-label"><b>Mode of Payment</b></label>
+                        <select name="mode_of_revenue_payment" id="mode_of_revenue_payment" class="form-control w-100">
+                            <option value="" hidden>Select Option</option>
+                            <option value="1">M-Pesa</option>
+                            <option value="2">Cash</option>
+                            <option value="3">Bank</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 form-group">
+                        <label for="payment_code" class="form-control-label"><b>Payment Code</b></label>
+                        <input type="text" class="form-control W-100" id="payment_code" placeholder="eg. KJKJHKJ (Optional)">
+                    </div>
+                    <div class="col-md-4 form-group">
                         <label for="revenue_cash_activity" class="form-control-label"><b>Revenue Cashflow Activity</b></label>
                         <select name="revenue_cash_activity" id="revenue_cash_activity" class="form-control w-100">
                             <option value="" hidden>Select Option</option>
@@ -117,6 +130,14 @@
                         <label for="contact_person" class="form-label"><b>Contact Person</b></label>
                         <input type="text" name="contact_person" id="contact_person" class="form-control w-100" placeholder="Contact Person - (Optional)">
                     </div>
+                    <div class="col-md-4 form-group">
+                        <label for="reportable_status" class="form-control-label"><b>Reportable Status</b></label>
+                        <select name="reportable_status" id="reportable_status" class="form-control w-100">
+                            <option value="" hidden>Select Option</option>
+                            <option selected value="1">Reportable Revenue</option>
+                            <option value="0">Non-Reportable Revenue</option>
+                        </select>
+                    </div>
                     <div class="col-md-12">
                         <label for="revenue_description" class="form-label"><b>Revenue Description</b></label>
                         <textarea name="revenue_description" id="revenue_description" cols="30" rows="5" class="form-control w-100" placeholder="Write a brief description of the revenue here!"></textarea>
@@ -139,6 +160,19 @@
                     <div class="col-md-4 form-group">
                         <label for="revenue_amount_edit" class="form-label"><b>Amount</b></label>
                         <input type="number" name="revenue_amount_edit" id="revenue_amount_edit" class="form-control w-100" placeholder="e.g, 1000">
+                    </div>
+                    <div class="col-md-4 form-group">
+                        <label for="mode_of_revenue_payment_edit" class="form-control-label"><b>Mode of Payment</b></label>
+                        <select name="mode_of_revenue_payment_edit" id="mode_of_revenue_payment_edit" class="form-control w-100">
+                            <option value="" hidden>Select Option</option>
+                            <option value="1">M-Pesa</option>
+                            <option value="2">Cash</option>
+                            <option value="3">Bank</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 form-group">
+                        <label for="payment_code_edit" class="form-control-label"><b>Payment Code</b></label>
+                        <input type="text" class="form-control W-100" id="payment_code_edit" placeholder="eg, JGHGFHG">
                     </div>
                     <div class="col-md-4 form-group">
                         <label for="edit_revenue_cash_activity" class="form-control-label"><b>Revenue Cashflow Activity</b></label>
@@ -168,6 +202,14 @@
                     <div class="col-md-4 form-group">
                         <label for="contact_person_edit" class="form-label"><b>Contact Person</b></label>
                         <input type="text" name="contact_person_edit" id="contact_person_edit" class="form-control w-100" placeholder="Contact Person - (Optional)">
+                    </div>
+                    <div class="col-md-4 form-group">
+                        <label for="reportable_status_edit" class="form-control-label"><b>Reportable Status</b></label>
+                        <select name="reportable_status_edit" id="reportable_status_edit" class="form-control w-100">
+                            <option value="" hidden>Select Option</option>
+                            <option selected value="1">Reportable Revenue</option>
+                            <option value="0">Non-Reportable Revenue</option>
+                        </select>
                     </div>
                     <div class="col-md-12">
                         <label for="revenue_description_edit" class="form-label"><b>Revenue Description</b></label>

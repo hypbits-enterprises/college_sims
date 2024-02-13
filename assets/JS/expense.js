@@ -37,7 +37,7 @@ function getExpensesNDisplay(student_data) {
             var col = [];
             // console.log(element);
             col.push(element['exp_amount']);
-            col.push(element['exp_category']);
+            col.push(element['expense_name']);
             col.push(element['exp_name']);
             col.push(element['exp_quantity']);
             col.push(element['exp_time']);
@@ -48,6 +48,9 @@ function getExpensesNDisplay(student_data) {
             col.push(element['expid']);
             col.push(element['expense_categories']);
             col.push(element['date']);
+            col.push(element['exp_category']);
+            col.push(element['document_number']);
+            col.push(element['expense_description']);
             // var col = element.split(":");
             rowsColStudents_expenses.push(col);
         }
@@ -76,19 +79,43 @@ function setEvents() {
     }
 }
 
+function activate_amount() {
+    var disable = true;
+    if (cObj("expense_categories_value") != undefined && cObj("expense_categories_value") != null) {
+        var expense_categories_value = valObj("expense_categories_value");
+        if(hasJsonStructure(expense_categories_value)){
+            expense_categories_value = JSON.parse(expense_categories_value);
+            for (let index = 0; index < expense_categories_value.length; index++) {
+                const element = expense_categories_value[index];
+                if (element.expense_id == valObj("exp_cat")) {
+                    if (element.running_balance >= this.value) {
+                        disable = false;
+                    }
+                    break;
+                }
+            }
+        }
+    }
+    if(disable){
+        cObj("add_expenseed").classList.add("hide");
+        cObj("error_message_expenses").innerHTML = "<p class='text-danger text-center'>You have exceeded your current running balance!</p>";
+    }else{
+        cObj("error_message_expenses").innerHTML = "";
+        cObj("add_expenseed").classList.remove("hide");
+    }
+}
 function editExpense() {
     var this_id = this.id.substr(12);
     var data = valObj("data_expenses"+this_id);
     if (hasJsonStructure(data)) {
         data = JSON.parse(data);
+        console.log(data);
         cObj("edit_expense_name").value = data[2];
-        cObj("edit_expense_quantity").value = data[3];
-        cObj("edit_expense_unit_cost").value = data[5];
-        cObj("edit_expense_unit_name").value = data[7];
-        cObj("show_total_unit_costs").innerHTML = data[0];
         cObj("total_unit_cost").value = data[0];
         cObj("expense_ids_in").value = data[9];
         cObj("edit_expense_record_date").value = data[11];
+        cObj("edit_expense_description").value = data[14];
+        cObj("edit_document_number").value = data[13];
         
         // set the expense activity
         var edit_expense_cash_activity = cObj("edit_expense_cash_activity").children;
@@ -116,7 +143,7 @@ function editExpense() {
                     var exp_cats_exp = document.getElementsByClassName("exp_cats_exp");
                     for (let index = 0; index < exp_cats_exp.length; index++) {
                         const element = exp_cats_exp[index];
-                        if (element.value == data[1]) {
+                        if (element.value == data[12]) {
                             element.selected = true;
                             break;
                         }
@@ -133,20 +160,20 @@ function displayRecord_expenses(start, finish, arrays) {
     //the finish value
     var fins = 0;
     //this is the table header to the start of the tbody
-    var tableData = "<table class='table'><thead><tr><th title='Sort all' id='sortall_exp'># <span id='sortallexp'><i class='fas fa-caret-down'></i></span></th><th id='sortexp_name' title='Sort by Expense Name'>Expense Name<span id='sortByexp_name'><i class='fas fa-caret-down'></i></span></th><th  id='sortExp_cat' title='Sort by Expense Category'>Expense Category<span id='sortByExp_cat'><i class='fas fa-caret-down'></i></span></th><th  title='Sort by Unit Count' id='sortExp_date'>Units<span id='sortbyExp_date'><i class='fas fa-caret-down'></i></span></th><th title='Sort by Unit Count' id='sortUnit'>Unit Price <span id='sortByUnit_price'><i class='fas fa-caret-down'></i></span></th><th title='Sort by Total Unit Cost' id='sortTotUnits'>Total Unit Cost <span id='sortByTotUnit_price'><i class='fas fa-caret-down'></i></span></th><th>Date</th><th>Action</th></tr></thead><tbody>";
+    var tableData = "<table class='table'><thead><tr><th title='Sort all' id='sortall_exp'># <span id='sortallexp'><i class='fas fa-caret-down'></i></span></th><th id='sortexp_name' title='Sort by Expense Name'>Expense Name<span id='sortByexp_name'><i class='fas fa-caret-down'></i></span></th><th  id='sortExp_cat' title='Sort by Expense Category'>Expense Category<span id='sortByExp_cat'><i class='fas fa-caret-down'></i></span></th><th title='Sort by Total Unit Cost' id='sortTotUnits'>Total Unit Cost <span id='sortByTotUnit_price'><i class='fas fa-caret-down'></i></span></th><th>Document Number</th><th>Date</th><th>Action</th></tr></thead><tbody>";
     if(finish < total) {
         fins = finish;
         //create a table of the 50 records
         var counter = start+1;
         for (let index = start; index < finish; index++) {
-            tableData += "<tr><input type='hidden' id='data_expenses"+index+"' value='"+JSON.stringify(arrays[index])+"'><td>"+arrays[index][8]+"</td><td>"+arrays[index][2]+"</td><td>"+arrays[index][1]+"</td><td>"+arrays[index][3] +" "+arrays[index][7]+"</td><td>Kes "+arrays[index][5]+"</td><td>Kes "+arrays[index][0]+"</td><td>"+arrays[index][6]+" @ "+arrays[index][4]+"</td><td><span class='link edit_expense' id='edit_expense"+index+"'><i class='fas fa-pen-fancy'></i> Edit</span></td></tr>";
+            tableData += "<tr><input type='hidden' id='data_expenses"+index+"' value='"+JSON.stringify(arrays[index])+"'><td>"+arrays[index][8]+"</td><td>"+arrays[index][2]+"</td><td>"+arrays[index][1]+"</td><td>Kes "+arrays[index][0]+"</td><td class='text-center'>"+ (arrays[index][13] != null ? arrays[index][13] : "-") +"</td><td>"+arrays[index][6]+" @ "+arrays[index][4]+"</td><td><span class='link edit_expense' id='edit_expense"+index+"'><i class='fas fa-pen-fancy'></i> Edit</span></td></tr>";
             counter++;
         }
     }else{
         //create a table of the 50 records
         var counter = start+1;
         for (let index = start; index < total; index++) {
-            tableData += "<tr><input type='hidden' id='data_expenses"+index+"' value='"+JSON.stringify(arrays[index])+"'><td>"+arrays[index][8]+"</td><td>"+arrays[index][2]+"</td><td>"+arrays[index][1]+"</td><td>"+arrays[index][3] +" "+arrays[index][7]+"</td><td>Kes "+arrays[index][5]+"</td><td>Kes "+arrays[index][0]+"</td><td>"+arrays[index][6]+" @ "+arrays[index][4]+"</td><td><span class='link edit_expense' id='edit_expense"+index+"'><i class='fas fa-pen-fancy'></i> Edit</span></td></tr>";
+            tableData += "<tr><input type='hidden' id='data_expenses"+index+"' value='"+JSON.stringify(arrays[index])+"'><td>"+arrays[index][8]+"</td><td>"+arrays[index][2]+"</td><td>"+arrays[index][1]+"</td><td>Kes "+arrays[index][0]+"</td><td class='text-center'>"+ (arrays[index][13] != null ? arrays[index][13] : "-") +"</td><td>"+arrays[index][6]+" @ "+arrays[index][4]+"</td><td><span class='link edit_expense' id='edit_expense"+index+"'><i class='fas fa-pen-fancy'></i> Edit</span></td></tr>";
             counter++;
         }
         fins = total;
@@ -252,6 +279,11 @@ function checkName3(keyword) {
         }
         if (element[6].toLowerCase().includes(keyword) || element[6].toLowerCase().includes(keyUpper)) {
             present++;
+        }
+        if (element[13] != null) {
+            if (element[13].toLowerCase().toString().includes(keylower)) {
+                present++;
+            }
         }
         //here you can add any other columns to be searched for
         // console.log(element[6]==keyword);
@@ -373,68 +405,6 @@ function sortTableExpenses() {
             cObj("transDataReciever_expenses").innerHTML = displayRecord_expenses(0, 50, rowsColStudents_expenses);
             cObj("tot_records_expenses").innerText = rowsColStudents_expenses.length;
             cObj("sortByExp_cat").innerHTML = "- <i class='fas fa-caret-up'></i>";
-            setEvents();
-        }
-    });
-    cObj("sortExp_date").addEventListener("click",function () {
-        // sort all in ascending order
-        if (sortUnits == 0) {
-            // asc up to down
-            sortUnits = 1;
-            // console.log(cObj("sortbyExp_date").innerHTML);
-            //WITH FIRST COLUMN
-            rowsColStudents_expenses = rowsNCols_original_expenses;
-            rowsColStudents_expenses = sortDesc(rowsColStudents_expenses,3);
-            var counted = rowsColStudents_expenses.length / 50;
-            pagecountTransaction = Math.ceil(counted);
-            // console.log(rowsColStudents_expenses);
-            cObj("transDataReciever_expenses").innerHTML = displayRecord_expenses(0, 50, rowsColStudents_expenses);
-            cObj("tot_records_expenses").innerText = rowsColStudents_expenses.length;
-            cObj("sortbyExp_date").innerHTML = "- <i class='fas fa-caret-down'></i>";
-            setEvents();
-        }else{
-            // desc down to up
-            sortUnits = 0;
-            //WITH FIRST COLUMN
-            rowsColStudents_expenses = rowsNCols_original_expenses;
-            rowsColStudents_expenses = sortAsc(rowsColStudents_expenses,3);
-            var counted = rowsColStudents_expenses.length / 50;
-            // console.log(rowsColStudents_expenses);
-            pagecountTransaction = Math.ceil(counted);
-            cObj("transDataReciever_expenses").innerHTML = displayRecord_expenses(0, 50, rowsColStudents_expenses);
-            cObj("tot_records_expenses").innerText = rowsColStudents_expenses.length;
-            cObj("sortbyExp_date").innerHTML = "- <i class='fas fa-caret-up'></i>";
-            setEvents();
-        }
-    });
-    cObj("sortUnit").addEventListener("click",function () {
-        // sort all in ascending order
-        if (sortUnited == 0) {
-            // asc up to down
-            sortUnited = 1;
-            // console.log(cObj("sortByUnit_price").innerHTML);
-            //WITH FIRST COLUMN
-            rowsColStudents_expenses = rowsNCols_original_expenses;
-            rowsColStudents_expenses = sortDesc(rowsColStudents_expenses,5);
-            var counted = rowsColStudents_expenses.length / 50;
-            pagecountTransaction = Math.ceil(counted);
-            // console.log(rowsColStudents_expenses);
-            cObj("transDataReciever_expenses").innerHTML = displayRecord_expenses(0, 50, rowsColStudents_expenses);
-            cObj("tot_records_expenses").innerText = rowsColStudents_expenses.length;
-            cObj("sortByUnit_price").innerHTML = "- <i class='fas fa-caret-down'></i>";
-            setEvents();
-        }else{
-            // desc down to up
-            sortUnited = 0;
-            //WITH FIRST COLUMN
-            rowsColStudents_expenses = rowsNCols_original_expenses;
-            rowsColStudents_expenses = sortAsc(rowsColStudents_expenses,5);
-            var counted = rowsColStudents_expenses.length / 50;
-            // console.log(rowsColStudents_expenses);
-            pagecountTransaction = Math.ceil(counted);
-            cObj("transDataReciever_expenses").innerHTML = displayRecord_expenses(0, 50, rowsColStudents_expenses);
-            cObj("tot_records_expenses").innerText = rowsColStudents_expenses.length;
-            cObj("sortByUnit_price").innerHTML = "- <i class='fas fa-caret-up'></i>";
             setEvents();
         }
     });

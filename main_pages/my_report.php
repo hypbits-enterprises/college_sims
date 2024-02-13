@@ -31,8 +31,17 @@
                             <option value="" hidden>Select an option</option>
                             <option value="all_students">Student Information</option>
                             <option value="students_admitted">Students Admitted</option>
-                            <option value="school_in_attendance">School Attendance</option>
+                            <!-- <option value="school_in_attendance">School Attendance</option> -->
                             <option value="show_alumni">Alumni</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 student my-2 hide" id="gender_option">
+                        <label for="select_gender_option" class="form-label"><b>Select Gender</b></label>
+                        <select name="select_gender_option" id="select_gender_option" class="form-control">
+                            <option value="" hidden>Select Gender</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            <option value="all">All</option>
                         </select>
                     </div>
                     <div class="col-md-4 my-2 hide" id="student_status_selector">

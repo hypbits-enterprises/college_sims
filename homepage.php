@@ -2255,8 +2255,22 @@ function checkPresnt($array, $string){
                     <h6 class="text-center"><b>Add Expense Category</b></h6>
                 </div>
                 <div class="container w-100" id="">
-                    <label for="expense_category_name" class="form-control-label">Expense Category Name.</label>
-                    <input type="" name="" id="expense_category_name" class="form-control" placeholder="E.x., Daily Expenses">
+                    <div class="form-group">
+                        <label for="expense_category_name" class="form-control-label">Expense Category Name.</label>
+                        <input type="text" name="" id="expense_category_name" class="form-control" placeholder="E.x., Daily Expenses">
+                    </div>
+                    <div class="form-group my-2">
+                        <label for="expense_category_budget" class="form-control-label">Category Maximum Budget.</label>
+                        <input type="number" name="" id="expense_category_budget" class="form-control" placeholder="E.x. 1000000">
+                    </div>
+                    <div class="form-group my-2">
+                        <label for="budget_start_time" class="form-control-label">Budget Start Time.</label>
+                        <input type="date" name="" id="budget_start_time" class="form-control" value="<?= date("Y")."-01-01" ?>">
+                    </div>
+                    <div class="form-group my-2">
+                        <label for="budget_end_date" class="form-control-label">Budget End Time.</label>
+                        <input type="date" name="" id="budget_end_date" class="form-control" value="<?= date("Y")."-12-31" ?>">
+                    </div>
                     <div class="btns">
                         <button type="button" id="save_expense_category">Save</button>
                         <button type="button" id="cancel_expense_category">Close</button>
@@ -2307,7 +2321,7 @@ function checkPresnt($array, $string){
                     Are you sure you want to delete this expense entry! <br>
                     <span id="delete_expense_entry" class="text-danger link"><i class="fas fa-trash"></i>Delete</span>
                 </p>
-                <div class="cont w-100" id="">
+                <div class="conts w-100" id="">
                     <label for="edit_expense_name" class="form-label">Expense Name</label>
                     <input type="text" class="form-control" id="edit_expense_name" placeholder="Expense Name">
                     
@@ -2325,19 +2339,16 @@ function checkPresnt($array, $string){
                         <option value="3">Financing Activities</option>
                     </select>
                     
-                    <label for="edit_expense_quantity" class="form-label">Expense Quantity <small>(Number of unit)</small></label>
-                    <input type="number" class="form-control" id="edit_expense_quantity" placeholder="Expense Quantity">
-                    
-                    <label for="edit_expense_unit_cost" class="form-label">Expense Unit Cost <small>(Cost for one unit)</small></label>
-                    <input type="number" class="form-control" id="edit_expense_unit_cost" placeholder="Expense Unit Cost">
-                    
-                    <label for="edit_expense_unit_name" class="form-label">Expense Unit Name <small>(Kgs, Ltrs)</small></label>
-                    <input type="text" class="form-control" id="edit_expense_unit_name" placeholder="Expense Unit Name">
-                    
-                    <label for="" class="form-label">Expense Amount</label>
-                    <input type="hidden" id="total_unit_cost">
+                    <label for="total_unit_cost" class="form-control-label">Total Unit Cost</label>
+                    <input type="number" id="total_unit_cost" class="form-control">
+
+                    <label class="form-control-label" for="edit_document_number"><b>Document Number</b> <br></label>
+                    <input class="form-control" type="text" name="edit_document_number" id="edit_document_number"  min = "0" placeholder = "Optional - Receipt, Invoice, Cheque">
+
+                    <label class="form-control-label" for="edit_expense_description"><b>Expense Description</b> <br></label>
+                    <textarea name="edit_expense_description" id="edit_expense_description" cols="30" rows="3" class="form-control" placeholder="Expense description"></textarea>
+
                     <input type="hidden" id="expense_ids_in">
-                    <p class="border border-success rounded p-2">Kes <b id="show_total_unit_costs"></b></p>
                     <div class="btns">
                         <button type="button" id="save_expense_details">Update Expense</button>
                         <button type="button" id="close_edit_expense_window">Close</button>
@@ -2372,12 +2383,26 @@ function checkPresnt($array, $string){
                     <h6 class="text-center"><b>Change Expense Category</b></h6>
                 </div>
                 <div class="container w-100" id="">
-                    <p>Are you sure you want to change <b id="expense_category_change_name"></b>? <br> <b class="text-danger"> Note</b> <br> All entities with this name will be changed in the system.</p>
-                    <label for="change_expense_category_input_window" class="form-control-label">New Expense Category Name</label>
-                    <input type="text" class="form-control" id="change_expense_category_input_window">
+                    <p>Are you sure you want to change <b id="expense_category_change_name"></b>? <br> <b class="text-danger"> Note</b> <br> All entities with this name will be changed in the system. <br>This action will be recorded in the system.</p>
+                    <div class="form-control">
+                        <label for="change_expense_category_input_window" class="form-control-label">New Expense Category Name</label>
+                        <input type="text" class="form-control" id="change_expense_category_input_window">
+                    </div>
+                    <div class="form-group my-2">
+                        <label for="expense_category_budget_edit" class="form-control-label">Category Maximum Budget.</label>
+                        <input type="number" name="" id="expense_category_budget_edit" class="form-control" placeholder="E.x. 1000000">
+                    </div>
+                    <div class="form-group my-2">
+                        <label for="budget_start_time_edit" class="form-control-label">Budget Start Time.</label>
+                        <input type="date" name="" id="budget_start_time_edit" class="form-control" value="<?= date("Y")."-01-01" ?>">
+                    </div>
+                    <div class="form-group my-2">
+                        <label for="budget_end_date_edit" class="form-control-label">Budget End Time.</label>
+                        <input type="date" name="" id="budget_end_date_edit" class="form-control" value="<?= date("Y")."-12-31" ?>">
+                    </div>
                     <input type="hidden" id="exp_indexes_update">
                     <div class="btns">
-                        <button type="button" id="save_change_expense_category">Yes</button>
+                        <button type="button" id="save_change_expense_category">Update</button>
                         <button type="button" id="cancel_change_expense_category">Close</button>
                     </div>
                 </div>

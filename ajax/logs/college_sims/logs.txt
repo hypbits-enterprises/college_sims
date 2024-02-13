@@ -1,3 +1,79 @@
+13th Feb 2024 14:21:11PM : Revenue "BRISKEY MASKATEERS" has been updated successfully! - {HILLARY NGIGE}
+13th Feb 2024 12:21:47PM : Expense "One Expense" updated successfully! - {HILLARY NGIGE}
+13th Feb 2024 12:21:17PM : Expense "Maximum Calamity" updated successfully! - {HILLARY NGIGE}
+13th Feb 2024 12:03:53PM : HILLARY NGIGE successfully logged into the system as System Administrator - {HILLARY NGIGE}
+13th Feb 2024 08:10:07AM : Expense "Car Buying" uploaded successfully! - {HILLARY NGIGE}
+13th Feb 2024 07:48:20AM : Expense "Maximum Calamity" uploaded successfully! - {HILLARY NGIGE}
+13th Feb 2024 06:47:31AM : Expense "Ginger" updated successfully! - {HILLARY NGIGE}
+13th Feb 2024 06:47:12AM : Expense "KODI" updated successfully! - {HILLARY NGIGE}
+13th Feb 2024 06:46:59AM : Expense "KODI" updated successfully! - {HILLARY NGIGE}
+13th Feb 2024 06:46:36AM : Expense "KODI" updated successfully! - {HILLARY NGIGE}
+13th Feb 2024 06:46:09AM : Expense "KODI" updated successfully! - {HILLARY NGIGE}
+13th Feb 2024 06:45:49AM : Expense "Unga" updated successfully! - {HILLARY NGIGE}
+13th Feb 2024 06:39:00AM : Expense "KODI" updated successfully! - {HILLARY NGIGE}
+13th Feb 2024 06:36:44AM : Expense "KODI" updated successfully! - {HILLARY NGIGE}
+13th Feb 2024 06:28:02AM : Expense "Rice" updated successfully! - {HILLARY NGIGE}
+13th Feb 2024 06:27:53AM : Expense "Rice" updated successfully! - {HILLARY NGIGE}
+13th Feb 2024 06:27:34AM : Expense "Rices" updated successfully! - {HILLARY NGIGE}
+13th Feb 2024 06:27:10AM : Expense "Rices" updated successfully! - {HILLARY NGIGE}
+13th Feb 2024 06:15:05AM : Expense "Ginger" updated successfully! - {HILLARY NGIGE}
+13th Feb 2024 06:14:56AM : Expense "Rices" updated successfully! - {HILLARY NGIGE}
+13th Feb 2024 06:03:31AM : Expense "Office Expenses" updated successfully! - {HILLARY NGIGE}
+13th Feb 2024 06:03:09AM : Expense "JAMES MUGOH" updated successfully! - {HILLARY NGIGE}
+13th Feb 2024 05:45:21AM : Expense "One Expense" uploaded successfully! - {HILLARY NGIGE}
+13th Feb 2024 05:36:27AM : Expense category "Rent" added successfully! - {HILLARY NGIGE}
+13th Feb 2024 05:33:16AM : Expense category "Daily Expenses" added successfully! - {HILLARY NGIGE}
+13th Feb 2024 05:31:17AM : HILLARY NGIGE successfully logged into the system as System Administrator - {HILLARY NGIGE}
+12th Feb 2024 22:43:38PM : Expense category "Muskateers" added successfully! - {HILLARY NGIGE}
+12th Feb 2024 21:42:28PM : Expense category "House Allowance" added successfully! - {HILLARY NGIGE}
+12th Feb 2024 16:40:33PM : Revenue "BRISKEY MASKATEERS" has been updated successfully! - {HILLARY NGIGE}
+12th Feb 2024 16:32:18PM : Revenue "BRISKEY MASKATEERS" has been updated successfully! - {HILLARY NGIGE}
+12th Feb 2024 16:18:29PM : Revenue "BRISKEY MASKATEERS" has been updated successfully! - {HILLARY NGIGE}
+12th Feb 2024 16:17:23PM : Revenue "KITALE MAN" has been updated successfully! - {HILLARY NGIGE}
+12th Feb 2024 16:17:00PM : Revenue "BRISKEY MASKATEERS" has been updated successfully! - {HILLARY NGIGE}
+12th Feb 2024 15:36:57PM : Revenue "BRISKEY MASKATEERS" has been added successfully! - {HILLARY NGIGE}
+12th Feb 2024 15:34:32PM : Revenue "KITALE MAN" has been added successfully! - {HILLARY NGIGE}
+12th Feb 2024 15:25:10PM : Revenue "School Bus" has been updated successfully! - {HILLARY NGIGE}
+12th Feb 2024 15:24:44PM : Revenue "School Bus" has been updated successfully! - {HILLARY NGIGE}
+12th Feb 2024 15:13:18PM : Revenue "RENTING THE SWIMMING POOL" has been added successfully! - {HILLARY NGIGE}
+12th Feb 2024 14:55:51PM : Revenue "Hillary Ngige" has been updated successfully! - {HILLARY NGIGE}
+12th Feb 2024 14:47:39PM : Revenue "DOMESTIC REVENUES" has been updated successfully! - {HILLARY NGIGE}
+12th Feb 2024 14:41:48PM : Transaction for "Quako Kika" Reg No "HJHGJHG" has been completed successfully! - {HILLARY NGIGE}
+12th Feb 2024 14:41:19PM : Fees structure has been modified. Votehead "Tuition" changed successfully! - {HILLARY NGIGE}
+12th Feb 2024 14:40:43PM : Fees structure has been modified. Votehead "Tuition" changed successfully! - {HILLARY NGIGE}
+12th Feb 2024 13:56:43PM : Revenue "Government Bursaries" has been updated successfully! - {HILLARY NGIGE}
+12th Feb 2024 13:56:34PM : Revenue "Government Bursaries" has been updated successfully! - {HILLARY NGIGE}
+12th Feb 2024 13:50:38PM : Revenue "DOMESTIC REVENUES" has been updated successfully! - {HILLARY NGIGE}
+12th Feb 2024 13:46:50PM : Revenue "DOMESTIC REVENUES" has been added successfully! - {HILLARY NGIGE}
+12th Feb 2024 13:42:09PM : Revenue "Mackezie Brown" has been added successfully! - {HILLARY NGIGE}
+12th Feb 2024 11:47:55AM : Class "ARTISAN CRAFT" updated successfully - {HILLARY NGIGE}
+12th Feb 2024 11:47:40AM : Class "CRAFT CERTIFICATE 1" updated successfully - {HILLARY NGIGE}
+12th Feb 2024 11:47:25AM : Class "DIPLOMA MODULE 2" updated successfully - {HILLARY NGIGE}
+12th Feb 2024 11:47:12AM : Class "DIPLOMA MODULE 1" updated successfully - {HILLARY NGIGE}
+12th Feb 2024 11:46:16AM : Class "ARTISAN" added successfully - {HILLARY NGIGE}
+12th Feb 2024 11:45:54AM : Class "CRAFT CERTIFICATE MODULE 2 (NON MODULAR)" added successfully - {HILLARY NGIGE}
+12th Feb 2024 11:45:42AM : Class "CRAFT CERTIFICATE MODULE 1 (NON MODULAR)" updated successfully - {HILLARY NGIGE}
+12th Feb 2024 11:45:30AM : Class "CRAFT CERTIFICATE MODULE (NON MODULAR)" added successfully - {HILLARY NGIGE}
+12th Feb 2024 11:44:42AM : Class "Craft Certificate 1" updated successfully - {HILLARY NGIGE}
+12th Feb 2024 11:44:37AM : Class "CRAFT CERTIFICATE MODULE 2" updated successfully - {HILLARY NGIGE}
+12th Feb 2024 11:44:31AM : Class "Craft Certificate 2" updated successfully - {HILLARY NGIGE}
+12th Feb 2024 11:44:23AM : Class "CRAFT CERTIFICATE MODULE 1" added successfully - {HILLARY NGIGE}
+12th Feb 2024 11:44:05AM : Class "DIPLOMA MODULE 3" added successfully - {HILLARY NGIGE}
+12th Feb 2024 09:58:25AM : Transaction for "Quako Kika" Reg No "HJHGJHG" has been completed successfully! - {HILLARY NGIGE}
+12th Feb 2024 09:48:16AM : Transaction for "Quako Kika" Reg No "HJHGJHG" has been completed successfully! - {HILLARY NGIGE}
+12th Feb 2024 09:38:19AM : Transaction for "Quako Kika" Reg No "HJHGJHG" has been completed successfully! - {HILLARY NGIGE}
+12th Feb 2024 09:36:01AM : Staff "Hillary Ngige" information has been updated successfully! - {HILLARY NGIGE}
+12th Feb 2024 09:35:54AM : Staff "JUMA AMANEX" information has been updated successfully! - {HILLARY NGIGE}
+12th Feb 2024 09:34:37AM : Staff "Hillary Ngige" information has been updated successfully! - {HILLARY NGIGE}
+12th Feb 2024 09:34:20AM : Staff "Hillary Ngige" information has been updated successfully! - {HILLARY NGIGE}
+12th Feb 2024 09:32:59AM : Staff "Hillary Ngige" information has been updated successfully! - {HILLARY NGIGE}
+12th Feb 2024 09:31:00AM : Staff "Hillary Ngige" information has been updated successfully! - {HILLARY NGIGE}
+12th Feb 2024 09:17:40AM : Staff "JUMA AMANEX" information has been updated successfully! - {HILLARY NGIGE}
+12th Feb 2024 07:18:41AM : Staff "JUMA AMANEX" information has been updated successfully! - {HILLARY NGIGE}
+12th Feb 2024 06:37:05AM : Corden Muigai - of Reg No. (SW-ED-34) data has been updated successfully! - {HILLARY NGIGE}
+12th Feb 2024 05:41:26AM : Quako Kika - of Reg No. (HJHGJHG) course data has been updated successfully! - {HILLARY NGIGE}
+12th Feb 2024 05:40:37AM : HILLARY NGIGE successfully logged into the system as System Administrator - {HILLARY NGIGE}
+11th Feb 2024 12:33:53PM : HILLARY NGIGE successfully logged into the system as System Administrator - {HILLARY NGIGE}
 01st Feb 2024 22:25:35PM : Transaction for "Hillary  Ngige" Reg No "SW-ED-45" has been completed successfully! - {HILLARY NGIGE}
 01st Feb 2024 22:24:50PM : HILLARY  NGIGE has been admitted successfully - {HILLARY NGIGE}
 01st Feb 2024 22:21:50PM : Transaction for "Charles Khamala" Reg No "4" has been completed successfully! - {HILLARY NGIGE}

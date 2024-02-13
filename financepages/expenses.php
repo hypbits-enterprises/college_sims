@@ -103,29 +103,42 @@
                             <label for="expense_record_date" class="form-control-label"><b>Expense Record Date</b></label>
                             <input type="date" class="form-control w-100" id="expense_record_date" value="<?php echo date("Y-m-d");?>">
                         </div>
-                        <div class="conts col-md-4">
+                        <div class="conts col-md-4 hide">
                             <label class="form-control-label" for="exp_quant"><b>Expense quantity:</b> <br></label>
-                            <input class="form-control w-100" type="number" name="exp_quant" id="exp_quant"  min = "0" placeholder = "Quantity">
+                            <input class="form-control w-100" value="1" type="number" name="exp_quant" id="exp_quant"  min = "0" placeholder = "Quantity">
                         </div>
-                        <div class="conts col-md-4">
+                        <div class="conts col-md-4 hide">
                             <label class="form-control-label" for="exp_amnt"><b>Expense unit cost:</b> <br></label>
                             <input class="form-control w-100" type="number" name="exp_amnt" id="exp_amnt" value = '0' min = "0" placeholder = "Amount">
                         </div>
-                        <div class="conts col-md-4">
+                        <div class="conts col-md-4 hide">
                             <label class="form-control-label" for="unit_name"><b>Unit Name:</b> <small>(eg. kgs, litres)</small> <br></label>
                             <input class="form-control w-100" type="text" name="unit_name" id="unit_name" placeholder = "Unit Name">
                         </div>
                         <div class="conts col-md-4">
                             <label class="form-control-label" for="exp_total_amt"><b>Expense Amount</b> <br></label>
-                            <input class="form-control w-100" type="number" class="dis-abled" name="exp_total_amt" id="exp_total_amt" value = "0"  min = "0" readonly placeholder = "Amount">
+                            <input class="form-control w-100" type="number" name="exp_total_amt" id="exp_total_amt" min = "0" placeholder = "Amount">
+                        </div>
+                        <div class="conts col-md-4">
+                            <label class="form-control-label" for="document_number"><b>Document Number</b> <br></label>
+                            <input class="form-control w-100" type="text" name="document_number" id="document_number"  min = "0" placeholder = "Optional - Receipt, Invoice, Cheque">
+                        </div>
+                        <div class="col-md-12">
+                            <label for="new_expense_description" class="form-control-label"><b>Expense Description</b></label>
+                            <textarea name="new_expense_description" id="new_expense_description" cols="30" rows="3" class="form-control" placeholder="Write expense description here.."></textarea>
                         </div>
                         <div class="conts col-md-4">
                             <p id='err_hndler_expenses'></p>
                         </div>
                     </div>
-                    <div class="conts col-md-4">
-                        <button id='add_expenseed'>Save</button>
-                        <button id='done_adding_exp'>Close</button>
+                    <div class="conts col-md-6 row">
+                        <div class="col-md-6">
+                            <div id="error_message_expenses"><p class="text-danger text-center"><b>Select expense category before you proceed!</b></p></div>
+                            <button id='add_expenseed' class="hide">Save</button>
+                        </div>
+                        <div class="col-md-6">
+                            <button id='done_adding_exp'>Close</button>
+                        </div>
                     </div>
                 </div>
             </div>

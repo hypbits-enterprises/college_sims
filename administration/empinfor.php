@@ -99,6 +99,9 @@
                     <option class="emp_infor_opt" value="Casual"> Casual</option>
                     <option class="emp_infor_opt" value="Consultant"> Consultant</option>
                     <option class="emp_infor_opt" value="Non-teaching Staff"> Non-teaching Staff</option>
+                    <option class="emp_infor_opt" value="BOG Staff"> BOG Staff</option>
+                    <option class="emp_infor_opt" value="Teacher In Practice"> Teacher In Practice (T.P)</option>
+                    <option class="emp_infor_opt" value="T.S.C Teacher"> T.S.C Teacher</option>
                 </select>
             </div>
         </div>
@@ -175,6 +178,11 @@
                 <option id='act1' value="1">Yes</option>
                 <option id='act0' value="0">No</option>
             </select>
+        </div>
+        <div class="conts hide" id="reason_for_staff_inactive">
+            <label class="form-control-label" for="activated"><b>Reason: </b><br></label>
+            <p><i >Type reasons below why the staffis de-activated.</i></p>
+            <textarea name="reason_inactive" id="reason_inactive" cols="30" rows="5" class="w-100 form-control" placeholder="Reason for being De-activated!"></textarea>
         </div>
     </div>
     <div class="conts">

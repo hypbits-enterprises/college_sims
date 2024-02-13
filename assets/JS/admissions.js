@@ -1669,7 +1669,7 @@ cObj('updatestaff').onclick = function () {
                 datapassing += '&emails=' + valObj1('staffmail') + '&tscno=' + valObj1('tscnosd') + '&username=' + valObj1('usenames') + '&genders=' + valObj1('gende') + '&activated=' + valObj1('activated') + '&authorities=' + valObj1('auths') + '&staffid=' + staffid + '&deleted=' + valObj1("deleted");
                 datapassing += "&nssf_numbers=" + valObj1("nssf_numbers") + "&nhif_numbers=" + valObj1("nhif_numbers") + "&d_o_e_input=" + valObj("d_o_e_input");
                 datapassing += "&job_number=" + valObj("employees_job_number") + "&job_title=" + valObj("employees_job_title") + "&employees_type=" + valObj("employees_type") + "";
-                datapassing += "&kin_fullnames=" + valObj("kin_fullnames") + "&kin_relationship_edit=" + valObj("kin_relationship_edit") + "&kin_contacts_edit=" + valObj("kin_contacts_edit") + "&kin_location_edit=" + valObj("kin_location_edit");
+                datapassing += "&kin_fullnames=" + valObj("kin_fullnames") + "&kin_relationship_edit=" + valObj("kin_relationship_edit") + "&kin_contacts_edit=" + valObj("kin_contacts_edit") + "&kin_location_edit=" + valObj("kin_location_edit")+"&reason_inactive="+valObj("reason_inactive");
                 sendData1('GET', "administration/admissions.php", datapassing, cObj('updateerror'));
                 setTimeout(() => {
                     var timeout = 0;
@@ -1884,6 +1884,7 @@ function clicks() {
                     cObj('d_o_e_input').value = splitdata[16];
                     cObj('employees_job_number').value = splitdata[17];
                     cObj('employees_job_title').value = splitdata[18];
+                    cObj("reason_inactive").value = splitdata[24];
 
                     var employees_type = splitdata[19];
                     var emp_infor_opt = document.getElementsByClassName("emp_infor_opt");
@@ -1942,6 +1943,11 @@ function clicks() {
 
                     cObj("del" + splitdata[9] + "").selected = true;
                     cObj("act" + splitdata[10] + "").selected = true;
+                    if (splitdata[10] == 0) {
+                        cObj("reason_for_staff_inactive").classList.remove("hide");
+                    }else{
+                        cObj("reason_for_staff_inactive").classList.add("hide");
+                    }
                     cObj("staffid").innerText = splitdata[13];
                     // cObj("auths"+splitdata[11]).selected = true;
 
@@ -7016,8 +7022,12 @@ cObj("cancel_revenue_category").onclick = function () {
 
 cObj("save_expense_category").onclick = function () {
     var err = checkBlank("expense_category_name");
+    err+= checkBlank("expense_category_budget");
+    err += checkBlank("budget_start_time");
+    err += checkBlank("budget_end_date");
     if (err == 0) {
-        var datapass = "?save_expense_category=true&category_name=" + escape(valObj("expense_category_name"));
+        var datapass = "?save_expense_category=true&category_name=" + escape(valObj("expense_category_name"))+"&expense_category_budget="+valObj("expense_category_budget");
+        datapass += "&budget_start_time="+valObj("budget_start_time")+"&budget_end_date="+valObj("budget_end_date");
         sendData2("GET", "administration/admissions.php", datapass, cObj("display_data_exp_category"), cObj("expense_categories_loaders"));
         setTimeout(() => {
             var timeout = 0;
@@ -7032,6 +7042,9 @@ cObj("save_expense_category").onclick = function () {
                         displayExpCategories();
                         cObj("display_data_exp_category").innerHTML = "";
                         cObj("expense_category_name").value = "";
+                        cObj("expense_category_budget").value = "";
+                        cObj("budget_start_time").value = "";
+                        cObj("budget_end_date").value = "";
                     }, 1000);
                     cObj("cancel_expense_category").click();
                     stopInterval(ids);
@@ -7074,6 +7087,14 @@ function delete_revenue_categories() {
     cObj("delete_revenue_category").classList.remove("hide");
     cObj("revenue_category_name_holder").innerText = cObj("revenue_name_"+this.id.substr(19)).innerText;
     cObj("revenue_index").value = this.id.substr(19);
+}
+
+cObj("activated").onchange = function () {
+    if (cObj("activated").value == "0") {
+        cObj("reason_for_staff_inactive").classList.remove("hide");
+    }else{
+        cObj("reason_for_staff_inactive").classList.add("hide");
+    }
 }
 
 cObj("yes_delete_revenue_category").onclick = function () {
@@ -7200,8 +7221,12 @@ cObj("save_change_revenue_category").onclick = function name() {
 
 cObj("save_change_expense_category").onclick = function name() {
     var err = checkBlank("change_expense_category_input_window");
+    err += checkBlank("budget_start_time_edit");
+    err += checkBlank("budget_end_date_edit");
+    err += checkBlank("expense_category_budget_edit");
     if (err == 0) {
         var datapass = "?change_expense_categories=true&new_exp_name=" + escape(valObj("change_expense_category_input_window")) + "&exp_indexes=" + escape(valObj("exp_indexes_update"));
+        datapass += "&budget_start_time_edit="+valObj("budget_start_time_edit")+"&budget_end_date_edit="+valObj("budget_end_date_edit")+"&expense_category_budget_edit="+valObj("expense_category_budget_edit");
         sendData2("GET", "administration/admissions.php", datapass, cObj("display_data_exp_category"), cObj("expense_categories_loaders"));
         setTimeout(() => {
             var timeout = 0;
@@ -7224,10 +7249,21 @@ cObj("save_change_expense_category").onclick = function name() {
 
 function edit_expense_category() {
     var this_id = this.id.substr(13);
-    cObj("change_expense_category_input_window").value = cObj("exp_name_" + this_id).innerText;
-    cObj("expense_category_change_name").innerHTML = cObj("exp_name_" + this_id).innerText;
-    cObj("change_expense_category_window").classList.remove("hide");
-    cObj("exp_indexes_update").value = this_id;
+    var expense_category = valObj("exp_name_"+this_id);
+    if (hasJsonStructure(expense_category)) {
+        cObj("change_expense_category_window").classList.remove("hide");
+        
+        // decode json
+        expense_category = JSON.parse(expense_category);
+
+        // get the expense value
+        cObj("exp_indexes_update").value = this_id;
+        cObj("change_expense_category_input_window").value = expense_category.expense_name;
+        cObj("expense_category_change_name").value = expense_category.expense_name;
+        cObj("expense_category_budget_edit").value = expense_category.expense_budget;
+        cObj("budget_start_time_edit").value = expense_category.start_date;
+        cObj("budget_end_date_edit").value = expense_category.end_date;
+    }
 }
 
 function edit_revenue_category() {
@@ -7240,9 +7276,13 @@ function edit_revenue_category() {
 
 function delete_exp_categories() {
     var ids = this.id.substr(15);
-    cObj("expense_category_delete_name").innerText = cObj("exp_name_" + ids).innerText;
-    cObj("exp_indexes").value = ids;
-    cObj("delete_expense_category_window").classList.remove("hide");
+    var expense_category = cObj("exp_name_" + ids).value;
+    if (hasJsonStructure(expense_category)) {
+        expense_category = JSON.parse(expense_category);
+        cObj("expense_category_delete_name").innerText = expense_category.expense_name;
+        cObj("exp_indexes").value = ids;
+        cObj("delete_expense_category_window").classList.remove("hide");
+    }
 }
 
 cObj("close_window_delete_expense_category").onclick = function () {
