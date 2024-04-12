@@ -2720,19 +2720,19 @@ function tablebtnlistener() {
                     cObj("paroccupation2").value = splitdata[27];
                     cObj("medical_histry").value = splitdata[23];
                     //set for email and sms
-                    if (splitdata[12].length > 5) {
-                        var name = splitdata[1].substr(splitdata[1].length - 1, splitdata.length);
-                        var showname = splitdata[1] + "'s";
-                        if (name == "s" || name == "S") {
-                            showname = splitdata[1] + "'";
-                        }
+                    // if (splitdata[12].length > 5) {
+                    //     var name = splitdata[1].substr(splitdata[1].length - 1, splitdata.length);
+                    //     // var showname = splitdata[1] + "'s";
+                    //     // if (name == "s" || name == "S") {
+                    //     //     showname = splitdata[1] + "'";
+                    //     // }
 
-                        // set the action of calling and sending email
-                        cObj("call_phone").disabled = false;
-                        cObj("mail_to").disabled = false;
-                        cObj("call_phone").innerHTML = splitdata[10].trim().length != 0 ? "<a class='link' href='tel:" + splitdata[10] + "'>Click to call " + showname + " parent </a>" : cObj("call_phone").disabled = true;
-                        cObj("mail_to").innerHTML = splitdata[10].trim().length != 0 ? "<a class='link' href='mailto:" + splitdata[12] + "'>Click to send " + showname + " parent an email.</a>" : cObj("mail_to").disabled = true;
-                    }
+                    //     // set the action of calling and sending email
+                    //     cObj("call_phone").disabled = false;
+                    //     cObj("mail_to").disabled = false;
+                    //     // cObj("call_phone").innerHTML = splitdata[10].trim().length != 0 ? "<a class='link' href='tel:" + splitdata[10] + "'>Click to call " + showname + " parent </a>" : cObj("call_phone").disabled = true;
+                    //     // cObj("mail_to").innerHTML = splitdata[10].trim().length != 0 ? "<a class='link' href='mailto:" + splitdata[12] + "'>Click to send " + showname + " parent an email.</a>" : cObj("mail_to").disabled = true;
+                    // }
                     cObj("pnamed2").value = splitdata[16];
                     cObj("pcontacted2").value = splitdata[17];
                     cObj("pemails2").value = splitdata[19];
@@ -2791,8 +2791,8 @@ function tablebtnlistener() {
                     cObj("transport_enrolled_std_infor").innerHTML = splitdata[34];
                     cObj("board_enrolled_std_infor").innerHTML = splitdata[35];
 
-                    cObj("call_phone2").innerHTML = "<a class='link' href='tel:" + splitdata[17] + "'>Click to call " + showname + " parent </a>";
-                    cObj("mail_to2").innerHTML = "<a class='link' href='mailto:" + splitdata[19] + "'>Click to send " + showname + " parent an email.</a>";
+                    // cObj("call_phone2").innerHTML = "<a class='link' href='tel:" + splitdata[17] + "'>Click to call " + showname + " parent </a>";
+                    // cObj("mail_to2").innerHTML = "<a class='link' href='mailto:" + splitdata[19] + "'>Click to send " + showname + " parent an email.</a>";
 
                     var clubs_in_sporter = document.getElementsByClassName("clubs_in_sporter");
                     // console.log(splitdata);
@@ -9014,6 +9014,55 @@ cObj("select_all_dept").onchange = function () {
 
     // members list
     cObj("members_lists").value = JSON.stringify(members_lists);
+}
+
+cObj("upload_new_students_button").onclick = function () {
+    var err = checkBlank("new_student_uploads");
+    if (err == 0) {
+        // show the progress bar
+        cObj("upload_new_students").classList.remove("hide");
+
+        // pick the file.
+        var file = cObj("new_student_uploads").files[0];
+        
+        var formData = new FormData();
+        formData.append("file", file);
+        formData.append("upload_new_students", "new_student");
+      
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "/college_sims/ajax/administration/admissions.php", true);
+        
+        xhr.upload.onprogress = function (e) {
+          if (e.lengthComputable) {
+            var progress = (e.loaded / e.total) * 100;
+            cObj("upload_new_students").value = progress;
+          }
+        };
+      
+        xhr.onreadystatechange = function () {
+          if (xhr.readyState === 4 && xhr.status === 200) {
+            if (hasJsonStructure(xhr.responseText)) {
+                // hide progress bar
+                cObj("upload_new_students").classList.add("hide");
+
+                // set the values
+                cObj("file_names").value = "";
+
+                // get the response
+                var response = JSON.parse(xhr.responseText);
+                
+                // check the message if its a success message
+                if (response.success) {
+                    cObj("error_message_holder_new_student").innerHTML = "<p class='text-success'>"+response.message+"</p>";
+                }else{
+                    cObj("error_message_holder_new_student").innerHTML = "<p class='text-danger'>"+response.message+"</p>";
+                }
+            }
+            cObj("new_student_uploads").value = "";
+          }
+        };
+        xhr.send(formData);
+    }
 }
 cObj("add_subject_dept").onclick = function () {
     cObj("add_subjects_dept_window").classList.remove("hide");

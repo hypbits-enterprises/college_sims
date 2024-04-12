@@ -1,7 +1,10 @@
 <?php
+    // Include PhpSpreadsheet library
+    require '../../vendor/autoload.php';
     use PHPMailer\PHPMailer\PHPMailer;
     use PHPMailer\PHPMailer\SMTP;
     use PHPMailer\PHPMailer\Exception;
+    use PhpOffice\PhpSpreadsheet\IOFactory;
 
     require 'phpmailer/src/Exception.php';
     require 'phpmailer/src/PHPMailer.php';
@@ -1653,14 +1656,16 @@
                     $stmt->bind_param("s",$staffid);
                     if($stmt->execute()){
                         echo "<p style='color:green;'>Staff information updated successfully!</p>";
-                        $log_text = "Staff \"".$fullname."\" information has been updated successfully!";
-                        log_administration($log_text);
                     }else {
                         echo "<p style='color:red;'>Error occured during updating!</p>";
                     }
                 }else {
                     echo "<p style='color:green;'>Staff information updated successfully!</p>";
                 }
+                // delete the staff
+                $log_text = "Staff \"".$fullname."\" information has been updated successfully!";
+                log_administration($log_text);
+                echo $log_text;
             }else {
                 echo "<p style='color:red;'>Error occured during updating!</p>";
             }
@@ -5910,6 +5915,110 @@
                 echo "<p>No classes to display!</p>";
             }
             // echo "p";
+        }elseif(isset($_POST['upload_new_students'])){
+            $targetDirectory = "../../csv/"; // Directory to store uploaded files$file = $_FILES["file"];
+            $customFileName = date("YmdHis"); //Make the custom file name be time
+
+            // file name
+            $file = $_FILES["file"];
+
+            // Check if the file type is allowed
+            $allowedExtensions = array('xls', 'xlsx', 'csv');
+            $fileExtension = strtolower(pathinfo($file["name"], PATHINFO_EXTENSION));
+            if (!in_array($fileExtension, $allowedExtensions)) {
+                $message = ['success' => false, "message" => "The only allowed files are the following .'xls', 'xlsx', 'csv'"];
+                echo json_encode($message);
+                exit();
+            }
+
+            // Create the target directory and necessary subdirectories if they don't exist
+            if (!is_dir($targetDirectory)) {
+                mkdir($targetDirectory, 0777, true);
+            }
+
+            $fileName = $customFileName . '.' . pathinfo($file["name"], PATHINFO_EXTENSION);
+            $fileLocation = $targetDirectory . $fileName;
+
+            if (move_uploaded_file($file["tmp_name"], $fileLocation)) {
+
+                // read the files details so that you add the student data to the database.
+                // Load the Excel file
+                $spreadsheet = IOFactory::load($fileLocation);
+
+                // Select the first worksheet
+                $worksheet = $spreadsheet->getActiveSheet();
+
+                // Get the highest row and column numbers containing data
+                $highestColumn = $worksheet->getHighestColumn(); // e.g., 'F'
+                $highestRow = $worksheet->getHighestRow($highestColumn); // e.g., 10
+
+                // Convert the highest column letter to a number
+                $highestColumnIndex = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString($highestColumn);
+
+                $found = false;
+                $columns = ['No', 'Student Name','Reg no', 'Sex', 'Course', 'Level', 'Department', 'Intake Month', 'Intake Year', 'D.O.B', 'Date Of Adm', '1st Parent Name', 'Contacts','2nd Parent Name', 'Contacts', 'Term Active'];
+                
+                // go through the first columns and see if they match the required columns
+                $match_counter = 0;
+                $columns_read = "";
+                for($column_index = 1; $column_index <= count($columns); $column_index++){
+                    $cellValue = $worksheet->getCellByColumnAndRow($column_index, 1)->getValue();
+                    $columns_read.=$cellValue." == ".$columns[$column_index-1].", ";
+                    if(strtolower(trim($cellValue)) == strtolower(trim($columns[$column_index-1]))){
+                        $match_counter++;
+                    }
+                }
+                $columns_read.=$match_counter." ".count($columns);
+
+                if($match_counter != count($columns)){
+                    $message = ['success' => false, "message" => "Check your columns, they don`t match the template you were given!"];
+                    echo json_encode($message);
+                    return 0;
+                }
+
+                // get the department
+
+                $data = [];
+                for($row = 2; $row <= $highestRow; $row++){
+                    // get the student data and add to the database
+                    $student_name = explode(" ",$worksheet->getCellByColumnAndRow(2, $row)->getValue());
+                    $reg_no = $worksheet->getCellByColumnAndRow(3, $row)->getValue();
+                    $gender = $worksheet->getCellByColumnAndRow(4, $row)->getValue();
+                    $course = get_course_id($worksheet->getCellByColumnAndRow(5, $row)->getValue(),$conn2);
+                    $level = get_course_level_valid($worksheet->getCellByColumnAndRow(6, $row)->getValue(),$conn2);
+                    $intake_month = $worksheet->getCellByColumnAndRow(8, $row)->getValue();
+                    $intake_year = $worksheet->getCellByColumnAndRow(9, $row)->getValue();
+                    $dob = date("Y-m-d", strtotime(explode("|",$worksheet->getCellByColumnAndRow(10, $row)->getValue())[0]));
+                    $doa = date("Y-m-d",strtotime(explode("|",$worksheet->getCellByColumnAndRow(11, $row)->getValue())[0]));
+                    $parent_name_1 = $worksheet->getCellByColumnAndRow(12, $row)->getValue();
+                    $contact_1 = $worksheet->getCellByColumnAndRow(13, $row)->getValue();
+                    $parent_name_2 = $worksheet->getCellByColumnAndRow(14, $row)->getValue();
+                    $contact_2 = $worksheet->getCellByColumnAndRow(15, $row)->getValue();
+                    $term_active = $worksheet->getCellByColumnAndRow(16, $row)->getValue();
+                    
+                    $new_array = [$student_name,$reg_no,$gender,$course,$level,$intake_month,$intake_year,$dob,$doa,$parent_name_1,$contact_1,$parent_name_2,$contact_2,$term_active];
+                    array_push($data,$new_array);
+                    $student_name[1] = isset($student_name[1]) ? $student_name[1] : "";
+                    $student_name[2] = isset($student_name[2]) ? $student_name[2] : "";
+                    $student_course = '[{"course_level":1,"course_name":"5","course_status":1,"id":1,"module_terms":[{"id":1,"term_name":"TERM_1","status":0,"start_date":"","end_date":""},{"id":2,"term_name":"TERM_2","status":0,"start_date":"","end_date":""},{"id":3,"term_name":"TERM_3","status":0,"start_date":"","end_date":""}]}]';
+                    $insert = "INSERT INTO `student_data` (`first_name`,`second_name`,`surname`,`adm_no`,`course_done`,`stud_class`,`intake_month`,`intake_year`,`D_O_B`,`D_O_A`,`parentName`,`parentContacts`,`parent_name2`,`parent_contact2`,`gender`,`subjects_attempting`,`my_course_list`) 
+                    VALUES ('".$student_name[0]."','".$student_name[1]."','".$student_name[2]."','".$reg_no."','".$course."','".$level."','".$intake_month."','".$intake_year."','".$dob."','".$doa."','".$parent_name_1."','".$contact_1."','".$parent_name_2."','$contact_2','".$gender."','[]','$student_course')";
+                    $stmt = $conn2->prepare($insert);
+                    $stmt->execute();
+                }
+
+                // Check if the file exists before attempting to delete it
+                if (file_exists($fileLocation)) {
+                    // Attempt to delete the file
+                    unlink($fileLocation);
+                }
+
+                $message = ['success' => true, "message" => "File uploaded successfully!", "file_location" => $fileLocation];
+                echo json_encode($message);
+            } else {
+                $message = ['success' => false, "message" => "Error uploading the file!"];
+                echo json_encode($message);
+            }
         }elseif(isset($_POST['show_courses'])){
             // get the passed data
             $course_name = $_POST['course_level'];
@@ -11363,6 +11472,7 @@ function isJson_report($string) {
         $result = str_replace('"', "'", $string);
         return $result;
     }
+
     function log_administration($text){
         $full_text = date("dS M Y H:i:sA")." : ".$text." - {".$_SESSION['username']."}\n";
         $file_location = "../../ajax/logs/".$_SESSION['dbname']."/logs.txt";
@@ -11428,5 +11538,49 @@ function isJson_report($string) {
         } else {
             return "Unable to open file!";
         }
+    }
+
+    // get the course id when given the name
+    function get_course_id($course_name, $conn2){
+        // get all courses
+        $select = "SELECT * FROM `settings` WHERE `sett` = 'courses'";
+        $stmt = $conn2->prepare($select);
+        $stmt->execute();
+        $course_levels = [];
+        $result = $stmt->get_result();
+        if($result){
+            if($row = $result->fetch_assoc()){
+                $course_levels = isJson_report($row['valued']) ? json_decode($row['valued']) : [];
+            }
+        }
+
+        foreach ($course_levels as $key => $value) {
+            if(strtolower($course_name) == strtolower($value->course_name)){
+                return $value->id;
+            }
+        }
+        return "";
+    }
+
+    // get the course id when given the name
+    function get_course_level_valid($course_level, $conn2){
+        // get all courses
+        $select = "SELECT * FROM `settings` WHERE `sett` = 'class'";
+        $stmt = $conn2->prepare($select);
+        $stmt->execute();
+        $course_levels = [];
+        $result = $stmt->get_result();
+        if($result){
+            if($row = $result->fetch_assoc()){
+                $course_levels = isJson_report($row['valued']) ? json_decode($row['valued']) : [];
+            }
+        }
+
+        foreach ($course_levels as $key => $value) {
+            if(strtolower($course_level) == strtolower($value->classes)){
+                return $value->classes;
+            }
+        }
+        return "";
     }
 ?>

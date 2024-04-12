@@ -32,7 +32,7 @@
                 <div class="col-md-3">
                     <!-- upload documents -->
                     <p style="text-align: center; font-size:16px;"><strong>Upload Students</strong></p>
-                    <input style="font-size: 12px;" type="file"  accept=".csv, .xslx, .xls" class="form-control text-sm my-2" name="new_student_uploads" id="new_student_uploads">
+                    <input style="font-size: 12px;" type="file"  accept=".csv, .xlsx, .xls" class="form-control text-sm my-2" name="new_student_uploads" id="new_student_uploads">
                     <progress class="form-control my-1 hide" id="upload_new_students" value="0" max="100"></progress>
                     <p id="error_message_holder_new_student"></p>
                     <button type="button" id="upload_new_students_button" class="">Upload</button>
