@@ -1569,6 +1569,10 @@ function change_expense_category() {
     if (this.value.length > 0) {
         cObj("error_message_expenses").innerHTML = "";
         cObj("add_expenseed").classList.remove("hide");
+
+        // get the subcategory
+        var datapass = "?get_expense_subcategory="+this.value;
+        sendData2("GET","administration/admissions.php",datapass,cObj("expense_subcategory_display"),cObj("load_expense_sub_categs"));
     }
 }
 

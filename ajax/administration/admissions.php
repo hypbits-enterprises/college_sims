@@ -3484,6 +3484,31 @@
             }else {
                 echo "<p class='text-danger'>An error has occured. Please try again later!</p>";
             }
+        }elseif(isset($_GET['get_expense_subcategory'])){
+            $get_expense_subcategory = $_GET['get_expense_subcategory'];
+            $select = "SELECT * FROM `expense_category` WHERE `expense_id` = '".$get_expense_subcategory."'";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $sub_categories = [];
+            if ($result) {
+                if($row = $result->fetch_assoc()){
+                    $expense_sub_categories = $row['expense_sub_categories'];
+                    $sub_categories = isJson_report($expense_sub_categories) ? json_decode($expense_sub_categories) : [];
+                }
+            }
+
+            // expense subcategories
+            $data_to_display = "<select class='form-control' id='expense_sub_category'><option hidden value=''>Select an Option</option>";
+            for($index = 0; $index < count($sub_categories); $index++){
+                $id = $sub_categories[$index]->id;
+                $name = $sub_categories[$index]->name;
+                $data_to_display .= "<option value='".$id."' >".$name."</option>";
+            }
+            $data_to_display .= "</select>";
+
+            // display select
+            echo $data_to_display;
         }elseif (isset($_GET['unenroll_boarding_this'])) {
             $admno = $_GET['unenroll_boarding_this'];
             // delete the student from the dormitory
