@@ -3988,24 +3988,26 @@
             // log text
             $log_text = "Revenue category \"".$_GET['category_name']."\" has been added successfully!";
             log_administration($log_text);
-        }elseif(isset($_GET['save_expense_category'])){
-            $category_name = $_GET['category_name'];
-            $expense_category_budget = $_GET['expense_category_budget'];
-            $budget_start_time = $_GET['budget_start_time'];
-            $budget_end_date = $_GET['budget_end_date'];
+        }
+        // elseif(isset($_GET['save_expense_category'])){
+        //     $category_name = $_GET['category_name'];
+        //     $expense_category_budget = $_GET['expense_category_budget'];
+        //     $budget_start_time = $_GET['budget_start_time'];
+        //     $budget_end_date = $_GET['budget_end_date'];
 
 
-            $insert = "INSERT INTO `expense_category` (`expense_name`,`expense_budget`,`start_date`,`end_date`,`created_at`,`updated_at`) VALUES (?,?,?,?,?,?)";
-            $stmt = $conn2->prepare($insert);
-            $date = date("YmdHis");
-            $stmt->bind_param("ssssss",$category_name,$expense_category_budget,$budget_start_time,$budget_end_date,$date,$date);
-            $stmt->execute();
+        //     $insert = "INSERT INTO `expense_category` (`expense_name`,`expense_budget`,`start_date`,`end_date`,`created_at`,`updated_at`) VALUES (?,?,?,?,?,?)";
+        //     $stmt = $conn2->prepare($insert);
+        //     $date = date("YmdHis");
+        //     $stmt->bind_param("ssssss",$category_name,$expense_category_budget,$budget_start_time,$budget_end_date,$date,$date);
+        //     $stmt->execute();
 
-            // log text
-            $log_text = "Expense category \"".$_GET['category_name']."\" added successfully!";
-            log_administration($log_text);
-            echo "<p class='text-success border border-success my-2 p-2'>Expense name added successfully!.</p>";
-        }elseif(isset($_GET['show_revenue_category'])){
+        //     // log text
+        //     $log_text = "Expense category \"".$_GET['category_name']."\" added successfully!";
+        //     log_administration($log_text);
+        //     echo "<p class='text-success border border-success my-2 p-2'>Expense name added successfully!.</p>";
+        // }
+        elseif(isset($_GET['show_revenue_category'])){
             $select = "SELECT * FROM `settings` WHERE `sett` = 'revenue_categories'";
             $stmt = $conn2->prepare($select);
             $stmt->execute();
@@ -4036,7 +4038,7 @@
             $result = $stmt->get_result();
             $data_to_display = "<p class='text-danger border border-danger my-2 p-2'>Add expense categories, they will appear here.</p>";
             if($result){
-                $data_to_display = "<table class='table'><tr><th>No.</th><th>Expense Category</th><th>Maximum Budget</th><th>Used Budget (%)</th><th>Actions.</th></tr>";
+                $data_to_display = "<table class='table'><tr><th>No.</th><th>Expense Category</th><th>Maximum Budget</th><th>Used Budget (%)</th><th>Expense Sub-Categories</th><th>Actions.</th></tr>";
                 $index = 1;
                 while($row = $result->fetch_assoc()){
                     $selected = "SELECT SUM(`exp_amount`) AS 'expense_amount' FROM `expenses` WHERE `exp_category` = '".$row['expense_id']."' AND `expense_date` BETWEEN '".$row['start_date']."' AND '".$row['end_date']."'";
@@ -4056,13 +4058,15 @@
 
                     // get the used budget from the expense record table
                     $percentage = ($used_amount > 0 && ($row['expense_budget']*1) > 0) ? round((($used_amount/$row['expense_budget']) * 100),1)."%" : "0%";
-                    $data_to_display.="<tr><td>".($index).". </td><td><input type='hidden' value='".json_encode($row)."' id='exp_name_".$row['expense_id']."'>".$row['expense_name']."</td><td>Kes ".(number_format($row['expense_budget']))."</td><td>Kes ".number_format($used_amount)." (".$percentage.")</td><td><p><span class='mx-1 link edit_exp_cat' id='edit_exp_cat_".$row['expense_id']."'><i class='fas fa-pen-fancy'></i></span> <span class='mx-1 link delete_exp_cat' id = 'delete_exp_cat_".$row['expense_id']."'><i class='fas fa-trash'></i></span></p></td></tr>";
+                    $subcategories = isJson_report($row['expense_sub_categories']) ? count(json_decode($row['expense_sub_categories'])) : 0;
+                    $data_to_display.="<tr><td>".($index).". </td><td><input type='hidden' value='".json_encode($row)."' id='exp_name_".$row['expense_id']."'>".$row['expense_name']."</td><td>Kes ".(number_format($row['expense_budget']))."</td><td>Kes ".number_format($used_amount)." (".$percentage.")</td><td>".$subcategories." subcategories</td><td><p><span class='mx-1 link edit_exp_cat' id='edit_exp_cat_".$row['expense_id']."'><i class='fas fa-pen-fancy'></i></span> <span class='mx-1 link delete_exp_cat' id = 'delete_exp_cat_".$row['expense_id']."'><i class='fas fa-trash'></i></span></p></td></tr>";
                     $index++;
                 }
                 $data_to_display .= "</table></div>";
             }
             echo $data_to_display;
-        }elseif(isset($_GET['change_expense_categories'])){
+        }
+        elseif(isset($_GET['change_expense_categories'])){
             $new_exp_name = ($_GET['new_exp_name']);
             $exp_indexes = $_GET['exp_indexes'];
             $budget_start_time_edit = date("Ymd",strtotime($_GET['budget_start_time_edit']));
@@ -4078,7 +4082,8 @@
             
             // display success message
             echo "<p class='text-success border border-success my-2 p-2'>Expense has been updated successfully!</p>";
-        }elseif(isset($_GET['change_revenue_categories'])){
+        }
+        elseif(isset($_GET['change_revenue_categories'])){
             $change_revenue_categories = ($_GET['change_revenue_categories']);
             $new_revenue_name = $_GET['new_revenue_name'];
             $revenue_indexes = $_GET['revenue_indexes'];
@@ -5321,6 +5326,24 @@
             }else {
                 echo "<p class='text-danger'>An error occured while trying to delete the student. Try again later</p>";
             }
+        }elseif(isset($_POST['save_expense_category'])){
+            $category_name = $_POST['category_name'];
+            $expense_category_budget = $_POST['expense_category_budget'];
+            $budget_start_time = $_POST['budget_start_time'];
+            $budget_end_date = $_POST['budget_end_date'];
+            $expense_categories = $_POST['expense_categories'];
+
+
+            $insert = "INSERT INTO `expense_category` (`expense_name`,`expense_budget`,`start_date`,`end_date`,`created_at`,`expense_sub_categories`,`updated_at`) VALUES (?,?,?,?,?,?,?)";
+            $stmt = $conn2->prepare($insert);
+            $date = date("YmdHis");
+            $stmt->bind_param("sssssss",$category_name,$expense_category_budget,$budget_start_time,$budget_end_date,$date,$expense_categories,$date);
+            $stmt->execute();
+
+            // log text
+            $log_text = "Expense category \"".$_POST['category_name']."\" added successfully!";
+            log_administration($log_text);
+            echo "<p class='text-success border border-success my-2 p-2'>Expense name added successfully!.</p>";
         }elseif(isset($_POST['subjects_for_student'])){
             // echo $_POST['student_admission'];
             $student_admission = $_POST['student_admission'];
@@ -5851,6 +5874,23 @@
             // }else{
             //     echo "<p class='text-danger'>An error occured.Please try again later!</p>";
             // }
+        }elseif(isset($_POST['change_expense_categories'])){
+            $new_exp_name = ($_POST['new_exp_name']);
+            $exp_indexes = $_POST['exp_indexes'];
+            $budget_start_time_edit = date("Ymd",strtotime($_POST['budget_start_time_edit']));
+            $budget_end_date_edit = date("Ymd",strtotime($_POST['budget_end_date_edit']));
+            $expense_category_budget_edit = $_POST['expense_category_budget_edit'];
+            $expense_categories = $_POST['expense_categories'];
+            $change_date = date("YmdHis");
+
+            // update
+            $update = "UPDATE `expense_category` SET `expense_name` = ?, `expense_budget` = ?, `start_date` = ?, `end_date` = ?, `updated_at` = ?, `expense_sub_categories` = ? WHERE `expense_id` = ?";
+            $stmt = $conn2->prepare($update);
+            $stmt->bind_param("sssssss",$new_exp_name,$expense_category_budget_edit,$budget_start_time_edit,$budget_end_date_edit,$change_date,$expense_categories,$exp_indexes);
+            $stmt->execute();
+            
+            // display success message
+            echo "<p class='text-success border border-success my-2 p-2'>Expense has been updated successfully!</p>";
         }elseif (isset($_POST['set_report_button'])) {
             // get if the report button is set
             $roles = "";

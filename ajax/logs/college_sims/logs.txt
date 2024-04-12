@@ -1,3 +1,5 @@
+12th Apr 2024 18:25:17PM : Expense category "Expense Category 2" added successfully! - {HILLARY NGIGE}
+12th Apr 2024 12:47:21PM : HILLARY NGIGE successfully logged into the system as System Administrator - {HILLARY NGIGE}
 24th Feb 2024 10:12:46AM : HILLARY NGIGE successfully logged into the system as System Administrator - {HILLARY NGIGE}
 13th Feb 2024 20:18:55PM : Class "DIPLOMA" added successfully - {HILLARY NGIGE}
 13th Feb 2024 19:30:33PM : Quako Kika - of Reg No. (HJHGJHG) course data has been updated successfully! - {HILLARY NGIGE}

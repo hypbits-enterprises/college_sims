@@ -7019,6 +7019,94 @@ cObj("cancel_revenue_category").onclick = function () {
     cObj("add_revenue_category_window").classList.add("hide");
 }
 
+cObj("add_expense_sub_category").onclick = function () {
+    var expense_subcategories = valObj("expense_sub_categories_holder");
+    var store_subcategories = [];
+    if (hasJsonStructure(expense_subcategories)) {
+        store_subcategories = JSON.parse(expense_subcategories);
+    }
+
+    // get the subcategories
+    var err = checkBlank("expense_sub_categories");
+    if (err == 0) {
+        var id = 0;
+        for (let index = 0; index < store_subcategories.length; index++) {
+            const element = store_subcategories[index];
+            if (element.id > id) {
+                id = element.id;
+            }
+        }
+
+        // get the id
+        id+=1;
+        var expense_sub_cat = {"id" : id,"name" : valObj("expense_sub_categories")};
+        store_subcategories.push(expense_sub_cat);
+    }
+    console.log(store_subcategories);
+
+    cObj("expense_sub_categories_holder").value = JSON.stringify(store_subcategories);
+
+    // display subcategories
+    display_subcategories();
+
+    // reset the input text field
+    cObj("expense_sub_categories").value = "";
+}
+
+// display tables
+function display_subcategories() {
+    var expense_subcategories = valObj("expense_sub_categories_holder");
+    var store_subcategories = [];
+    if (hasJsonStructure(expense_subcategories)) {
+        store_subcategories = JSON.parse(expense_subcategories);
+    }
+
+    //display the stored subcategories
+    var array = store_subcategories;
+    var data_to_display = "";
+    if (array.length > 0) {
+        data_to_display = "<table class='table col-md-12'><tr><th>No.</th><th>Expense Sub-Categories</th><th>Action</th></tr>";
+        for (let index = 0; index < array.length; index++) {
+            const element = array[index];
+            data_to_display += "<tr><td>"+(index+1)+".</td><td>"+element.name+"</td><td><span class='link exit_expense_sub_cat' id='exit_expense_sub_cat_"+element.id+"'><i class='fas fa-trash'></i> Delete</span></td></tr>";
+        }
+        data_to_display+="</table>";
+    }else{
+        data_to_display = "<p class='text-danger'>No expense categories to display!<br>Add expense category list will appear here!</p>";
+    }
+    
+    // display
+    cObj("expense_subcategory_table").innerHTML = data_to_display;
+
+    // add event lsiteners
+    var exit_expense_sub_cat = document.getElementsByClassName("exit_expense_sub_cat");
+    for (let index = 0; index < exit_expense_sub_cat.length; index++) {
+        const element = exit_expense_sub_cat[index];
+        element.addEventListener("click",edit_delete_expense);
+    }
+}
+
+function edit_delete_expense() {
+    var expense_subcategories = valObj("expense_sub_categories_holder");
+    var store_subcategories = [];
+    if (hasJsonStructure(expense_subcategories)) {
+        store_subcategories = JSON.parse(expense_subcategories);
+    }
+
+    var expense_category_2 = [];
+    for (let index = 0; index < store_subcategories.length; index++) {
+        const element = store_subcategories[index];
+        if (element.id == this.id.substr(21)) {
+            continue;
+        }
+        expense_category_2.push(element);
+    }
+    
+    // display subcategories
+    cObj("expense_sub_categories_holder").value = JSON.stringify(expense_category_2);
+    display_subcategories();
+}
+
 
 cObj("save_expense_category").onclick = function () {
     var err = checkBlank("expense_category_name");
@@ -7026,9 +7114,9 @@ cObj("save_expense_category").onclick = function () {
     err += checkBlank("budget_start_time");
     err += checkBlank("budget_end_date");
     if (err == 0) {
-        var datapass = "?save_expense_category=true&category_name=" + escape(valObj("expense_category_name"))+"&expense_category_budget="+valObj("expense_category_budget");
+        var datapass = "save_expense_category=true&category_name=" + escape(valObj("expense_category_name"))+"&expense_category_budget="+valObj("expense_category_budget")+"&expense_categories="+escape(valObj("expense_sub_categories_holder"));
         datapass += "&budget_start_time="+valObj("budget_start_time")+"&budget_end_date="+valObj("budget_end_date");
-        sendData2("GET", "administration/admissions.php", datapass, cObj("display_data_exp_category"), cObj("expense_categories_loaders"));
+        sendDataPost("POST", "ajax/administration/admissions.php", datapass, cObj("display_data_exp_category"), cObj("expense_categories_loaders"));
         setTimeout(() => {
             var timeout = 0;
             var ids = setInterval(() => {
@@ -7225,9 +7313,9 @@ cObj("save_change_expense_category").onclick = function name() {
     err += checkBlank("budget_end_date_edit");
     err += checkBlank("expense_category_budget_edit");
     if (err == 0) {
-        var datapass = "?change_expense_categories=true&new_exp_name=" + escape(valObj("change_expense_category_input_window")) + "&exp_indexes=" + escape(valObj("exp_indexes_update"));
+        var datapass = "change_expense_categories=true&new_exp_name=" + escape(valObj("change_expense_category_input_window")) + "&exp_indexes=" + escape(valObj("exp_indexes_update"))+"&expense_categories="+valObj("edit_expense_sub_categories_holder");
         datapass += "&budget_start_time_edit="+valObj("budget_start_time_edit")+"&budget_end_date_edit="+valObj("budget_end_date_edit")+"&expense_category_budget_edit="+valObj("expense_category_budget_edit");
-        sendData2("GET", "administration/admissions.php", datapass, cObj("display_data_exp_category"), cObj("expense_categories_loaders"));
+        sendDataPost("POST", "ajax/administration/admissions.php", datapass, cObj("display_data_exp_category"), cObj("expense_categories_loaders"));
         setTimeout(() => {
             var timeout = 0;
             var ids = setInterval(() => {
@@ -7263,7 +7351,98 @@ function edit_expense_category() {
         cObj("expense_category_budget_edit").value = expense_category.expense_budget;
         cObj("budget_start_time_edit").value = expense_category.start_date;
         cObj("budget_end_date_edit").value = expense_category.end_date;
+        cObj("edit_expense_sub_categories_holder").value = expense_category.expense_sub_categories;
+
+        // display expense category
+        display_data_exp_category_edit();
     }
+}
+
+
+function display_data_exp_category_edit() {
+    var expense_subcategories = valObj("edit_expense_sub_categories_holder");
+    var store_subcategories = [];
+    if (hasJsonStructure(expense_subcategories)) {
+        store_subcategories = JSON.parse(expense_subcategories);
+    }
+
+    //display the stored subcategories
+    var array = store_subcategories;
+    var data_to_display = "";
+    if (array.length > 0) {
+        data_to_display = "<table class='table col-md-12'><tr><th>No.</th><th>Expense Sub-Categories</th><th>Action</th></tr>";
+        for (let index = 0; index < array.length; index++) {
+            const element = array[index];
+            data_to_display += "<tr><td>"+(index+1)+".</td><td>"+element.name+"</td><td><span class='link delete_expense_sub_cat' id='delete_expense_sub_cat_"+element.id+"'><i class='fas fa-trash'></i> Delete</span></td></tr>";
+        }
+        data_to_display+="</table>";
+    }else{
+        data_to_display = "<p class='text-danger'>No expense categories to display!<br>Add expense category list will appear here!</p>";
+    }
+    
+    // display
+    cObj("edit_expense_subcategory_table").innerHTML = data_to_display;
+
+    // add event lsiteners
+    var delete_expense_sub_cat = document.getElementsByClassName("delete_expense_sub_cat");
+    for (let index = 0; index < delete_expense_sub_cat.length; index++) {
+        const element = delete_expense_sub_cat[index];
+        element.addEventListener("click",edit_delete_expense_category);
+    }
+}
+
+function edit_delete_expense_category() {
+    var expense_subcategories = valObj("edit_expense_sub_categories_holder");
+    var store_subcategories = [];
+    if (hasJsonStructure(expense_subcategories)) {
+        store_subcategories = JSON.parse(expense_subcategories);
+    }
+
+    var expense_category_2 = [];
+    for (let index = 0; index < store_subcategories.length; index++) {
+        const element = store_subcategories[index];
+        if (element.id == this.id.substr(23)) {
+            continue;
+        }
+        expense_category_2.push(element);
+    }
+    
+    // display subcategories
+    cObj("edit_expense_sub_categories_holder").value = JSON.stringify(expense_category_2);
+    display_data_exp_category_edit();
+}
+
+cObj("edit_expense_sub_category").onclick = function () {
+    var expense_subcategories = valObj("edit_expense_sub_categories_holder");
+    var store_subcategories = [];
+    if (hasJsonStructure(expense_subcategories)) {
+        store_subcategories = JSON.parse(expense_subcategories);
+    }
+
+    // get the subcategories
+    var err = checkBlank("edit_expense_sub_categories");
+    if (err == 0) {
+        var id = 0;
+        for (let index = 0; index < store_subcategories.length; index++) {
+            const element = store_subcategories[index];
+            if (element.id > id) {
+                id = element.id;
+            }
+        }
+
+        // get the id
+        id+=1;
+        var expense_sub_cat = {"id" : id,"name" : valObj("edit_expense_sub_categories")};
+        store_subcategories.push(expense_sub_cat);
+    }
+
+    cObj("edit_expense_sub_categories_holder").value = JSON.stringify(store_subcategories);
+
+    // display subcategories
+    display_data_exp_category_edit();
+
+    // reset the input text field
+    cObj("edit_expense_sub_categories").value = "";
 }
 
 function edit_revenue_category() {

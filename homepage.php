@@ -2249,37 +2249,73 @@ function checkPresnt($array, $string){
             </div>
         </div>
         <div class="confirmpaymentwindow hide" style="overflow: auto;" id="add_expense_category_window">
-            <div class="changesubwindow editexams animate">
+            <div class="changesubwindow2 editexams animate">
                 <div class="container w-100">
                     <p class="funga" id="close_window_expense_category">&times</p>
-                    <h6 class="text-center"><b>Add Expense Category</b></h6>
+                    <h5 class="text-center"><b>Add Expense Category</b></h5>
                 </div>
-                <div class="container w-100" id="">
-                    <div class="form-group">
-                        <label for="expense_category_name" class="form-control-label">Expense Category Name.</label>
-                        <input type="text" name="" id="expense_category_name" class="form-control" placeholder="E.x., Daily Expenses">
+                <div class="mx-auto row w-100">
+                    <div class="container col-md-6" id="">
+                        <h6 class="text-center">Expense Details</h6>
+                        <div class="form-group">
+                            <label for="expense_category_name" class="form-control-label">Expense Category Name.</label>
+                            <input type="text" name="" id="expense_category_name" class="form-control w-75" placeholder="E.x., Daily Expenses">
+                        </div>
+                        <div class="form-group my-2">
+                            <label for="expense_category_budget" class="form-control-label">Category Maximum Budget.</label>
+                            <input type="number" name="" id="expense_category_budget" class="form-control w-75" placeholder="E.x. 1000000">
+                        </div>
+                        <div class="form-group my-2">
+                            <label for="budget_start_time" class="form-control-label">Budget Start Time.</label>
+                            <input type="date" name="" id="budget_start_time" class="form-control w-75" value="<?= date("Y")."-01-01" ?>">
+                        </div>
+                        <div class="form-group my-2">
+                            <label for="budget_end_date" class="form-control-label">Budget End Time.</label>
+                            <input type="date" name="" id="budget_end_date" class="form-control w-75" value="<?= date("Y")."-12-31" ?>">
+                        </div>
                     </div>
-                    <div class="form-group my-2">
-                        <label for="expense_category_budget" class="form-control-label">Category Maximum Budget.</label>
-                        <input type="number" name="" id="expense_category_budget" class="form-control" placeholder="E.x. 1000000">
+                    <div class="col-md-6">
+                        <h6 class="text-center">Expense Categories</h6>
+                        <div class="container border border-rounded border-secondary row">
+                            <div class="col-lg-6 my-2">
+                                <label for="expense_sub_categories" class="form-control-label">Expense Categories</label>
+                                <input type="text" placeholder="Exp. Category" class="form-control w-100" id="expense_sub_categories">
+                                <input type="hidden" value="[]" id="expense_sub_categories_holder">
+                            </div>
+                            <div class="col-lg-6">
+                                <button class="btn btn-primary" id="add_expense_sub_category"><i class="fas fa-plus"></i> Add</button>
+                            </div>
+                        </div>
+                        <div class="container border border-rounded border-secondary row my-1 py-2">
+                            <div class="col-md-12">
+                                <h6 class="text-center">Expense Sub-Category Table</h6>
+                            </div>
+                            <div class="col-md-12 p-0" id="expense_subcategory_table">
+                                <!-- <table class="table col-md-12">
+                                    <tr>
+                                        <th>No.</th>
+                                        <th>Expense Sub-Categories</th>
+                                        <th>Action</th>
+                                    </tr>
+                                    <tr>
+                                        <td>1.</td>
+                                        <td>Expense Sub-Category 1</td>
+                                        <td><span class="link" id="exit_expense_sub_cat"><i class="fas fa-trash"></i> Delete</span></td>
+                                    </tr>
+                                </table> -->
+                                <p class='text-danger'>No expense categories to display!<br>Add expense category list will appear here!</p>
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-group my-2">
-                        <label for="budget_start_time" class="form-control-label">Budget Start Time.</label>
-                        <input type="date" name="" id="budget_start_time" class="form-control" value="<?= date("Y")."-01-01" ?>">
-                    </div>
-                    <div class="form-group my-2">
-                        <label for="budget_end_date" class="form-control-label">Budget End Time.</label>
-                        <input type="date" name="" id="budget_end_date" class="form-control" value="<?= date("Y")."-12-31" ?>">
-                    </div>
-                    <div class="btns">
-                        <button type="button" id="save_expense_category">Save</button>
-                        <button type="button" id="cancel_expense_category">Close</button>
-                    </div>
+                </div>
+                <div class="btns">
+                    <button type="button" id="save_expense_category">Save</button>
+                    <button type="button" id="cancel_expense_category">Close</button>
                 </div>
             </div>
         </div>
         <div class="confirmpaymentwindow hide" style="overflow: auto;" id="add_revenue_category_window">
-            <div class="changesubwindow editexams animate">
+            <div class="changesubwindow2 editexams animate">
                 <div class="container w-100">
                     <p class="funga" id="close_window_revenue_category">&times</p>
                     <h6 class="text-center"><b>Add Revenue Category</b></h6>
@@ -2376,35 +2412,72 @@ function checkPresnt($array, $string){
                 </div>
             </div>
         </div>
-        <div class="confirmpaymentwindow hide" style="overflow: auto;" id="change_expense_category_window">
-            <div class="changesubwindow editexams animate">
+        <div class="confirmpaymentwindow " style="overflow: auto;" id="change_expense_category_window">
+            <div class="changesubwindow2 editexams animate">
                 <div class="container w-100">
                     <p class="funga" id="close_change_expense_category_window">&times</p>
                     <h6 class="text-center"><b>Change Expense Category</b></h6>
+                        <p>Are you sure you want to change <b id="expense_category_change_name"></b>? <br> <b class="text-danger"> Note</b> <br> All entities with this name will be changed in the system. <br>This action will be recorded in the system.</p>
                 </div>
-                <div class="container w-100" id="">
-                    <p>Are you sure you want to change <b id="expense_category_change_name"></b>? <br> <b class="text-danger"> Note</b> <br> All entities with this name will be changed in the system. <br>This action will be recorded in the system.</p>
-                    <div class="form-control">
-                        <label for="change_expense_category_input_window" class="form-control-label">New Expense Category Name</label>
-                        <input type="text" class="form-control" id="change_expense_category_input_window">
+                <hr class="py-1 my-2">
+                <div class="row container">
+                    <div class="container col-md-6" id="">
+                        <h6 class="text-center">Expense Details</h6>
+                        <div class="form-group">
+                            <label for="change_expense_category_input_window" class="form-control-label">New Expense Category Name</label>
+                            <input type="text" class="form-control" placeholder="Expense Category" id="change_expense_category_input_window">
+                        </div>
+                        <div class="form-group my-2">
+                            <label for="expense_category_budget_edit" class="form-control-label">Category Maximum Budget.</label>
+                            <input type="number" name="" id="expense_category_budget_edit" class="form-control" placeholder="E.x. 1000000">
+                        </div>
+                        <div class="form-group my-2">
+                            <label for="budget_start_time_edit" class="form-control-label">Budget Start Time.</label>
+                            <input type="date" name="" id="budget_start_time_edit" class="form-control" value="<?= date("Y")."-01-01" ?>">
+                        </div>
+                        <div class="form-group my-2">
+                            <label for="budget_end_date_edit" class="form-control-label">Budget End Time.</label>
+                            <input type="date" name="" id="budget_end_date_edit" class="form-control" value="<?= date("Y")."-12-31" ?>">
+                        </div>
+                        <input type="hidden" id="exp_indexes_update">
                     </div>
-                    <div class="form-group my-2">
-                        <label for="expense_category_budget_edit" class="form-control-label">Category Maximum Budget.</label>
-                        <input type="number" name="" id="expense_category_budget_edit" class="form-control" placeholder="E.x. 1000000">
+                    <div class="col-md-6">
+                        <h6 class="text-center">Expense Sub-Categories</h6>
+                        <div class="container border border-rounded border-secondary row">
+                            <div class="col-lg-6 my-2">
+                                <label for="edit_expense_sub_categories" class="form-control-label">Expense Categories</label>
+                                <input type="text" placeholder="Exp. Category" class="form-control w-100" id="edit_expense_sub_categories">
+                                <input type="hidden" value="[]" id="edit_expense_sub_categories_holder">
+                            </div>
+                            <div class="col-lg-6">
+                                <button class="btn btn-primary" id="edit_expense_sub_category"><i class="fas fa-plus"></i> Add</button>
+                            </div>
+                        </div>
+                        <div class="container border border-rounded border-secondary row my-1 py-2">
+                            <div class="col-md-12">
+                                <h6 class="text-center">Expense Sub-Category Table</h6>
+                            </div>
+                            <div class="col-md-12 p-0" id="edit_expense_subcategory_table">
+                                <!-- <table class="table col-md-12">
+                                    <tr>
+                                        <th>No.</th>
+                                        <th>Expense Sub-Categories</th>
+                                        <th>Action</th>
+                                    </tr>
+                                    <tr>
+                                        <td>1.</td>
+                                        <td>Expense Sub-Category 1</td>
+                                        <td><span class="link" id="exit_expense_sub_cat"><i class="fas fa-trash"></i> Delete</span></td>
+                                    </tr>
+                                </table> -->
+                                <p class='text-danger'>No expense categories to display!<br>Add expense category list will appear here!</p>
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-group my-2">
-                        <label for="budget_start_time_edit" class="form-control-label">Budget Start Time.</label>
-                        <input type="date" name="" id="budget_start_time_edit" class="form-control" value="<?= date("Y")."-01-01" ?>">
-                    </div>
-                    <div class="form-group my-2">
-                        <label for="budget_end_date_edit" class="form-control-label">Budget End Time.</label>
-                        <input type="date" name="" id="budget_end_date_edit" class="form-control" value="<?= date("Y")."-12-31" ?>">
-                    </div>
-                    <input type="hidden" id="exp_indexes_update">
-                    <div class="btns">
-                        <button type="button" id="save_change_expense_category">Update</button>
-                        <button type="button" id="cancel_change_expense_category">Close</button>
-                    </div>
+                </div>
+                <div class="btns">
+                    <button type="button" id="save_change_expense_category">Update</button>
+                    <button type="button" id="cancel_change_expense_category">Close</button>
                 </div>
             </div>
         </div>

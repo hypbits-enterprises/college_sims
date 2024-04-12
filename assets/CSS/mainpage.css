@@ -841,6 +841,17 @@ table tr:last-of-type{
     background-color: rgba(255, 255, 255, 0.692);
     backdrop-filter: blur(10px);
 }
+.changesubwindow2{
+    margin: auto;
+    background: rgb(255, 255, 255);
+    padding: 10px 5px;
+    position: relative;
+    margin-top: 20vh;
+    border-radius: 10px;
+    font-family: 'Cambria Math';
+    transform: 2s;
+    width: 1000px !important;
+}
 .changesubwindow{
     margin: auto;
     width: 450px;
@@ -910,7 +921,7 @@ table tr:last-of-type{
 #returnback:hover,#returnback2:hover,#returnback3:hover{
     color: rgb(36, 36, 36);
 }
-.changesubwindow .funga{
+.changesubwindow .funga, .changesubwindow2 .funga{
     position: absolute;
     top: 3px;
     right: 10px;
@@ -918,7 +929,7 @@ table tr:last-of-type{
     font-size: 25px;
     font-family: "Calibri";
 }
-.changesubwindow .fungasubjects,.changesubwindow .toasubjects{
+.changesubwindow .fungasubjects,.changesubwindow .toasubjects, .changesubwindow2 .fungasubjects,.changesubwindow2 .toasubjects{
     position: relative;
     cursor: pointer;
     font-size: 20px;
@@ -928,11 +939,11 @@ table tr:last-of-type{
 .boddy1{
     position: relative;
 }
-.funga:hover, .changesubwindow .fungasubjects:hover,.changesubwindow .toasubjects:hover{
+.funga:hover, .changesubwindow .fungasubjects:hover,.changesubwindow .toasubjects:hover, .changesubwindow2 .fungasubjects:hover,.changesubwindow2 .toasubjects:hover{
     color: rgb(247, 37, 0);
     font-weight: bolder;
 }
-.changesubwindow #namesub{
+.changesubwindow #namesub, .changesubwindow2 #namesub{
     position: relative;
     margin: 3px auto;
     padding: 2px 5px;
@@ -943,12 +954,12 @@ table tr:last-of-type{
     outline: none;
     width: 90%;
 }
-.changesubwindow h3{
+.changesubwindow h3, .changesubwindow2 h3{
     text-align: center;
     color: black;
     margin: 3px auto;
 }
-.changesubwindow button{
+.changesubwindow button, .changesubwindow2 button{
     width: auto;
     min-width:100px;
     outline: none;
@@ -961,14 +972,17 @@ table tr:last-of-type{
     cursor: pointer;
     margin: 10px;
 }
-.changesubwindow button:hover{
+
+.changesubwindow button:hover, .changesubwindow2 button:hover{
     background: rgb(16, 141, 148);
     color: rgb(255, 255, 255);
 }
-.changesubwindow label{
+
+.changesubwindow label, .changesubwindow2 label{
     font-weight: 600;
 }
-.changesubwindow .informed{
+
+.changesubwindow .informed, .changesubwindow2 .informed{
     position: relative;
     border-top: .5px dashed black;
     border-bottom: .5px dashed black;
@@ -2442,6 +2456,11 @@ td{
 .message_admin{
     border-bottom: 4px double rgb(199, 199, 199);
 }
+@media screen and (max-width: 1016px){
+    .changesubwindow2{
+        width: 810px !important;
+    }
+}
 @media screen and (max-width: 810px){   
     .middle1 .otheropt{
         display: flex;
@@ -2481,6 +2500,14 @@ td{
         width: 80%;
         margin: auto;
         min-width: 300px;
+    }
+    .changesubwindow2{
+        width: 650px !important;
+    }
+}
+@media screen and (max-width: 650px){
+    .changesubwindow2{
+        width: 450px !important;
     }
 }
 @media screen and (max-width: 500px){
@@ -2522,9 +2549,18 @@ td{
         
     }
 }
+@media screen and (max-width: 450px){
+    .changesubwindow2{
+        width: 350 !important;
+    }
+}
+
 @media screen and (max-width: 400px){
     .boddy3{
         width: 95%;
+    }
+    .changesubwindow2{
+        display: none;
     }
 }
 @media screen and (max-width: 380px){
