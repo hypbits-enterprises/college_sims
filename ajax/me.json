@@ -1,1 +1,91 @@
-[{"course_level":1,"course_name":"5","course_status":1,"id":1,"module_terms":[{"id":1,"term_name":"TERM_1","status":0,"start_date":"20240101000000","end_date":"20240430000000"},{"id":2,"term_name":"TERM_2","status":0,"start_date":"","end_date":""},{"id":3,"term_name":"TERM_3","status":0,"start_date":"","end_date":""}]}]
+[
+    {
+        "category_id": 5,
+        "category_name": "Machiavelli",
+        "sub_categories": [
+            {
+                "id": 1,
+                "name": "MAR1"
+            },
+            {
+                "id": 2,
+                "name": "MAR2"
+            }
+        ]
+    },
+    {
+        "category_id": 6,
+        "category_name": "Scumble",
+        "sub_categories": [
+            {
+                "id": 1,
+                "name": "Scumble1"
+            },
+            {
+                "id": 2,
+                "name": "Scumble2"
+            },
+            {
+                "id": 3,
+                "name": "Scumble3"
+            }
+        ]
+    },
+    {
+        "category_id": 7,
+        "category_name": "Scumblers",
+        "sub_categories": null
+    },
+    {
+        "category_id": 8,
+        "category_name": "Revenue Category 1",
+        "sub_categories": [
+            {
+                "id": 1,
+                "name": "RC1"
+            },
+            {
+                "id": 2,
+                "name": "RC2"
+            },
+            {
+                "id": 3,
+                "name": "RC3"
+            }
+        ]
+    },
+    {
+        "category_id": 9,
+        "category_name": "Revenue Category One",
+        "sub_categories": [
+            {
+                "id": 1,
+                "name": "S"
+            },
+            {
+                "id": 2,
+                "name": "SP"
+            },
+            {
+                "id": 3,
+                "name": "SPE"
+            },
+            {
+                "id": 4,
+                "name": "SPEA"
+            },
+            {
+                "id": 5,
+                "name": "SPEAK"
+            },
+            {
+                "id": 6,
+                "name": "SPEAKE"
+            },
+            {
+                "id": 7,
+                "name": "SPEAKER"
+            }
+        ]
+    }
+]

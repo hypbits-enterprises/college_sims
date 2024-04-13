@@ -3499,11 +3499,11 @@
             }
 
             // expense subcategories
-            $data_to_display = "<select class='form-control' id='expense_sub_category'><option hidden value=''>Select an Option</option>";
+            $data_to_display = "<select class='form-control w-100' id='expense_sub_category'><option hidden value=''>Select an Option</option>";
             for($index = 0; $index < count($sub_categories); $index++){
                 $id = $sub_categories[$index]->id;
                 $name = $sub_categories[$index]->name;
-                $data_to_display .= "<option value='".$id."' >".$name."</option>";
+                $data_to_display .= "<option value='".$get_expense_subcategory.":".$id."' >".$name."</option>";
             }
             $data_to_display .= "</select>";
 
@@ -3928,6 +3928,7 @@
                 echo $data_to_display;
             }
         }elseif(isset($_GET['save_revenue_category'])){
+            $revenue_sub_category = $_GET['revenue_sub_category'];
             $select = "SELECT * FROM `settings` WHERE `sett` = 'revenue_categories'";
             $stmt = $conn2->prepare($select);
             $stmt->execute();
@@ -3962,6 +3963,7 @@
                             $category_details = [];
                             $category_details['category_id'] = $id;
                             $category_details['category_name'] = $_GET['category_name'];
+                            $category_details['sub_categories'] = isJson_report($revenue_sub_category) ? json_decode($revenue_sub_category) : [];
                             array_push($new_array,$category_details);
 
                             // update 
@@ -3979,6 +3981,7 @@
                         $category_details = [];
                         $category_details['category_id'] = $id;
                         $category_details['category_name'] = $_GET['category_name'];
+                        $category_details['sub_categories'] = isJson_report($revenue_sub_category) ? json_decode($revenue_sub_category) : [];
                         $new_array = json_encode([$category_details]);
                         $update = "INSERT INTO `settings` (`sett`,`valued`) VALUES ('revenue_categories','".$new_array."')";
                         $stmt = $conn2->prepare($update);
@@ -3991,6 +3994,7 @@
                     $category_details = [];
                     $category_details['category_id'] = $id;
                     $category_details['category_name'] = $_GET['category_name'];
+                    $category_details['sub_categories'] = isJson_report($revenue_sub_category) ? json_decode($revenue_sub_category) : [];
                     $new_array = json_encode([$category_details]);
                     $update = "INSERT INTO `settings` (`sett`,`valued`) VALUES ('revenue_categories','".$new_array."')";
                     $stmt = $conn2->prepare($update);
@@ -4003,6 +4007,7 @@
                 $category_details = [];
                 $category_details['category_id'] = $id;
                 $category_details['category_name'] = $_GET['category_name'];
+                $category_details['sub_categories'] = isJson_report($revenue_sub_category) ? json_decode($revenue_sub_category) : [];
                 $new_array = json_encode([$category_details]);
                 $update = "INSERT INTO `settings` (`sett`,`valued`) VALUES ('revenue_categories','".$new_array."')";
                 $stmt = $conn2->prepare($update);
@@ -4049,12 +4054,46 @@
                         // get if the name is used before
                         $exp_cats = json_decode($exp_cat);
                         for ($index=0; $index < count($exp_cats); $index++) {
-                            $data_to_display.="<tr><td>".($index+1).". </td><td id='revenue_name_".$exp_cats[$index]->category_id."'>".$exp_cats[$index]->category_name."</td><td><p><span class='mx-1 link edit_revenue_cat' id='edit_revenue_cat_".$exp_cats[$index]->category_id."'><i class='fas fa-pen-fancy'></i></span> <span class='mx-1 link delete_revenue_cat' id = 'delete_revenue_cat_".$exp_cats[$index]->category_id."'><i class='fas fa-trash'></i></span></p></td></tr>";
+                            $data_to_display.="<tr><td>".($index+1).".<input type='hidden' id=expense_sub_category_".$exp_cats[$index]->category_id." value='".((isset($exp_cats[$index]->sub_categories) ? json_encode($exp_cats[$index]->sub_categories) : "[]"))."'> </td><td id='revenue_name_".$exp_cats[$index]->category_id."'>".$exp_cats[$index]->category_name."</td><td><p><span class='mx-1 link edit_revenue_cat' id='edit_revenue_cat_".$exp_cats[$index]->category_id."'><i class='fas fa-pen-fancy'></i></span> <span class='mx-1 link delete_revenue_cat' id = 'delete_revenue_cat_".$exp_cats[$index]->category_id."'><i class='fas fa-trash'></i></span></p></td></tr>";
                         }
                         $data_to_display .= "</table>";
                     }
                 }
             }
+            echo $data_to_display;
+        }elseif(isset($_GET['get_revenue_sub_category'])){
+            $get_revenue_sub_category = $_GET['get_revenue_sub_category'];
+            $revenue_value = $_GET['revenue_value'];
+            $element_id = $_GET['element_id'];
+            $sub_revenue_id = $_GET['sub_revenue_id'];
+
+            // select
+            $select = "SELECT * FROM `settings` WHERE `sett` = 'revenue_categories'";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $expense_sub_category = [];
+            if($result){
+                if($row = $result->fetch_assoc()){
+                    $valued = $row['valued'];
+                    if(isJson_report($valued)){
+                        $valued = json_decode($valued);
+                        foreach ($valued as $key => $value) {
+                            if($value->category_id == $revenue_value){
+                                $expense_sub_category = isset($value->sub_categories) ? $value->sub_categories : [];
+                            }
+                        }
+                    }
+                }
+            }
+
+            // display the options
+            $data_to_display = "<select class='form-control w-100' id='".$element_id."'><option hidden value=''>Select an Option!</option>";
+            foreach($expense_sub_category as $value){
+                $selected = $value->id == $sub_revenue_id ? "selected" : "";
+                $data_to_display .= "<option value='".$value->id."' ".$selected." >".$value->name."</option>";
+            }
+            $data_to_display .= "</select>";
             echo $data_to_display;
         }elseif(isset($_GET['show_expense_cat'])){
             $select = "SELECT * FROM `expense_category`";
@@ -4112,6 +4151,7 @@
             $change_revenue_categories = ($_GET['change_revenue_categories']);
             $new_revenue_name = $_GET['new_revenue_name'];
             $revenue_indexes = $_GET['revenue_indexes'];
+            $revenue_sub_categories = $_GET['revenue_sub_categories'];
             
             $select = "SELECT * FROM `settings` WHERE `sett` = 'revenue_categories'";
             $stmt = $conn2->prepare($select);
@@ -4136,6 +4176,7 @@
                             for($index = 0; $index < count($valued); $index++){
                                 if($valued[$index]->category_id == $revenue_indexes){
                                     $valued[$index]->category_name = $new_revenue_name;
+                                    $valued[$index]->sub_categories = isJson_report($revenue_sub_categories) ? json_decode($revenue_sub_categories) : [];
                                     break;
                                 }
                             }
@@ -5899,6 +5940,33 @@
             // }else{
             //     echo "<p class='text-danger'>An error occured.Please try again later!</p>";
             // }
+        }elseif(isset($_POST['get_expense_sub_category'])){
+            $get_expense_sub_category = $_POST['get_expense_sub_category'];
+            $expense_sub_category = $_POST['expense_sub_category'];
+            $select = "SELECT * FROM `expense_category` WHERE `expense_id` = '".$get_expense_sub_category."'";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $sub_categories = [];
+            if ($result) {
+                if($row = $result->fetch_assoc()){
+                    $expense_sub_categories = $row['expense_sub_categories'];
+                    $sub_categories = isJson_report($expense_sub_categories) ? json_decode($expense_sub_categories) : [];
+                }
+            }
+
+            // expense subcategories
+            $data_to_display = "<select class='form-control w-100' id='expense_sub_category'><option hidden value=''>Select an Option</option>";
+            for($index = 0; $index < count($sub_categories); $index++){
+                $id = $sub_categories[$index]->id;
+                $name = $sub_categories[$index]->name;
+                $selected = $expense_sub_category == $id ? "selected" : "";
+                $data_to_display .= "<option value='".$get_expense_sub_category.":".$id."' ".$selected." >".$name."</option>";
+            }
+            $data_to_display .= "</select>";
+
+            // display select
+            echo $data_to_display;
         }elseif(isset($_POST['change_expense_categories'])){
             $new_exp_name = ($_POST['new_exp_name']);
             $exp_indexes = $_POST['exp_indexes'];
@@ -6186,8 +6254,10 @@
             $expense_ids_in = $_POST['expense_ids_in'];
             $expense_cash_activity = $_POST['expense_cash_activity'];
             $edit_expense_record_date = $_POST['edit_expense_record_date'];
+            $expense_sub_category = $_POST['expense_sub_category'];
+            
 
-            $update = "UPDATE `expenses` SET `exp_name` = '".$expense_name."' , `exp_category` = '".$expense_category."', `document_number` = '".$document_number."', `expense_description` = '".$expense_description."', `exp_amount` = '".$total_unit_cost."', `expense_date` = '".$edit_expense_record_date."', `expense_categories` = '".$expense_cash_activity."' WHERE `expid` = '".$expense_ids_in."'";
+            $update = "UPDATE `expenses` SET `exp_sub_category` = '".$expense_sub_category."', `exp_name` = '".$expense_name."' , `exp_category` = '".$expense_category."', `document_number` = '".$document_number."', `expense_description` = '".$expense_description."', `exp_amount` = '".$total_unit_cost."', `expense_date` = '".$edit_expense_record_date."', `expense_categories` = '".$expense_cash_activity."' WHERE `expid` = '".$expense_ids_in."'";
             $stmt = $conn2->prepare($update);
             // echo $update;
             // $stmt->bind_param("sssssssss",$expense_name,$expense_category,$unit_name,$expense_quantity,$unit_cost,$total_unit_cost,$edit_expense_record_date,$expense_cash_activity,$expense_ids_in);

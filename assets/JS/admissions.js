@@ -7010,6 +7010,8 @@ cObj("cancel_expense_category").onclick = function () {
 }
 
 cObj("setup_revenue_category").onclick = function () {
+    cObj("add_revenue_sub_categories_holder_1").value = "[]";
+    display_revenue_subs_1();
     cObj("add_revenue_category_window").classList.remove("hide");
 }
 cObj("close_window_revenue_category").onclick = function () {
@@ -7146,7 +7148,7 @@ cObj("save_expense_category").onclick = function () {
 cObj("save_revenue_category").onclick = function () {
     var err = checkBlank("revenue_category_name");
     if (err == 0) {
-        var datapass = "?save_revenue_category=true&category_name=" + escape(valObj("revenue_category_name"));
+        var datapass = "?save_revenue_category=true&category_name=" + escape(valObj("revenue_category_name"))+"&revenue_sub_category="+valObj("add_revenue_sub_categories_holder_1");
         sendData2("GET", "administration/admissions.php", datapass, cObj("display_data_revenue_category"), cObj("revenue_categories_loaders"));
         setTimeout(() => {
             var timeout = 0;
@@ -7284,7 +7286,7 @@ cObj("close_change_revenue_category_window").onclick = function () {
 cObj("save_change_revenue_category").onclick = function name() {
     var err = checkBlank("change_revenue_category_input_window");
     if (err == 0) {
-        var datapass = "?change_revenue_categories=true&new_revenue_name=" + escape(valObj("change_revenue_category_input_window")) + "&revenue_indexes=" + escape(valObj("revenue_indexes_update"));
+        var datapass = "?change_revenue_categories=true&new_revenue_name=" + escape(valObj("change_revenue_category_input_window")) + "&revenue_indexes=" + escape(valObj("revenue_indexes_update"))+"&revenue_sub_categories="+valObj("add_revenue_sub_categories_holder");
         sendData2("GET", "administration/admissions.php", datapass, cObj("display_data_revenue_category"), cObj("revenue_categories_loaders"));
         setTimeout(() => {
             var timeout = 0;
@@ -7451,6 +7453,8 @@ function edit_revenue_category() {
     cObj("revenue_category_change_name").innerHTML = cObj("revenue_name_" + this_id).innerText;
     cObj("change_revenue_category_window").classList.remove("hide");
     cObj("revenue_indexes_update").value = this_id;
+    cObj("add_revenue_sub_categories_holder").value = cObj("expense_sub_category_"+this_id).value;
+    display_revenue_subs();
 }
 
 function delete_exp_categories() {

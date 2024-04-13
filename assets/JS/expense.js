@@ -51,6 +51,7 @@ function getExpensesNDisplay(student_data) {
             col.push(element['exp_category']);
             col.push(element['document_number']);
             col.push(element['expense_description']);
+            col.push(element['exp_sub_category']);
             // var col = element.split(":");
             rowsColStudents_expenses.push(col);
         }
@@ -109,13 +110,13 @@ function editExpense() {
     var data = valObj("data_expenses"+this_id);
     if (hasJsonStructure(data)) {
         data = JSON.parse(data);
-        console.log(data);
         cObj("edit_expense_name").value = data[2];
         cObj("total_unit_cost").value = data[0];
         cObj("expense_ids_in").value = data[9];
         cObj("edit_expense_record_date").value = data[11];
         cObj("edit_expense_description").value = data[14];
         cObj("edit_document_number").value = data[13];
+        console.log(data);
         
         // set the expense activity
         var edit_expense_cash_activity = cObj("edit_expense_cash_activity").children;
@@ -148,11 +149,25 @@ function editExpense() {
                             break;
                         }
                     }
+
+                    // DISPLAY THE EXPENSE SUBCATEGORIES
+                    // display_expense_sub_categories(data[15].split(":")[1]);
+                    display_expense_sub_categories(data[12], (data[15] != null ? data[15].split(":")[1] : "-"));
+
+                    // set the listener
+                    cObj("edit_expense_category").addEventListener("change", function () {
+                        display_expense_sub_categories(this.value,"-");
+                    });
                     stopInterval(ids);
                 }
             }, 10);
         }, 10);
     }
+}
+
+function display_expense_sub_categories(expense_category,expense_sub_category) {
+    var datapass = "get_expense_sub_category="+expense_category+"&expense_sub_category="+expense_sub_category;
+    sendDataPost("POST","ajax/administration/admissions.php",datapass,cObj("show_expense_sub_category"),cObj("expense_sub_cat_egories"));
 }
 
 function displayRecord_expenses(start, finish, arrays) {

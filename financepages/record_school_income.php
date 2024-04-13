@@ -99,7 +99,7 @@
                     </div>
                     <div class="col-md-4 form-group">
                         <label for="payment_code" class="form-control-label"><b>Payment Code</b></label>
-                        <input type="text" class="form-control W-100" id="payment_code" placeholder="eg. KJKJHKJ (Optional)">
+                        <input type="text" class="form-control w-100" id="payment_code" placeholder="eg. KJKJHKJ (Optional)">
                     </div>
                     <div class="col-md-4 form-group">
                         <label for="revenue_cash_activity" class="form-control-label"><b>Revenue Cashflow Activity</b></label>
@@ -112,7 +112,13 @@
                     </div>
                     <div class="col-md-4 form-group">
                         <label for="revenue_category" class="form-control-label"><b>Revenue Categories</b> <img class="hide" src="images/ajax_clock_small.gif" id="revenue_categories_loader"></label>
-                        <div id="revenue_categories_list"></div>
+                        <div id="revenue_categories_list">
+                            <p class="text-danger">Revenue categories will appear here!</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 form-group">
+                        <label for="add_revenue_sub_category" class="form-control-label"><b>Revenue Sub-Categories</b> <img class="hide" src="images/ajax_clock_small.gif" id="revenue_sub_categories_loaders"></label>
+                        <div id="revenue_sub_categories_list"><p class="text-danger">Select revenue to display revenue sub-categories!</p></div>
                     </div>
                     <div class="col-md-4 form-group">
                         <label for="revenue_date" class="form-label"><b>Date</b></label>
@@ -186,6 +192,10 @@
                     <div class="col-md-4 form-group">
                         <label for="edit_revenue_category" class="form-control-label"><b>Revenue Categories</b> <img class="hide" src="images/ajax_clock_small.gif" id="edit_revenue_categories_loader"></label>
                         <div id="edit_revenue_category_holder"></div>
+                    </div>
+                    <div class="col-md-4 form-group">
+                        <label for="edit_revenue_sub_category" class="form-control-label"><b>Revenue sub-categories</b> <img class="hide" src="images/ajax_clock_small.gif" id="edit_revenue_sub_categories_loader"></label>
+                        <div id="edit_revenue_sub_categories"></div>
                     </div>
                     <div class="col-md-4 form-group">
                         <label for="revenue_date_edit" class="form-label"><b>Date</b></label>

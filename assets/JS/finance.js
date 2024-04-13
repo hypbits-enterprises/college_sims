@@ -73,7 +73,7 @@ cObj("save_revenue").onclick = function () {
     if (err == 0) {
         cObj("error_handler_revenue_collection").innerHTML = "<p class='text-danger'></p>";
         let datapass = "add_revenue=true&revenue_name="+valObj("revenue_name")+"&revenue_amount="+valObj("revenue_amount")+"&revenue_date="+valObj("revenue_date")+"&customer_name="+valObj("customer_name")+"&customer_contacts_revenue="+valObj("customer_contacts_revenue")+"&contact_person="+valObj("contact_person")+"&revenue_description="+valObj("revenue_description")+"&revenue_categories="+valObj("revenue_category")+"&revenue_cash_activity="+valObj("revenue_cash_activity")+"&reportable_status="+valObj("reportable_status");
-        datapass += "&mode_of_revenue_payment="+valObj("mode_of_revenue_payment")+"&payment_code="+valObj("payment_code");
+        datapass += "&mode_of_revenue_payment="+valObj("mode_of_revenue_payment")+"&payment_code="+valObj("payment_code")+"&revenue_sub_category="+valObj("add_revenue_sub_category");
         sendDataPost("POST","ajax/finance/financial.php",datapass,cObj("error_handler_revenue_collection"),cObj("save_revenue_loader"));
         setTimeout(() => {
             var ids = setInterval(() => {
@@ -132,7 +132,7 @@ function display_revenue(data,start_from) {
     var data_to_display = "<br><h4 class='text-center'><u>Revenue List</u></h4><table class='table'><thead><tr><th>No.</th><th>Name</th><th>Amount</th><th>Date Recorded.</th><th>Revenue Name.</th><th>Contact Person</th><th>Customer Contact</th><th>Action</th></tr></thead><tbody id='revenue_lists_all_display'>";
     for (let index = 0; index < data.length; index++) {
         const element = data[index];
-        data_to_display+="<tr><td><input hidden value='"+JSON.stringify(element)+"' id='revenue_values_"+element.id+"'>"+(start_from+index+1)+"</td><td>"+element.name+"</td><td>Kes "+comma3(element.amount)+"</td><td>"+formatDate_1(element.date_recorded+"000000")+"</td><td>"+element.revenue_category_name+"</td><td>"+element.contact_person+"</td><td>"+element.customer_contact+"</td><td><span style='font-size:12px;' class='link edit_revenue_window' id='edit_revenue_window_"+element.id+"'><i class='fa fa-pen-fancy'></i> Edit </span> <span style='font-size:12px;' class='link delete_revenue_window' id='delete_revenue_window_"+element.id+"'><i class='fa fa-trash'></i> Delete</span> <br> <a target='_blank' href='/college_sims/reports/reports.php?revenue_receipt=true&revenue_details="+JSON.stringify(element)+"'><span style='font-size:12px;'><i class='fa fa-print'></i> Print</span></a></td></tr>";
+        data_to_display+="<tr><td><input hidden value='"+JSON.stringify(element)+"' id='revenue_values_"+element.id+"'>"+(start_from+index+1)+"</td><td>"+element.name+"</td><td>Kes "+comma3(element.amount)+"</td><td>"+formatDate_1(element.date_recorded+"000000")+"</td><td>"+element.revenue_category_name+"</td><td>"+element.contact_person+"</td><td>"+element.customer_contact+"</td><td><span style='font-size:12px;' class='link edit_revenue_window' id='edit_revenue_window_"+element.id+"'><i class='fa fa-pen-fancy'></i> Edit </span> <br> <span style='font-size:12px;' class='link delete_revenue_window' id='delete_revenue_window_"+element.id+"'><i class='fa fa-trash'></i> Del</span> <br> <a target='_blank' href='/college_sims/reports/reports.php?revenue_receipt=true&revenue_details="+JSON.stringify(element)+"'><span style='font-size:12px;'><i class='fa fa-print'></i> Print</span></a></td></tr>";
     }
     data_to_display+="</tbody></table>";
 
@@ -285,6 +285,15 @@ function edit_revenues() {
                             element.selected = true;
                         }
                     }
+
+                    // get the revenue sub category
+                    var revenue_sub_categories = (row_value.revenue_sub_category != null ? row_value.revenue_sub_category : "");
+                    revenue_sub_categories_2(row_value.revenue_category,revenue_sub_categories,"edit_revenue_sub_category");
+
+                    // get the revenue category
+                    cObj("edit_revenue_category").addEventListener("change",function () {
+                        revenue_sub_categories_2(this.value,"","edit_revenue_sub_category");
+                    });
                 }
                 stopInterval(ids);
             }
@@ -358,7 +367,7 @@ cObj("save_revenue_edit").onclick = function () {
     if (err == 0) {
         cObj("error_handler_revenue_collection_edit").innerHTML = "<p class='text-danger'></p>";
         let datapass = "update_revenue=true&revenue_name="+valObj("revenue_name_edit")+"&revenue_amount="+valObj("revenue_amount_edit")+"&revenue_date="+valObj("revenue_date_edit")+"&customer_name="+valObj("customer_name_edit")+"&customer_contacts_revenue="+valObj("customer_contacts_revenue_edit")+"&contact_person="+valObj("contact_person_edit")+"&revenue_description="+valObj("revenue_description_edit")+"&revenue_id="+valObj("revenue_ids")+"&revenue_category="+valObj("edit_revenue_category")+"&edit_revenue_cash_activity="+valObj("edit_revenue_cash_activity")+"&reportable_status_edit="+valObj("reportable_status_edit");
-        datapass += "&mode_of_revenue_payment_edit="+valObj("mode_of_revenue_payment_edit")+"&payment_code_edit="+valObj("payment_code_edit");
+        datapass += "&mode_of_revenue_payment_edit="+valObj("mode_of_revenue_payment_edit")+"&payment_code_edit="+valObj("payment_code_edit")+"&revenue_sub_category="+valObj("edit_revenue_sub_category");
         sendDataPost("POST","ajax/finance/financial.php",datapass,cObj("error_handler_revenue_collection_edit"),cObj("update_revenue_loader"));
         setTimeout(() => {
             var ids = setInterval(() => {
@@ -389,14 +398,46 @@ cObj("confirm_Delete_revenue_no").onclick = function () {
 cObj("add-revenue-btn").onclick = function () {
     cObj("show_revenue_list").classList.add("hide");
     cObj("add_revenues").classList.remove("hide");
+    cObj("revenue_sub_categories_list").innerHTML = "<p class='text-danger'>Select revenue to display revenue sub-categories!</p>";
+    cObj("revenue_categories_list").innerHTML = "<p class='text-danger'>Revenue categories will appear here!</p>";
     display_revenue_category();
 }
 
 function display_revenue_category() {
     var datapass = "get_revenue_categories=true&revenue_id=revenue_category";
     sendDataPost("POST","ajax/finance/financial.php",datapass,cObj("revenue_categories_list"),cObj("show_revenue_loader"));
+    setTimeout(() => {
+        var timeout = 0;
+        var ids = setInterval(() => {
+            timeout++;
+            //after two minutes of slow connection the next process wont be executed
+            if (timeout == 1200) {
+                stopInterval(ids);
+            }
+            if (cObj("show_revenue_loader").classList.contains("hide")) {
+                if(cObj("revenue_category") != undefined){
+                    cObj("revenue_category").addEventListener("change",function () {
+                        revenue_sub_categories(this.value,"","add_revenue_sub_category");
+                    });
+                }
+                stopInterval(ids);
+            }
+        }, 100);
+    }, 200);
 }
 
+
+function revenue_sub_categories(value,id,element_id) {
+    // get the revenue subcategories.
+    var datapass = "?get_revenue_sub_category=true&revenue_value="+value+"&sub_revenue_id="+id+"&element_id="+element_id;
+    sendData2("GET","administration/admissions.php",datapass,cObj("revenue_sub_categories_list"),cObj("revenue_sub_categories_loaders"));
+}
+
+function revenue_sub_categories_2(value,id,element_id) {
+    // get the revenue subcategories.
+    var datapass = "?get_revenue_sub_category=true&revenue_value="+value+"&sub_revenue_id="+id+"&element_id="+element_id;
+    sendData2("GET","administration/admissions.php",datapass,cObj("edit_revenue_sub_categories"),cObj("edit_revenue_sub_categories_loader"));
+}
 
 function editFees() {
     //get the values from the table
@@ -1447,7 +1488,8 @@ function addExpense() {
                 cObj("err_hndler_expenses").innerHTML = "<p class='green_notice'></p>";
             }
             if (err == 0) {
-                var datapass = "?addExpenses=true&exp_name=" + cObj("exp_named").value + "&expensecat=" + cObj("exp_cat").value + "&quantity=" + cObj("exp_quant").value + "&unitcost=" + cObj("exp_amnt").value + "&total=" + cObj("exp_total_amt").value + "&unit_name=" + cObj("unit_name").value+"&expense_cash_activity="+valObj("expense_cash_activity")+"&expense_record_date="+valObj("expense_record_date")+"&document_number="+valObj("document_number")+"&new_expense_description="+valObj("new_expense_description");
+                var expense_sub_category = cObj("expense_sub_category") != undefined && cObj("expense_sub_category") != null ? valObj("expense_sub_category") : "";
+                var datapass = "?addExpenses=true&exp_name=" + cObj("exp_named").value + "&expensecat=" + cObj("exp_cat").value + "&quantity=" + cObj("exp_quant").value + "&unitcost=" + cObj("exp_amnt").value + "&total=" + cObj("exp_total_amt").value + "&unit_name=" + cObj("unit_name").value+"&expense_cash_activity="+valObj("expense_cash_activity")+"&expense_record_date="+valObj("expense_record_date")+"&document_number="+valObj("document_number")+"&new_expense_description="+valObj("new_expense_description")+"&expense_sub_category="+expense_sub_category;
                 sendData1("GET", "finance/financial.php", datapass, cObj("err_hndler_expenses"));
                 setTimeout(() => {
                     var timeout = 0;
@@ -1468,6 +1510,12 @@ function addExpense() {
                                 cObj("unit_name").value = "";
                                 cObj("new_expense_description").value = "";
                                 cObj("document_number").value = "";
+
+                                // check if the element is defines
+                                if(cObj("expense_sub_category") != undefined && cObj("expense_sub_category") != null){
+                                    var main_children = cObj("expense_sub_category").children;
+                                    main_children[0].selected = true;
+                                }
                                 displayTodaysExpense();
                             }
                             setTimeout(() => {
@@ -1583,6 +1631,7 @@ cObj("done_adding_exp").onclick = function () {
 cObj("add_exp").onclick = function () {
     cObj("recordexp").classList.remove("hide");
     cObj("exp_options").classList.add("hide");
+    cObj("expense_subcategory_display").innerHTML = "<p class='text-danger'>Select expense category to display expense sub-category!</p>";
     getExpense_Cats();
 }
 cObj("done_display_exp").onclick = function () {
@@ -4052,7 +4101,7 @@ cObj("save_expense_details").onclick = function () {
         err+=checkBlank("total_unit_cost");
         err+=checkBlank("edit_expense_cash_activity");
         err+=checkBlank("edit_expense_record_date");
-        err+=checkBlank("edit_expense_description");
+        // err+=checkBlank("edit_expense_description");
         
         if (err == 0) {
             cObj("error_handlers_expenses").innerHTML = "";
@@ -4064,9 +4113,10 @@ cObj("save_expense_details").onclick = function () {
             var expense_ids_in = valObj("expense_ids_in");
             var edit_expense_cash_activity = valObj("edit_expense_cash_activity");
             var edit_expense_record_date = valObj("edit_expense_record_date");
+            var expense_sub_cate = cObj("expense_sub_category") != undefined ? cObj("expense_sub_category").value : "";
     
     
-            var datapass = "update_expense=true&expense_name="+edit_expense_name+"&expense_category="+edit_expense_category+"&document_number="+edit_document_number+"&expense_description="+edit_expense_description+"&total_unit_cost="+total_unit_cost+"&expense_ids_in="+expense_ids_in+"&expense_cash_activity="+edit_expense_cash_activity+"&edit_expense_record_date="+edit_expense_record_date;
+            var datapass = "update_expense=true&expense_name="+edit_expense_name+"&expense_category="+edit_expense_category+"&document_number="+edit_document_number+"&expense_description="+edit_expense_description+"&total_unit_cost="+total_unit_cost+"&expense_ids_in="+expense_ids_in+"&expense_cash_activity="+edit_expense_cash_activity+"&edit_expense_record_date="+edit_expense_record_date+"&expense_sub_category="+expense_sub_cate;
             sendDataPost("POST","ajax/administration/admissions.php",datapass,cObj("error_handlers_expenses"),cObj("expense_editor_loader"));
             setTimeout(() => {
                 var timeout = 0;
@@ -4304,3 +4354,182 @@ function deleteTrash() {
 cObj("payment_information_no").onclick = function () {
     cObj("payment_details_window").classList.add("hide");
 }
+
+cObj("add_revenue_sub_category").onclick = function () {
+    var err = checkBlank("add_revenue_sub_categories");
+    if (err == 0) {
+        var add_revenue_sub_categories_holder = valObj("add_revenue_sub_categories_holder");
+        var revenue_holder = [];
+        if (hasJsonStructure(add_revenue_sub_categories_holder)) {
+            revenue_holder = JSON.parse(add_revenue_sub_categories_holder);
+        }
+    
+        // get the id
+        var id = 0;
+        for (let index = 0; index < revenue_holder.length; index++) {
+            const element = revenue_holder[index];
+            if(element.id >= id){
+                id = element.id;
+            }
+        }
+    
+        // add id plus 1
+        id+=1;
+        
+        // add a new id
+        var new_revenue = {id:id, name: valObj("add_revenue_sub_categories")};
+        revenue_holder.push(new_revenue);
+
+        // return the value to the revenue holder
+        cObj("add_revenue_sub_categories_holder").value = JSON.stringify(revenue_holder);
+
+        // reset the field
+        cObj("add_revenue_sub_categories").value = "";
+
+        // display subcategories
+        display_revenue_subs();
+    }
+}
+function display_revenue_subs() {
+    var add_revenue_sub_categories_holder = valObj("add_revenue_sub_categories_holder");
+    var data_to_display = "";
+    if (hasJsonStructure(add_revenue_sub_categories_holder)) {
+        add_revenue_sub_categories_holder = JSON.parse(add_revenue_sub_categories_holder);
+        if (add_revenue_sub_categories_holder.length > 0) {
+            // display table
+            data_to_display = "<table class='table col-md-12'><tr><th>No.</th><th>Revenue Sub-Categories</th><th>Action</th></tr>";
+            for (let index = 0; index < add_revenue_sub_categories_holder.length; index++) {
+                const element = add_revenue_sub_categories_holder[index];
+                data_to_display+="<tr><td>"+ (index+1) +".</td><td>"+element.name+"</td><td><span class='link edit_revenue' id='edit_revenue_"+element.id+"'><i class='fas fa-trash'></i> Delete</span></td></tr>";
+            }
+            data_to_display+="</table>";
+        }else{
+            data_to_display += "<p class='text-danger'>No revenue sub-categories to display!<br>Revenue sub-category list will appear here!</p>";
+        }
+    }else{
+        data_to_display += "<p class='text-danger'>No revenue sub-categories to display!<br>Revenue sub-category list will appear here!</p>";
+    }
+
+    cObj("add_revenue_subcategory_table").innerHTML = data_to_display;
+
+    // add event listener
+    var edit_revenue = document.getElementsByClassName("edit_revenue");
+    for (let index = 0; index < edit_revenue.length; index++) {
+        const element = edit_revenue[index];
+        element.addEventListener("click", revenue_event_listener);
+    }
+}
+
+function revenue_event_listener() {
+    var id = this.id.substr(13);
+    var add_revenue_sub_categories_holder = valObj("add_revenue_sub_categories_holder");
+    if (hasJsonStructure(add_revenue_sub_categories_holder)) {
+        add_revenue_sub_categories_holder = JSON.parse(add_revenue_sub_categories_holder);
+
+        // loop through the 
+        var new_revenue_list = [];
+        for (let index = 0; index < add_revenue_sub_categories_holder.length; index++) {
+            const element = add_revenue_sub_categories_holder[index];
+            if (element.id == id) {
+                continue;
+            }
+            new_revenue_list.push(element);
+        }
+
+        // return value
+        cObj("add_revenue_sub_categories_holder").value = JSON.stringify(new_revenue_list);
+    }
+
+    // display value
+    display_revenue_subs();
+}
+
+cObj("add_revenue_sub_category_1").onclick = function () {
+    var err = checkBlank("add_revenue_sub_categories_1");
+    if (err == 0) {
+        var add_revenue_sub_categories_holder = valObj("add_revenue_sub_categories_holder_1");
+        var revenue_holder = [];
+        if (hasJsonStructure(add_revenue_sub_categories_holder)) {
+            revenue_holder = JSON.parse(add_revenue_sub_categories_holder);
+        }
+    
+        // get the id
+        var id = 0;
+        for (let index = 0; index < revenue_holder.length; index++) {
+            const element = revenue_holder[index];
+            if(element.id >= id){
+                id = element.id;
+            }
+        }
+    
+        // add id plus 1
+        id+=1;
+        
+        // add a new id
+        var new_revenue = {id:id, name: valObj("add_revenue_sub_categories_1")};
+        revenue_holder.push(new_revenue);
+
+        // return the value to the revenue holder
+        cObj("add_revenue_sub_categories_holder_1").value = JSON.stringify(revenue_holder);
+
+        // reset the field
+        cObj("add_revenue_sub_categories_1").value = "";
+
+        // display subcategories
+        display_revenue_subs_1();
+    }
+}
+function display_revenue_subs_1() {
+    var add_revenue_sub_categories_holder = valObj("add_revenue_sub_categories_holder_1");
+    var data_to_display = "";
+    if (hasJsonStructure(add_revenue_sub_categories_holder)) {
+        add_revenue_sub_categories_holder = JSON.parse(add_revenue_sub_categories_holder);
+        if (add_revenue_sub_categories_holder.length > 0) {
+            // display table
+            data_to_display = "<table class='table col-md-12'><tr><th>No.</th><th>Revenue Sub-Categories</th><th>Action</th></tr>";
+            for (let index = 0; index < add_revenue_sub_categories_holder.length; index++) {
+                const element = add_revenue_sub_categories_holder[index];
+                data_to_display+="<tr><td>"+ (index+1) +".</td><td>"+element.name+"</td><td><span class='link edit_revenue_1' id='edit_revenue_1_"+element.id+"'><i class='fas fa-trash'></i> Delete</span></td></tr>";
+            }
+            data_to_display+="</table>";
+        }else{
+            data_to_display += "<p class='text-danger'>No revenue sub-categories to display!<br>Revenue sub-category list will appear here!</p>";
+        }
+    }else{
+        data_to_display += "<p class='text-danger'>No revenue sub-categories to display!<br>Revenue sub-category list will appear here!</p>";
+    }
+
+    cObj("add_revenue_subcategory_table_1").innerHTML = data_to_display;
+
+    // add event listener
+    var edit_revenue = document.getElementsByClassName("edit_revenue_1");
+    for (let index = 0; index < edit_revenue.length; index++) {
+        const element = edit_revenue[index];
+        element.addEventListener("click", revenue_event_listener_1);
+    }
+}
+
+function revenue_event_listener_1() {
+    var id = this.id.substr(15);
+    var add_revenue_sub_categories_holder = valObj("add_revenue_sub_categories_holder_1");
+    if (hasJsonStructure(add_revenue_sub_categories_holder)) {
+        add_revenue_sub_categories_holder = JSON.parse(add_revenue_sub_categories_holder);
+
+        // loop through the 
+        var new_revenue_list = [];
+        for (let index = 0; index < add_revenue_sub_categories_holder.length; index++) {
+            const element = add_revenue_sub_categories_holder[index];
+            if (element.id == id) {
+                continue;
+            }
+            new_revenue_list.push(element);
+        }
+
+        // return value
+        cObj("add_revenue_sub_categories_holder_1").value = JSON.stringify(new_revenue_list);
+    }
+
+    // display value
+    display_revenue_subs_1();
+}
+

@@ -2254,6 +2254,7 @@ function checkPresnt($array, $string){
                     <p class="funga" id="close_window_expense_category">&times</p>
                     <h5 class="text-center"><b>Add Expense Category</b></h5>
                 </div>
+                <hr class="my-2 py-1">
                 <div class="mx-auto row w-100">
                     <div class="container col-md-6" id="">
                         <h6 class="text-center">Expense Details</h6>
@@ -2320,13 +2321,47 @@ function checkPresnt($array, $string){
                     <p class="funga" id="close_window_revenue_category">&times</p>
                     <h6 class="text-center"><b>Add Revenue Category</b></h6>
                 </div>
-                <div class="container w-100" id="">
-                    <label for="revenue_category_name" class="form-control-label">Revenue Category Name.</label>
-                    <input type="" name="" id="revenue_category_name" class="form-control" placeholder="E.x., Transfers from National Government entities">
-                    <div class="btns">
-                        <button type="button" id="save_revenue_category">Save</button>
-                        <button type="button" id="cancel_revenue_category">Close</button>
+                <div class="row container">
+                    <div class="col-md-6 p-2" id="">
+                        <label for="revenue_category_name" class="form-control-label">Revenue Category Name.</label>
+                        <input type="text" name="" id="revenue_category_name" class="form-control" placeholder="E.x., Transfers from National Government entities">
                     </div>
+                    <div class="col-md-6">
+                        <div class="container border border-rounded border-secondary row">
+                            <div class="col-lg-6 my-2">
+                                <label for="add_revenue_sub_categories" class="form-control-label">Revenue Categories</label>
+                                <input type="text" placeholder="Revenue. Category" class="form-control w-100" id="add_revenue_sub_categories_1">
+                                <input type="hidden" value="[]" id="add_revenue_sub_categories_holder_1">
+                            </div>
+                            <div class="col-lg-6">
+                                <button class="btn btn-primary" id="add_revenue_sub_category_1"><i class="fas fa-plus"></i> Add</button>
+                            </div>
+                        </div>
+                        <div class="container border border-rounded border-secondary row my-1 py-2">
+                            <div class="col-md-12">
+                                <h6 class="text-center">Revenue Sub-Category Table</h6>
+                            </div>
+                            <div class="col-md-12 p-0" id="add_revenue_subcategory_table_1">
+                                <!-- <table class="table col-md-12">
+                                    <tr>
+                                        <th>No.</th>
+                                        <th>Expense Sub-Categories</th>
+                                        <th>Action</th>
+                                    </tr>
+                                    <tr>
+                                        <td>1.</td>
+                                        <td>Expense Sub-Category 1</td>
+                                        <td><span class="link" id="exit_expense_sub_cat"><i class="fas fa-trash"></i> Delete</span></td>
+                                    </tr>
+                                </table> -->
+                                <p class='text-danger'>No revenue sub-categories to display!<br>Revenue sub-category list will appear here!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="btns">
+                    <button type="button" id="save_revenue_category">Save</button>
+                    <button type="button" id="cancel_revenue_category">Close</button>
                 </div>
             </div>
         </div>
@@ -2367,6 +2402,9 @@ function checkPresnt($array, $string){
                     <label for="edit_expense_category" class="form-label">Expense Category <img src="images/ajax_clock_small.gif" id="expense_cat_egories" class="hide"></label>
                     <p id="show_expense_category"></p>
 
+                    <label for="edit_expense_sub_cat" class="form-label">Expense Sub-Category <img src="images/ajax_clock_small.gif" id="expense_sub_cat_egories" class="hide"></label>
+                    <p id="show_expense_sub_category"></p>
+
                     <label for="edit_expense_cash_activity" class="form-control-label"><b>Expense Activity</b></label>
                     <select name="edit_expense_cash_activity" id="edit_expense_cash_activity" class="form-control w-100">
                         <option value="" hidden>Select Option</option>
@@ -2395,24 +2433,58 @@ function checkPresnt($array, $string){
             </div>
         </div>
         <div class="confirmpaymentwindow hide" style="overflow: auto;" id="change_revenue_category_window">
-            <div class="changesubwindow editexams animate">
+            <div class="changesubwindow2 editexams animate">
                 <div class="container w-100">
                     <p class="funga" id="close_change_revenue_category_window">&times</p>
                     <h6 class="text-center"><b>Change Revenue Category</b></h6>
                 </div>
-                <div class="container w-100" id="">
-                    <p>Are you sure you want to change <b id="revenue_category_change_name"></b>? <br> <b class="text-danger"> Note</b> <br> All entities with this name will be changed in the system.</p>
-                    <label for="change_revenue_category_input_window" class="form-control-label">New Revenue Category Name</label>
-                    <input type="text" class="form-control w-100" id="change_revenue_category_input_window">
-                    <input type="hidden" id="revenue_indexes_update">
-                    <div class="btns">
-                        <button type="button" id="save_change_revenue_category">Yes</button>
-                        <button type="button" id="cancel_change_revenue_category">Close</button>
+                <div class="row container">
+                    <div class="container col-md-6 border border-secondary rounded" id="">
+                        <p>Are you sure you want to change <b id="revenue_category_change_name"></b>? <br> <b class="text-danger"> Note</b> <br> All entities with this name will be changed in the system.</p>
+                        <label for="change_revenue_category_input_window" class="form-control-label">New Revenue Category Name</label>
+                        <input type="text" class="form-control w-75" placeholder="Revenue Category" id="change_revenue_category_input_window">
+                        <input type="hidden" id="revenue_indexes_update">
                     </div>
+                    <div class="col-md-6">
+                        <div class="container border border-rounded border-secondary row">
+                            <div class="col-lg-6 my-2">
+                                <label for="add_revenue_sub_categories" class="form-control-label">Revenue Categories</label>
+                                <input type="text" placeholder="Revenue. Category" class="form-control w-100" id="add_revenue_sub_categories">
+                                <input type="hidden" value="[]" id="add_revenue_sub_categories_holder">
+                            </div>
+                            <div class="col-lg-6">
+                                <button class="btn btn-primary" id="add_revenue_sub_category"><i class="fas fa-plus"></i> Add</button>
+                            </div>
+                        </div>
+                        <div class="container border border-rounded border-secondary row my-1 py-2">
+                            <div class="col-md-12">
+                                <h6 class="text-center">Revenue Sub-Category Table</h6>
+                            </div>
+                            <div class="col-md-12 p-0" id="add_revenue_subcategory_table">
+                                <!-- <table class="table col-md-12">
+                                    <tr>
+                                        <th>No.</th>
+                                        <th>Expense Sub-Categories</th>
+                                        <th>Action</th>
+                                    </tr>
+                                    <tr>
+                                        <td>1.</td>
+                                        <td>Expense Sub-Category 1</td>
+                                        <td><span class="link" id="exit_expense_sub_cat"><i class="fas fa-trash"></i> Delete</span></td>
+                                    </tr>
+                                </table> -->
+                                <p class='text-danger'>No revenue sub-categories to display!<br>Revenue sub-category list will appear here!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="btns">
+                    <button type="button" id="save_change_revenue_category"><i class="fas fa-save"></i> Save</button>
+                    <button type="button" id="cancel_change_revenue_category"><div class="fas fa-close"></div> Close</button>
                 </div>
             </div>
         </div>
-        <div class="confirmpaymentwindow " style="overflow: auto;" id="change_expense_category_window">
+        <div class="confirmpaymentwindow hide" style="overflow: auto;" id="change_expense_category_window">
             <div class="changesubwindow2 editexams animate">
                 <div class="container w-100">
                     <p class="funga" id="close_change_expense_category_window">&times</p>

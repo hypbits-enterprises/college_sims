@@ -1,3 +1,47 @@
+13th Apr 2024 22:54:42PM : Revenue "Revenue One" has been updated successfully! - {HILLARY NGIGE}
+13th Apr 2024 22:54:22PM : Revenue "Revenue One" has been added successfully! - {HILLARY NGIGE}
+13th Apr 2024 22:46:00PM : Revenue "RENTING THE SWIMMING POOL" has been updated successfully! - {HILLARY NGIGE}
+13th Apr 2024 22:45:51PM : Revenue "KITALE MAN" has been updated successfully! - {HILLARY NGIGE}
+13th Apr 2024 22:45:40PM : Revenue "BRISKEY MASKATEERS" has been updated successfully! - {HILLARY NGIGE}
+13th Apr 2024 22:45:04PM : Revenue "BRISKEY MASKATEERS" has been updated successfully! - {HILLARY NGIGE}
+13th Apr 2024 22:38:58PM : Revenue category "Machiavelli" updated successfully! - {HILLARY NGIGE}
+13th Apr 2024 22:38:29PM : Revenue category "Scumblers" updated successfully! - {HILLARY NGIGE}
+13th Apr 2024 18:17:18PM : Revenue category "Machiavelli" updated successfully! - {HILLARY NGIGE}
+13th Apr 2024 18:17:06PM : Revenue category "Revenue Category One" has been added successfully! - {HILLARY NGIGE}
+13th Apr 2024 18:12:25PM : Revenue category "Category 1" deleted successfully! - {HILLARY NGIGE}
+13th Apr 2024 18:12:22PM : Revenue category "School revenue" deleted successfully! - {HILLARY NGIGE}
+13th Apr 2024 18:12:19PM : Revenue category "Pen and Paper" deleted successfully! - {HILLARY NGIGE}
+13th Apr 2024 18:12:16PM : Revenue category "Mt Kenya Revenue Donations" deleted successfully! - {HILLARY NGIGE}
+13th Apr 2024 18:12:12PM : Revenue category "Mt Kenya Revenue Donations" updated successfully! - {HILLARY NGIGE}
+13th Apr 2024 18:07:43PM : Revenue category "Revenue Category 1" has been added successfully! - {HILLARY NGIGE}
+13th Apr 2024 18:06:23PM : Revenue category "Scumblers" has been added successfully! - {HILLARY NGIGE}
+13th Apr 2024 18:05:49PM : Revenue category "Scumble" updated successfully! - {HILLARY NGIGE}
+13th Apr 2024 18:04:45PM : Revenue category "Scumble" has been added successfully! - {HILLARY NGIGE}
+13th Apr 2024 16:42:57PM : Revenue category "School Revenue" updated successfully! - {HILLARY NGIGE}
+13th Apr 2024 16:42:44PM : Revenue category "Pen And Paper" updated successfully! - {HILLARY NGIGE}
+13th Apr 2024 16:42:40PM : Revenue category "Mt Kenya Revenue Donations" updated successfully! - {HILLARY NGIGE}
+13th Apr 2024 16:42:15PM : Revenue category "Mt Kenya Revenue Donations" updated successfully! - {HILLARY NGIGE}
+13th Apr 2024 16:42:09PM : Revenue category "School Revenue" updated successfully! - {HILLARY NGIGE}
+13th Apr 2024 16:42:01PM : Revenue category "Pen And Paper" updated successfully! - {HILLARY NGIGE}
+13th Apr 2024 16:41:46PM : Revenue category "Category 1" updated successfully! - {HILLARY NGIGE}
+13th Apr 2024 16:41:39PM : Revenue category "Mt Kenya Revenue Donations" updated successfully! - {HILLARY NGIGE}
+13th Apr 2024 16:41:21PM : Revenue category "Category 1" updated successfully! - {HILLARY NGIGE}
+13th Apr 2024 16:40:57PM : Revenue category "Machiavelli" updated successfully! - {HILLARY NGIGE}
+13th Apr 2024 16:40:23PM : Revenue category "Pen And Paper" updated successfully! - {HILLARY NGIGE}
+13th Apr 2024 16:38:09PM : Revenue category "ss" has been added successfully! - {HILLARY NGIGE}
+13th Apr 2024 16:19:32PM : Revenue category "Mt Kenya Revenue Donations" updated successfully! - {HILLARY NGIGE}
+13th Apr 2024 16:19:10PM : Revenue category "Mt Kenya Revenue Donations" updated successfully! - {HILLARY NGIGE}
+13th Apr 2024 14:18:56PM : Expense "KODI" updated successfully! - {HILLARY NGIGE}
+13th Apr 2024 14:18:39PM : Expense "Sugar" updated successfully! - {HILLARY NGIGE}
+13th Apr 2024 14:18:22PM : Expense "sugar" updated successfully! - {HILLARY NGIGE}
+13th Apr 2024 14:18:09PM : Expense "sugar" updated successfully! - {HILLARY NGIGE}
+13th Apr 2024 14:10:09PM : Expense "JAMES MUGOH" updated successfully! - {HILLARY NGIGE}
+13th Apr 2024 14:09:25PM : Expense "Rice" updated successfully! - {HILLARY NGIGE}
+13th Apr 2024 14:09:05PM : Expense "One Expense" updated successfully! - {HILLARY NGIGE}
+13th Apr 2024 14:08:46PM : Expense "Maximum Calamity" updated successfully! - {HILLARY NGIGE}
+13th Apr 2024 14:08:39PM : Expense "Car Buying" updated successfully! - {HILLARY NGIGE}
+13th Apr 2024 10:47:50AM : Expense "Expense Name" uploaded successfully! - {HILLARY NGIGE}
+13th Apr 2024 10:10:35AM : HILLARY NGIGE successfully logged into the system as System Administrator - {HILLARY NGIGE}
 12th Apr 2024 18:25:17PM : Expense category "Expense Category 2" added successfully! - {HILLARY NGIGE}
 12th Apr 2024 12:47:21PM : HILLARY NGIGE successfully logged into the system as System Administrator - {HILLARY NGIGE}
 24th Feb 2024 10:12:46AM : HILLARY NGIGE successfully logged into the system as System Administrator - {HILLARY NGIGE}

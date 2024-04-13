@@ -1526,11 +1526,12 @@
             $expense_record_date = $_GET['expense_record_date'];
             $document_number = $_GET['document_number'];
             $new_expense_description = $_GET['new_expense_description'];
+            $expense_sub_category = $_GET['expense_sub_category'];
             $date = date("Y-m-d",strtotime($expense_record_date));
             $time = date("H:i:s");
-            $insert = "INSERT INTO `expenses` (`expid`,`exp_name`,`exp_category`,`unit_name`,`exp_quantity`,`exp_unit_cost`,`exp_amount`,`expense_date`,`exp_time`,`exp_active`,`expense_categories`,`document_number`,`expense_description`)VALUES (null,?,?,?,?,?,?,?,?,0,?,?,?)";
+            $insert = "INSERT INTO `expenses` (`expid`,`exp_name`,`exp_category`,`unit_name`,`exp_quantity`,`exp_unit_cost`,`exp_amount`,`expense_date`,`exp_time`,`exp_active`,`expense_categories`,`exp_sub_category`,`document_number`,`expense_description`)VALUES (null,?,?,?,?,?,?,?,?,0,?,?,?,?)";
             $stmt = $conn2->prepare($insert);
-            $stmt->bind_param("sssssssssss",$exp_name,$exp_cat,$unit_name,$exp_quant,$exp_unit,$exp_totcost,$date,$time,$expense_cash_activity,$document_number,$expense_description);
+            $stmt->bind_param("ssssssssssss",$exp_name,$exp_cat,$unit_name,$exp_quant,$exp_unit,$exp_totcost,$date,$time,$expense_cash_activity,$expense_sub_category,$document_number,$expense_description);
             if($stmt->execute()){
                 // log text
                 $log_message = "Expense \"".ucwords(strtolower($exp_name))."\" uploaded successfully!";
@@ -4808,11 +4809,12 @@
             $reportable_status = $_POST['reportable_status'];
             $mode_of_revenue_payment = $_POST['mode_of_revenue_payment'];
             $payment_code = $_POST['payment_code'];
+            $revenue_sub_category = $_POST['revenue_sub_category'];
 
             // SAVE THE DATA TO THE DATABASE
-            $insert = "INSERT INTO `school_revenue` (`name`,`amount`,`mode_of_payment`,`payment_code`,`date_recorded`,`customer_name`,`customer_contact`,`contact_person`,`revenue_description`,`revenue_category`,`cash_flow_activities`,`reportable_status`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
+            $insert = "INSERT INTO `school_revenue` (`name`,`amount`,`mode_of_payment`,`payment_code`,`date_recorded`,`customer_name`,`customer_contact`,`contact_person`,`revenue_description`,`revenue_category`,`cash_flow_activities`,`reportable_status`, `revenue_sub_category`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)";
             $stmt = $conn2->prepare($insert);
-            $stmt->bind_param("ssssssssssss",$revenue_name,$revenue_amount,$mode_of_revenue_payment,$payment_code,$revenue_date,$customer_name,$customer_contacts_revenue,$contact_person,$revenue_description,$revenue_categories,$revenue_cash_activity,$reportable_status);
+            $stmt->bind_param("sssssssssssss",$revenue_name,$revenue_amount,$mode_of_revenue_payment,$payment_code,$revenue_date,$customer_name,$customer_contacts_revenue,$contact_person,$revenue_description,$revenue_categories,$revenue_cash_activity,$reportable_status,$revenue_sub_category);
             $stmt->execute();
             
             $log_text = "Revenue \"".$revenue_name."\" has been added successfully!";
@@ -4907,11 +4909,12 @@
             $revenue_category = $_POST['revenue_category'];
             $mode_of_revenue_payment_edit = $_POST['mode_of_revenue_payment_edit'];
             $payment_code_edit = $_POST['payment_code_edit'];
+            $revenue_sub_category = $_POST['revenue_sub_category'];
 
             // UPDATE THE DATABASES ACCORDINGLY 
-            $update = "UPDATE `school_revenue` SET `name` = ?, `amount` = ?, `date_recorded` = ?, `customer_name` = ?, `customer_contact` = ?, `contact_person` = ?, `revenue_description` = ?, `revenue_category` = ?, `cash_flow_activities` = ?, `reportable_status` = ?, `mode_of_payment` = ?, `payment_code` = ? WHERE `id` = ?";
+            $update = "UPDATE `school_revenue` SET `name` = ?, `amount` = ?, `date_recorded` = ?, `customer_name` = ?, `customer_contact` = ?, `contact_person` = ?, `revenue_description` = ?, `revenue_category` = ?, `cash_flow_activities` = ?, `reportable_status` = ?, `mode_of_payment` = ?, `payment_code` = ?, `revenue_sub_category` = ? WHERE `id` = ?";
             $stmt = $conn2->prepare($update);
-            $stmt->bind_param("sssssssssssss",$revenue_name,$revenue_amount,$revenue_date,$customer_name,$customer_contacts_revenue,$contact_person,$revenue_description,$revenue_category,$edit_revenue_cash_activity, $reportable_status_edit, $mode_of_revenue_payment_edit, $payment_code_edit, $revenue_id);
+            $stmt->bind_param("ssssssssssssss",$revenue_name,$revenue_amount,$revenue_date,$customer_name,$customer_contacts_revenue,$contact_person,$revenue_description,$revenue_category,$edit_revenue_cash_activity, $reportable_status_edit, $mode_of_revenue_payment_edit, $payment_code_edit, $revenue_sub_category, $revenue_id);
             $stmt->execute();
 
             // echo results

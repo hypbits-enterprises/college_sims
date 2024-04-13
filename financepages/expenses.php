@@ -92,7 +92,7 @@
                         </div>
                         <div class="conts col-md-4">
                             <label class="form-control-label" for="exp_cat"><b>Expense Sub-Category</b> <br><span class="hide" id="load_expense_sub_categs"><img src="images/ajax_clock_small.gif" id=""></span></label>
-                            <div id="expense_subcategory_display"></div>
+                            <div id="expense_subcategory_display"><p class="text-danger">Select expense category to display expense sub-category!</p></div>
                         </div>
                         <div class="col-md-4 form-group">
                             <label for="expense_cash_activity" class="form-control-label"><b>Expense Activity</b></label>
