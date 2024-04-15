@@ -4050,11 +4050,11 @@
                     $exp_cat = trim($row['valued']);
                     $expense_cats = $exp_cat;
                     if(isJson_report($exp_cat)){
-                        $data_to_display = "<table class='table'><tr><th>No.</th><th>Revenue Category.</th><th>Actions.</th></tr>";
+                        $data_to_display = "<table class='table'><tr><th>No.</th><th>Revenue Category.</th><th>Revenue Sub-Category.</th><th>Actions.</th></tr>";
                         // get if the name is used before
                         $exp_cats = json_decode($exp_cat);
                         for ($index=0; $index < count($exp_cats); $index++) {
-                            $data_to_display.="<tr><td>".($index+1).".<input type='hidden' id=expense_sub_category_".$exp_cats[$index]->category_id." value='".((isset($exp_cats[$index]->sub_categories) ? json_encode($exp_cats[$index]->sub_categories) : "[]"))."'> </td><td id='revenue_name_".$exp_cats[$index]->category_id."'>".$exp_cats[$index]->category_name."</td><td><p><span class='mx-1 link edit_revenue_cat' id='edit_revenue_cat_".$exp_cats[$index]->category_id."'><i class='fas fa-pen-fancy'></i></span> <span class='mx-1 link delete_revenue_cat' id = 'delete_revenue_cat_".$exp_cats[$index]->category_id."'><i class='fas fa-trash'></i></span></p></td></tr>";
+                            $data_to_display.="<tr><td>".($index+1).".<input type='hidden' id=expense_sub_category_".$exp_cats[$index]->category_id." value='".((isset($exp_cats[$index]->sub_categories) ? json_encode($exp_cats[$index]->sub_categories) : "[]"))."'> </td><td id='revenue_name_".$exp_cats[$index]->category_id."'>".$exp_cats[$index]->category_name."</td><td>".count($exp_cats[$index]->sub_categories)." Sub Categories</td><td><p><span class='mx-1 link edit_revenue_cat' id='edit_revenue_cat_".$exp_cats[$index]->category_id."'><i class='fas fa-pen-fancy'></i></span> <span class='mx-1 link delete_revenue_cat' id = 'delete_revenue_cat_".$exp_cats[$index]->category_id."'><i class='fas fa-trash'></i></span></p></td></tr>";
                         }
                         $data_to_display .= "</table>";
                     }
