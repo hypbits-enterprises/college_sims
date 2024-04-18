@@ -2535,7 +2535,7 @@ function displayRecord(start, finish, arrays) {
         }
         fins = total;
     }
-    tableData += "</tbody></table>";
+    tableData += "</table>";
     //set the start and the end value
     cObj("startNo").innerText = (start + 1);
     cObj("finishNo").innerText = fins;
@@ -3890,7 +3890,7 @@ function displayRecord_advance_application(start, finish, arrays) {
         }
         fins = total;
     }
-    tableData += "</tbody></table>";
+    tableData += "</table>";
     //set the start and the end value
     cObj("startNo_advances").innerText = (start + 1);
     cObj("finishNo_advances").innerText = fins;
@@ -4533,3 +4533,329 @@ function revenue_event_listener_1() {
     display_revenue_subs_1();
 }
 
+cObj("add-supplier-btn").onclick = function () {
+    cObj("supplier_list").classList.add("hide");
+    cObj("register_suppliers").classList.remove("hide");
+    cObj("edit_suppliers").classList.add("hide");
+}
+
+cObj("return_to_supplier_list").onclick = function () {
+    cObj("supplier_list").classList.remove("hide");
+    cObj("register_suppliers").classList.add("hide");
+    cObj("edit_suppliers").classList.add("hide");
+
+    // children selected
+    cObj("supplier_prefix").children[0].selected = true;
+    display_supplier();
+};
+
+// save suppliers
+cObj("save_suppliers").onclick = function () {
+    var err = checkBlank("supplier_name");
+    err += checkBlank("company_name");
+    err += checkBlank("supplier_phone");
+    err += checkBlank("supplier_email");
+    
+    if (err == 0) {
+        cObj("supplier_errors").innerHTML = "";
+        var datapass = "save_supplier=true&supplier_name="+valObj("supplier_name")+"&company_name="+valObj("company_name")+"&supplier_phone="+valObj("supplier_phone")+"&supplier_email="+valObj("supplier_email")+"&supplier_address="+valObj("supplier_address")+"&supplier_prefix="+valObj("supplier_prefix");
+        datapass+="&supplier_openning_balance="+valObj("supplier_openning_balance")+"&supplier_bank_name="+valObj("supplier_bank_name")+"&account_no="+valObj("account_no");
+        sendDataPost("POST","ajax/administration/admissions.php",datapass,cObj("supplier_errors"),cObj("save_suppliers_loader"));
+        setTimeout(() => {
+            var timeout = 0;
+            var ids = setInterval(() => {
+                timeout++;
+                //after two minutes of slow connection the next process wont be executed
+                if (timeout == 1200) {
+                    stopInterval(ids);
+                }
+                if (cObj("save_suppliers_loader").classList.contains("hide")) {
+                    cObj("supplier_name").value = "";
+                    cObj("company_name").value = "";
+                    cObj("supplier_phone").value = "";
+                    cObj("supplier_email").value = "";
+                    cObj("supplier_address").value = "";
+                    cObj("supplier_prefix").children[0].selected = true;
+                    cObj("supplier_openning_balance").value = "";
+                    cObj("supplier_bank_name").value = "";
+                    cObj("account_no").value = "";
+                    stopInterval(ids);
+                }
+            }, 100);
+        }, 200);
+    }else{
+        cObj("supplier_errors").innerHTML = "<p class='text-danger'>Kindly fill all fields with the red borders!</p>";
+    }
+}
+
+function display_supplier(page = 1){
+    var datapass = "get_suppliers="+page;
+    sendDataPost("POST","ajax/finance/financial.php",datapass,cObj("show_supplier_list"),cObj("show_supplier_loader"));
+    setTimeout(() => {
+        var timeout = 0;
+        var ids = setInterval(() => {
+            timeout++;
+            //after two minutes of slow connection the next process wont be executed
+            if (timeout == 1200) {
+                stopInterval(ids);
+            }
+            if (cObj("show_supplier_loader").classList.contains("hide")) {
+                var data_to_display = hasJsonStructure(cObj("show_supplier_list").innerText) ? JSON.parse(cObj("show_supplier_list").innerText) : {"suppliers" : [],"total_pages" : 0};
+                display_all_supplier(data_to_display.suppliers);
+                cObj("supplier_page_index").innerText = "Page "+page+" of "+data_to_display.total_pages;
+                cObj("supplier_page").value = page;
+                cObj("maximum_supplier_page").value = data_to_display.total_pages;
+                stopInterval(ids);
+            }
+
+            // navigation buttons
+            cObj("next_supplier_page").addEventListener("click",navigate_right);
+            cObj("previous_supplier_page").addEventListener("click",navigate_left);
+        }, 100);
+    }, 200);
+}
+
+function search_school_suppliers() {
+    var keyword = this.value.toLowerCase();
+    var row = cObj("supplier_table_list").children;
+
+    // new row
+    var new_row = row;
+    for (let index = 0; index < 4; index++) {
+        new_row = new_row.length > 0 ? (new_row[0].tagName == "TR" ? new_row : new_row[0].children) : [];
+        if (new_row.length > 0) {
+            if (new_row[0].tagName == "TR") {
+                break;
+            }else{
+                new_row = new_row[0].children;
+            }
+        }else{
+            new_row = [];
+        }
+    }
+
+    // row length
+    row = new_row;
+    for (let index = 1; index < row.length; index++) {
+        const element = row[index];
+        var columns = element.children;
+
+        // check if in this row the column has what the keyword shows
+        var present = 0;
+        for (let index = 1; index < (columns.length-1); index++) {
+            const elem = columns[index];
+            if (elem.innerText.toLowerCase().includes(keyword)) {
+                present++;
+            }
+        }
+
+        // if the keyword is present show the row
+        if (present > 0) {
+            element.classList.remove("hide");
+        }else{
+            element.classList.add("hide");
+        }
+    }
+}
+
+function navigate_left() {
+    if (valObj("maximum_supplier_page") == valObj("supplier_page")) {
+        // add disabled
+        this.classList.add("disabled");
+    }else{
+        // remove disabled
+        this.classList.remove("disabled");
+        var supplier_page = valObj("supplier_page");
+
+        cObj("supplier_page").value = supplier_page-1;
+        display_supplier((supplier_page-1));
+    }
+}
+function navigate_right() {
+    if (valObj("maximum_supplier_page") == valObj("supplier_page")) {
+        // add disabled
+        this.classList.add("disabled");
+    }else{
+        // remove disabled
+        this.classList.remove("disabled");
+        var supplier_page = valObj("supplier_page");
+
+        cObj("supplier_page").value = supplier_page+1;
+        display_supplier((supplier_page+1));
+    }
+}
+
+function display_all_supplier(data_to_display) {
+    var data_in_display = "";
+    if (data_to_display.length > 0) {
+        data_in_display = "<table id='supplier_table_list' class='table'><tr><th>No.</th><th>Supplier Name</th><th>Amount Owed</th><th>Date Registered.</th><th>Company Name</th><th>Contact</th><th>Action</th></tr>";
+        for (let index = 0; index < data_to_display.length; index++) {
+            const element = data_to_display[index];
+            data_in_display+="<tr><td><input type='hidden' id='supplier_details_"+element.supplier_id+"' value='"+JSON.stringify(element)+"'>"+(index+1)+"</td><td>"+element.supplier_name+"</td><td>Kes "+element.amount_owed+"</td><td>"+element.date_registered+"</td><td>"+element.company_name+"</td><td>"+element.supplier_phone+"</td><td><span style='font-size:12px;' class='link view_suppliers' id='view_supplier_"+element.supplier_id+"'><i class='fa fa-eye'></i> View </span></td></tr>";        
+        }
+        data_in_display+="</table>";
+    }else{
+        data_in_display="<p class='text-danger'>No supplier data found!</p>";
+    }
+
+    // data to display
+    cObj("supplier_table").innerHTML = data_in_display;
+
+    // add an event listener
+    var view_suppliers = document.getElementsByClassName("view_suppliers");
+    for (let index = 0; index < view_suppliers.length; index++) {
+        const element = view_suppliers[index];
+        element.addEventListener("click",view_supplier);
+    }
+
+    // search keyword
+    cObj("search_school_suppliers").addEventListener("keyup",search_school_suppliers);
+}
+
+// view suppliers
+function view_supplier() {
+    cObj("edit_suppliers").classList.remove("hide");
+    cObj("register_suppliers").classList.add("hide");
+    cObj("supplier_list").classList.add("hide");
+
+    // get the supplier details
+    var id = "supplier_details_"+this.id.substr(14);
+    var supplier_details = valObj(id);
+    if (hasJsonStructure(supplier_details)) {
+        // supplier details
+        supplier_details = JSON.parse(supplier_details);
+
+        // set the values
+        cObj("supplier_phone_2").value = supplier_details.supplier_phone;
+        cObj("supplier_email_2").value = supplier_details.supplier_email;
+        cObj("supplier_address_2").value = supplier_details.supplier_address;
+        cObj("supplier_bank_name_2").value = supplier_details.supplier_bank_name;
+        cObj("account_no_2").value = supplier_details.account_no;
+        cObj("supplier_note_2").value = supplier_details.supplier_note;
+        cObj("company_name_2").value = supplier_details.company_name;
+        cObj("supplier_id").value = supplier_details.supplier_id;
+
+        // split the company name
+        var prefix = supplier_details.supplier_name.split(".")[0];
+        if (prefix == "Mr" || prefix == "Mrs" || prefix == "Sir" || prefix == "Madam") {
+            var children = cObj("supplier_prefix_2").children;
+            for (let index = 0; index < children.length; index++) {
+                const element = children[index];
+                if (element.value == prefix) {
+                    element.selected = true;
+                    break;
+                }
+            }
+
+            var pref_length = prefix.length;
+            cObj("supplier_name_2").value = pref_length > 0 ? supplier_details.supplier_name.substr((pref_length+2),supplier_details.supplier_name.length) : supplier_details.supplier_name;
+        }else{
+            var pref_length = prefix.length;
+            cObj("supplier_name_2").value = supplier_details.supplier_name;
+        }
+
+    }
+
+    // get the supplier bill and supplier payments
+    var datapass = "?get_supplier_data="+supplier_details.supplier_id;
+    sendData2("GET","/administration/admissions.php",datapass,cObj("supplier_payment_bills"),cObj("supplier_data_loaders"));
+    setTimeout(() => {
+        var timeout = 0;
+        var ids = setInterval(() => {
+            timeout++;
+            //after two minutes of slow connection the next process wont be executed
+            if (timeout == 1200) {
+                stopInterval(ids);
+            }
+            if (cObj("supplier_data_loaders").classList.contains("hide")) {
+                // split the bills and payments
+                var supplier_payments_and_bills = cObj("supplier_payment_bills").innerText;
+                if (hasJsonStructure(supplier_payments_and_bills)) {
+                    // supplier payments and bills
+                    supplier_payments_and_bills = JSON.parse(supplier_payments_and_bills);
+
+                    // bills
+                    var bills = supplier_payments_and_bills.supplier_bill;
+                    var payments = supplier_payments_and_bills.supplier_payment;
+
+                    // display the data
+                    display_suppliers_bill(bills);
+                    display_suppliers_payments(payments);
+                    
+                }
+                stopInterval(ids);
+            }
+        }, 100);
+    }, 200);
+}
+
+function display_suppliers_bill(bills) {
+    var data_to_display = "<table class='table'><tr><th>No.</th><th>Bill Name</th><th>Amount</th><th>Date Registered</th><th>Action</th></tr>";
+    if (bills.length > 0) {
+        for (let index = 0; index < bills.length; index++) {
+            const element = bills[index];
+            data_to_display+="<tr>";
+            data_to_display+="<td>"+(index+1)+"</td>";
+            data_to_display+="<td>"+element.bill_name+"</td>";
+            data_to_display+="<td>Kes "+element.bill_amount+"</td>";
+            data_to_display+="<td>"+element.date+"</td>";
+            data_to_display+="<td><span class='link' id='"+element.bill_id+"'><i class='fas fa-eye'></i> View</span></td>";
+            data_to_display+="</tr>";
+        }
+        data_to_display+="</table>";
+    }else{
+        data_to_display = "<p class='text-danger text-center'>Supplier bills not present!</p>";
+    }
+
+    // inner html
+    cObj("supplier_bill_tables").innerHTML = data_to_display;
+}
+function display_suppliers_payments(payments) {
+    var data_to_display = "<table class='table'><tr><th>No.</th><th>Paid Amount</th><th>Date Paid</th><th>Action</th></tr>";
+    if (payments.length > 0) {
+        for (let index = 0; index < payments.length; index++) {
+            const element = payments[index];
+            data_to_display+="<tr>";
+            data_to_display+="<td>"+(index+1)+"</td>";
+            data_to_display+="<td>Kes "+element.amount+"</td>";
+            data_to_display+="<td>"+element.date_paid+"</td>";
+            data_to_display+="<td><span class='link' id='"+element.bill_id+"'><i class='fas fa-eye'></i> View</span></td>";
+            data_to_display+="</tr>";
+        }
+        data_to_display+="</table>";
+    }else{
+        data_to_display = "<p class='text-danger text-center'>Supplier payments not present!</p>";
+    }
+
+    // inner html
+    cObj("supplier_payment_table").innerHTML = data_to_display;
+}
+
+cObj("return_to_supplier_list_2").onclick = function () {
+    cObj("edit_suppliers").classList.add("hide");
+    cObj("register_suppliers").classList.add("hide");
+    cObj("supplier_list").classList.remove("hide");
+    display_supplier();
+}
+
+cObj("save_suppliers_2").onclick = function () {
+    var datapass = "update_suppliers=true&company_name="+valObj("company_name_2")+"&supplier_prefix="+valObj("supplier_prefix_2")+"&supplier_name="+valObj("supplier_name_2")+"&supplier_phone="+valObj("supplier_phone_2")+"&supplier_email="+valObj("supplier_email_2")+"&supplier_address="+valObj("supplier_address_2")+"&supplier_bank_name="+valObj("supplier_bank_name_2");
+    datapass+="&account_no="+valObj("account_no_2")+"&supplier_note="+valObj("supplier_note_2")+"&supplier_id="+valObj("supplier_id");
+    sendDataPost("POST","ajax/administration/admissions.php",datapass,cObj("supplier_errors_2"),cObj("save_suppliers_loader_2"));
+    setTimeout(() => {
+        var timeout = 0;
+        var ids = setInterval(() => {
+            timeout++;
+            //after two minutes of slow connection the next process wont be executed
+            if (timeout == 1200) {
+                stopInterval(ids);
+            }
+            if (cObj("save_suppliers_loader_2").classList.contains("hide")) {
+                setTimeout(() => {
+                    cObj("supplier_errors_2").innerHTML = "";
+                }, 3000);
+                stopInterval(ids);
+            }
+        }, 100);
+    }, 200);
+}

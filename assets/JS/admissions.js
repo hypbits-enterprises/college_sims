@@ -12,9 +12,17 @@ cObj("admitbtn").onclick = function () {
     //get the classes from the database for the admissions window
     getClasses("class_admission", "errolment", "");
     getLastAdm();
+}
 
-    // get the departments
-    // getDepartmentsList();
+cObj("supplier_btn").onclick = function () {
+    hideWindow();
+    unselectbtns();
+    addselected(this.id);
+
+    // unhide the main page
+    cObj("supplier_data").classList.remove("hide");
+    display_supplier();
+    removesidebar();
 }
 
 function getDepartmentsList() {
@@ -8439,7 +8447,7 @@ function displayDepartments() {
                     department_data = JSON.parse(department_data);
 
                     // display this data on a table
-                    var data_to_display = "<table class='table'><thead><tr><th>#</th><th>Department Name</th><th>Department Code</th><th>Member Population</th><th>Date Created</th><th>Action</th></tr></thead><tbody></tbody>";
+                    var data_to_display = "<table class='table'><thead><tr><th>#</th><th>Department Name</th><th>Department Code</th><th>Member Population</th><th>Date Created</th><th>Action</th></tr></thead><tbody>";
 
                     var counted = 1;
                     for (let index = (department_data.length - 1); index >= 0; index--) {
@@ -8588,8 +8596,7 @@ function showDepartments() {
                                 "<th>Date Joined</th>" +
                                 "<th>Action</th>" +
                                 "</tr>" +
-                                "</thead>" +
-                                "<tbody>";
+                                "</thead>";
                             for (let index = 0; index < department_data.members.length; index++) {
                                 const element = department_data.members[index];
                                 display_teachers += "<tr>" +
@@ -8635,8 +8642,7 @@ function showDepartments() {
                                 "<th>Display Name</th>" +
                                 "<th>Action</th>" +
                                 "</tr>" +
-                                "</thead>" +
-                                "<tbody>";
+                                "</thead>";
                             for (let index = 0; index < department_data.subjects.length; index++) {
                                 const element = department_data.subjects[index];
                                 var subject_data = getSubjectDetails(subjects, element.name);

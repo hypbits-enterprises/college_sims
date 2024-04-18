@@ -4893,6 +4893,72 @@
             // return the json encoded string to the front end
             echo json_encode($revenue_data);
 
+        }elseif(isset($_POST['get_suppliers'])){
+            $get_suppliers = $_POST['get_suppliers'];
+            // get the page limit
+            $page_req = $_POST['get_suppliers'];
+            $limit_1 = $_POST['get_suppliers'] * 1 > 1 ? (($_POST['get_suppliers']*1) - 1) * 50 : 0;
+            $limit_2 = $_POST['get_suppliers'] * 1 > 1 ? (($_POST['get_suppliers']*1)) * 50 : 50;
+
+            // save text
+            include("../../connections/conn1.php");
+            include("../../connections/conn2.php");
+
+            // get the page numbers and current page
+            $select = "SELECT COUNT(*) AS 'Total' FROM `suppliers`";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $count = 0;
+            if($result){
+                if($row = $result->fetch_assoc()){
+                    $count = $row['Total'];
+                }
+            }
+
+            $total_pages = round($count/50);
+            $total_pages += $count%50 == 0 ? 0 : 1;
+
+            // select
+            $select = "SELECT * FROM `suppliers` ORDER BY `supplier_id` DESC LIMIT $limit_1,$limit_2";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $suppliers = [];
+            if($result){
+                while($row = $result->fetch_assoc()){
+                    $select = "SELECT SUM(SB.bill_amount) AS 'bill_amount', SUM(SBP.amount) AS 'paid_amount' FROM `supplier_bills` AS SB ";
+                    $select .= "LEFT JOIN `supplier_bill_payments` AS SBP ";
+                    $select .= "ON SB.supplier_id = SBP.payment_for ";
+                    $select .= "WHERE SB.supplier_id = '".$row['supplier_id']."'";
+                    $select .= "GROUP BY `supplier_id`";
+                    // echo $select;
+                    $statement = $conn2->prepare($select);
+                    $statement->execute();
+                    $res = $statement->get_result();
+                    $billing_amount = 0;
+                    $paid_amount = 0;
+                    if ($res) {
+                        if($rows = $res->fetch_assoc()){
+                            $billing_amount = $rows['bill_amount'];
+                            $paid_amount = $rows['paid_amount'];
+                        }
+                    }
+
+                    $amount_owed = $billing_amount-$paid_amount;
+
+                    // amount owed
+                    $row['amount_owed'] = number_format($amount_owed);
+                    
+                    // change date
+                    $row['date_registered'] = date("D dS M Y",strtotime($row['date_registered']));
+                    array_push($suppliers,$row);
+                }
+            }
+            $data = array("suppliers" => $suppliers, "total_pages" => $total_pages);
+
+            // return the json encoded string to the front end
+            echo json_encode($data);
         }elseif(isset($_POST['update_revenue'])){
             include("../../connections/conn1.php");
             include("../../connections/conn2.php");

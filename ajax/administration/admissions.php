@@ -2664,6 +2664,39 @@
 
             // echo
             echo $data_to_display;
+        }elseif(isset($_GET['get_supplier_data'])){
+            $select_payments = "SELECT * FROM `supplier_bill_payments` WHERE `payment_for` = '".$_GET['get_supplier_data']."'";
+            $select_bill = "SELECT * FROM `supplier_bills` WHERE `supplier_id` = '".$_GET['get_supplier_data']."'";
+
+            // get the bill
+            $stmt = $conn2->prepare($select_bill);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $supplier_bill = [];
+            if ($result) {
+                while($row = $result->fetch_assoc()){
+                    $row['date'] = date("D dS M Y",strtotime($row['date_assigned']));
+                    $row['bill_amount'] = date("D dS M Y",strtotime($row['bill_amount']));
+                    array_push($supplier_bill,$row);
+                }
+            }
+
+            // get the payments
+            $stmt = $conn2->prepare($select_payments);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $supplier_payment = [];
+            if ($result) {
+                while($row = $result->fetch_assoc()){
+                    $row['date'] = date("D dS M Y",strtotime($row['date_paid']));
+                    $row['amount'] = date("D dS M Y",strtotime($row['amount']));
+                    array_push($supplier_payment,$row);
+                }
+            }
+
+            // return data
+            $data = array("supplier_bill" => $supplier_bill, "supplier_payment" => $supplier_payment);
+            echo json_encode($data);
         }elseif(isset($_GET['edit_course'])){
             $select = "SELECT * FROM `settings` WHERE `sett` = 'courses'";
             $stmt = $conn2->prepare($select);
@@ -5410,6 +5443,69 @@
             $log_text = "Expense category \"".$_POST['category_name']."\" added successfully!";
             log_administration($log_text);
             echo "<p class='text-success border border-success my-2 p-2'>Expense name added successfully!.</p>";
+        }elseif(isset($_POST['update_suppliers'])){
+            $company_name = $_POST['company_name'];
+            $supplier_prefix = $_POST['supplier_prefix'];
+            $supplier_name = $supplier_prefix.". ".$_POST['supplier_name'];
+            $supplier_phone = $_POST['supplier_phone'];
+            $supplier_email = $_POST['supplier_email'];
+            $supplier_address = $_POST['supplier_address'];
+            $supplier_bank_name = $_POST['supplier_bank_name'];
+            $account_no = $_POST['account_no'];
+            $supplier_id = $_POST['supplier_id'];
+            $supplier_note = $_POST['supplier_note'];
+            
+            // update the supplier`s details
+            $update = "UPDATE `suppliers` SET `supplier_name` = ?, `company_name` = ?, `supplier_phone` = ?, `supplier_address` = ?, `supplier_bank_name` = ?, `account_no` = ?, `supplier_note` = ? WHERE `supplier_id` = ?";
+            $stmt = $conn2->prepare($update);
+            $stmt->bind_param("ssssssss",$supplier_name,$company_name,$supplier_phone,$supplier_address,$supplier_bank_name,$account_no,$supplier_note,$supplier_id);
+            $stmt->execute();
+
+            echo "<p class='text-success'>Supplier updated successfully!</p>";
+        }elseif(isset($_POST['save_supplier'])){
+            $save_supplier = $_POST['save_supplier'];
+            $supplier_name = $_POST['supplier_name'];
+            $company_name = $_POST['company_name'];
+            $supplier_phone = $_POST['supplier_phone'];
+            $supplier_email = $_POST['supplier_email'];
+            $supplier_address = $_POST['supplier_address'];
+            $supplier_openning_balance = $_POST['supplier_openning_balance'];
+            $supplier_bank_name = $_POST['supplier_bank_name'];
+            $account_no = $_POST['account_no'];
+            $supplier_prefix = $_POST['supplier_prefix'];
+
+            // insert statement
+            $date_registered = date("YmdHis");
+            $insert = "INSERT INTO `suppliers` (`supplier_name`,`company_name`,`supplier_phone`,`supplier_email`,`supplier_address`,`supplier_bank_name`,`account_no`,`date_registered`) VALUES (?,?,?,?,?,?,?,?)";
+            $stmt = $conn2->prepare($insert);
+            $supplier_name = ($supplier_prefix.". ".$supplier_name);
+            $stmt->bind_param("ssssssss",$supplier_name, $company_name, $supplier_phone, $supplier_email, $supplier_address, $supplier_bank_name, $account_no, $date_registered);
+            $stmt->execute();
+            
+            // also check if there is an opening balance
+            if($supplier_openning_balance > 0){
+                // get the supplier id
+                $select = "SELECT * FROM `suppliers` ORDER BY supplier_id DESC LIMIT 1";
+                $stmt = $conn2->prepare($select);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                $supplier_id = 0;
+                if($result){
+                    if($row = $result->fetch_assoc()){
+                        $supplier_id = $row['supplier_id'];
+                    }
+                }
+
+                // insert supplier bill
+                $insert = "INSERT INTO `supplier_bills` (`supplier_id`,`bill_name`,`bill_amount`,`date_assigned`,`due_date`) VALUES (?,?,?,?,?)";
+                $stmt = $conn2->prepare($insert);
+                $bill_name = "Opening Balance";
+                $stmt->bind_param("sssss",$supplier_id,$bill_name,$supplier_openning_balance,$date_registered,$date_registered);
+                $stmt->execute();
+            }
+            
+            echo "<p class='text-success'>Supplier has been registered successfully!</p>";
+
         }elseif(isset($_POST['subjects_for_student'])){
             // echo $_POST['student_admission'];
             $student_admission = $_POST['student_admission'];
