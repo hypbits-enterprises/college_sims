@@ -1,4 +1,4 @@
-<div class="contents animate hide" id="supplier_data">
+<div class="contents animate hide" id="asset_accounts">
     <div class="titled">
         <h2>Finance</h2>
     </div>
@@ -6,7 +6,7 @@
         <div class="top1">
             <div class="row">
                 <div class="col-md-9">
-                    <p>Suppliers</p>
+                    <p>Asset Accounts</p>
                 </div>
             </div>
         </div>
@@ -18,26 +18,26 @@
                         <p><strong>Important:</strong></p>
                     </div>
                     <ul>
-                        <li> VIEW, UPDATE AND DELETE THE SCHOOL SUPPLIERS.</li>
+                        <li> VIEW, UPDATE AND DELETE THE SCHOOL ASSETS.</li>
                     </ul>
                 </div>
             </div>
             <div class="container" id="supplier_list">
-                <button class="nav-bar-btns" id="add-supplier-btn"><i class="fa fa-plus"></i> Register New Supplier <img class="hide" src="images/ajax_clock_small.gif" id="show_supplier_loader"></button>
-                <div id="supplier_runtime_error"></div>
-                <div class="hide" id="show_supplier_list"></div>
+                <button class="nav-bar-btns" id="register-new-asset"><i class="fa fa-plus"></i> Register New Asset <img class="hide" src="images/ajax_clock_small.gif" id="new-asset-leader"></button>
+                <div id="asset-lists-notifier"></div>
+                <div class="hide" id="asset-data"></div>
                 <div class="table_container">
                     <h6 class="text-center my-2"><u>Supplier List</u></h6>
-                    <input type="hidden" name="" value="1" id="supplier_page">
-                    <input type="hidden" name="" value="1" id="maximum_supplier_page">
+                    <input type="hidden" name="" value="1" id="asset-page">
+                    <input type="hidden" name="" value="1" id="maximum-page-asset">
                     <div class="row">
                         <div class="col-md-6"></div>
                         <div class="col-md-6">
-                            <input type="text" class="text form-control w-100" id="search_school_suppliers" placeholder="Enter Keyword Here">
+                            <input type="text" class="text form-control w-100" id="search-assets" placeholder="Enter Keyword Here">
                         </div>
                     </div>
-                    <p id="supplier_notices"></p>
-                    <div id="supplier_table">
+                    <p id="asset-notices-2"></p>
+                    <div id="asset-data-table">
                         <table class="table">
                             <thead>
                                 <tr>
@@ -65,19 +65,19 @@
                     </div>
                     <div class="row w-50">
                         <div class="col-sm-4">
-                            <span class="btn btn-secondary btn-sm disabled" id="previous_supplier_page"><i class="fa fa-arrow-left"></i><i class="fa fa-arrow-left"></i></span>
+                            <span class="btn btn-secondary btn-sm disabled" id="previous-asset-page"><i class="fa fa-arrow-left"></i><i class="fa fa-arrow-left"></i></span>
                         </div>
                         <div class="col-sm-4">
-                            <span id="supplier_page_index" class="text-center">Page 1 of 2</span>
+                            <span id="asset-current-page" class="text-center">Page 1 of 2</span>
                         </div>
                         <div class="col-sm-4">
-                            <span class="btn btn-secondary btn-sm disabled" id="next_supplier_page"><i class="fa fa-arrow-right"></i><i class="fa fa-arrow-right"></i></span>
+                            <span class="btn btn-secondary btn-sm disabled" id="next-asset-page"><i class="fa fa-arrow-right"></i><i class="fa fa-arrow-right"></i></span>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="container hide" id="register_suppliers">
-                <button id="return_to_supplier_list"><i class="fa fa-arrow-left"></i> Back to suppliers </button>
+            <!-- <div class="container hide" id="register-asset">
+                <button id="back-to-assets"><i class="fa fa-arrow-left"></i> Back to suppliers </button>
                 <div class="row my-2">
                     <div class="col-md-12 my-2">
                         <h4 class="text-center"><u>Register Supplier</u></h4>
@@ -255,7 +255,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> -->
         </div>
         <div class="bottom1">
             <p>Managed by Ladybird</p>

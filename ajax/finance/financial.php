@@ -4927,11 +4927,7 @@
             $suppliers = [];
             if($result){
                 while($row = $result->fetch_assoc()){
-                    $select = "SELECT SUM(SB.bill_amount) AS 'bill_amount', SUM(SBP.amount) AS 'paid_amount' FROM `supplier_bills` AS SB ";
-                    $select .= "LEFT JOIN `supplier_bill_payments` AS SBP ";
-                    $select .= "ON SB.supplier_id = SBP.payment_for ";
-                    $select .= "WHERE SB.supplier_id = '".$row['supplier_id']."'";
-                    $select .= "GROUP BY `supplier_id`";
+                    $select = "SELECT SUM(SB.bill_amount) AS 'Due', SUM((SELECT SUM(SBP.amount) AS 'Paid' FROM `supplier_bill_payments` AS SBP WHERE SBP.payment_for = SB.bill_id )) AS 'Paid' FROM `supplier_bills` AS SB WHERE SB.supplier_id = '".$row['supplier_id']."'";
                     // echo $select;
                     $statement = $conn2->prepare($select);
                     $statement->execute();
@@ -4940,8 +4936,8 @@
                     $paid_amount = 0;
                     if ($res) {
                         if($rows = $res->fetch_assoc()){
-                            $billing_amount = $rows['bill_amount'];
-                            $paid_amount = $rows['paid_amount'];
+                            $billing_amount = $rows['Due'];
+                            $paid_amount = $rows['Paid'];
                         }
                     }
 
@@ -4959,6 +4955,287 @@
 
             // return the json encoded string to the front end
             echo json_encode($data);
+        }elseif(isset($_POST['save_supplier_bill'])){
+            include("../../connections/conn1.php");
+            include("../../connections/conn2.php");
+            $supplier_id = $_POST['supplier_id'];
+            $supplier_bill_name = $_POST['supplier_bill_name'];
+            $supplier_bill_amount = $_POST['supplier_bill_amount'];
+            $supplier_expense_category = $_POST['supplier_expense_category'];
+            $supplier_expense_sub_category = $_POST['supplier_expense_sub_category'];
+            $date_assigned = date("YmdHis",strtotime($_POST['date_assigned']));
+            $supplier_document_number = $_POST['supplier_document_number'];
+            $supplier_bill_due_date = date("YmdHis",strtotime($_POST['supplier_bill_due_date']));
+            
+            // insert the data to the database
+            $insert = "INSERT INTO `supplier_bills` (`supplier_id`,`bill_name`,`bill_amount`,`document_number`,`expense_category`,`expense_sub_category`,`due_date`,`date_assigned`) VALUES (?,?,?,?,?,?,'".$supplier_bill_due_date."','".$date_assigned."')";
+            $stmt = $conn2->prepare($insert);
+            $stmt->bind_param("ssssss",$supplier_id,$supplier_bill_name,$supplier_bill_amount,$supplier_document_number,$supplier_expense_category,$supplier_expense_sub_category);
+            $stmt->execute();
+            
+            echo "<p class='text-success'>Supplier has been successfully registered!</p>";
+        }elseif(isset($_POST['update_bill'])){
+            include("../../connections/conn1.php");
+            include("../../connections/conn2.php");
+
+            // get the data
+            $update_bill = $_POST['update_bill'];
+            $bill_name = $_POST['bill_name'];
+            $bill_amount = $_POST['bill_amount'];
+            $date_assigned = date("YmdHis",strtotime($_POST['date_assigned']));
+            $due_date = date("YmdHis",strtotime($_POST['due_date']));
+            $supplier_bill_id_edit = $_POST['supplier_bill_id_edit'];
+            $supplier_document_number = $_POST['supplier_document_number'];
+            $supplier_expense_category_edit = $_POST['supplier_expense_category_edit'];
+            $supplier_expense_sub_category_edit = $_POST['supplier_expense_sub_category_edit'];
+
+            // SELECT 
+            $UPDATE = "UPDATE `supplier_bills` SET `bill_name` = ? ,`bill_amount` = ?,date_assigned = ?, due_date = ?, `document_number` = ?, `expense_category` = ?, `expense_sub_category` = ? WHERE `bill_id` = ?";
+            $stmt = $conn2->prepare($UPDATE);
+            $stmt->bind_param("ssssssss",$bill_name,$bill_amount,$date_assigned,$due_date,$supplier_document_number,$supplier_expense_category_edit,$supplier_expense_sub_category_edit,$supplier_bill_id_edit);
+            $stmt->execute();
+
+            echo "<p class='text-success'>Supplier bill updated successfully!</p>";
+        }elseif(isset($_POST['get_payment_for'])){
+            // connections
+            include("../../connections/conn1.php");
+            include("../../connections/conn2.php");
+
+            // values
+            $option_id = $_POST['option_id'];
+            $option_value = $_POST['option_value'];
+            $supplier_id = $_POST['supplier_id'];
+
+            // SELECT
+            $select = "SELECT * FROM `supplier_bills` WHERE `supplier_id` = ?";
+            $stmt = $conn2->prepare($select);
+            $stmt->bind_param("s",$supplier_id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $data_to_display = "<select class='form-control w-75' id='".$option_id."'><option hidden value=''>Select an Option</option>";
+            if($result){
+                while($row = $result->fetch_assoc()){
+                    $sel = "SELECT SUM(`amount`) AS 'Total' FROM `supplier_bill_payments` WHERE `payment_for` = ?";
+                    $statement = $conn2->prepare($sel);
+                    $statement->bind_param("s",$row['bill_id']);
+                    $statement->execute();
+                    $res = $statement->get_result();
+                    $total = 0;
+                    if ($res) {
+                        if($rows = $res->fetch_assoc()){
+                            $total = $rows['Total'];
+                        }
+                    }
+                    $balance = $row['bill_amount']*1 - $total*1;
+                    $selected = $option_value == $row['bill_id'] ? "selected" : "";
+
+                    // show balance
+                    if($balance == 0){
+                        // continue;
+                    }
+                    $data_to_display.="<option ".$selected." value='".$row['bill_id']."'>".ucwords(strtolower($row['bill_name']))." - (Bal: Kes ".number_format($balance).")</option>";
+                }
+            }
+            $data_to_display .= "</select>";
+            echo $data_to_display;
+        }elseif(isset($_POST['save_supplier_data'])){
+            // connection
+            include("../../connections/conn1.php");
+            include("../../connections/conn2.php");
+
+            $payment_amount = $_POST['payment_amount'];
+            $payment_date = date("YmdHis",strtotime($_POST['payment_date']));
+            $document_number = $_POST['document_number'];
+            $payment_description = $_POST['payment_description'];
+            $supplier_payment_for = $_POST['supplier_payment_for'];
+            $supplier_payment_id = $_POST['supplier_payment_id'];
+
+            // select
+            $select = "SELECT SUM(`amount`) AS 'Total' FROM `supplier_bill_payments` WHERE `payment_for` = '".$supplier_payment_for."' AND `payment_id` != '".$supplier_payment_id."'";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $paid_amount = 0;
+            if ($result) {
+                if($row = $result->fetch_assoc()){
+                    $paid_amount = $row['Total'];
+                }
+            }
+
+            $select = "SELECT * FROM `supplier_bills` WHERE `bill_id` = '".$supplier_payment_for."'";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $bill_amount = 0;
+            if ($result) {
+                if($row = $result->fetch_assoc()){
+                    $bill_amount = $row['bill_amount'];
+                }
+            }
+
+            $balance = $bill_amount - $paid_amount;
+            if($balance >= $payment_amount){
+                $update = "UPDATE `supplier_bill_payments` SET `payment_for` = ?, `amount` = ?, `date_paid` = ?, `payment_description` = ?, `document_number` = ? WHERE `payment_id` = ?";
+                $stmt = $conn2->prepare($update);
+                $stmt->bind_param("ssssss", $supplier_payment_for, $payment_amount, $payment_date, $payment_description, $document_number, $supplier_payment_id);
+                $stmt->execute();
+                
+                echo "<p class='text-success'>Payment has been updated successfully!</p>";
+            }else{
+                echo "<p class='text-danger'>You cannot add more than the balance of Kes ".number_format($balance)."! <input type='hidden' id='supplier_payment_error_edit' value='false'></p>";
+            }
+
+            // get the amount of payment if its more than the balance
+        }elseif(isset($_POST['save_payment'])){
+            // connection
+            include("../../connections/conn1.php");
+            include("../../connections/conn2.php");
+
+            // data
+            $supplier_payment_for = $_POST['supplier_payment_for'];
+            $supplier_payment_amount = $_POST['supplier_payment_amount'];
+            $supplier_payment_date = date("YmdHis", strtotime($_POST['supplier_payment_date']));
+            $supplier_payment_description = $_POST['supplier_payment_description'];
+            $supplier_payment_document_no = $_POST['supplier_payment_document_no'];
+
+            // get what you are paying for
+            $select = "SELECT * FROM `supplier_bills` WHERE `bill_id` = ?";
+            $stmt = $conn2->prepare($select);
+            $stmt->bind_param("s",$supplier_payment_for);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $bill_amount = 0;
+            if($result){
+                if($row = $result->fetch_assoc()){
+                    $bill_amount = $row['bill_amount'];
+                }
+            }
+
+            // get how much has been paid for that bill.
+            $select = "SELECT SUM(`amount`) AS 'Total' FROM `supplier_bill_payments` WHERE `payment_for` = ?";
+            $stmt = $conn2->prepare($select);
+            $stmt->bind_param("s",$supplier_payment_for);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $paid_amount = 0;
+            if ($result) {
+                if($row = $result->fetch_assoc()){
+                    $paid_amount = $row['Total'];
+                }
+            }
+
+            $balance = $bill_amount - $paid_amount;
+
+            // check if the amount paid is greater than the balance
+            if($balance >= $supplier_payment_amount){
+                // SAVE THE PAYMENT
+                $insert = "INSERT INTO `supplier_bill_payments` (`payment_for`,`amount`,`date_paid`,`payment_description`,`document_number`) VALUES (?,?,?,?,?)";
+                $stmt = $conn2->prepare($insert);
+                $stmt->bind_param("sssss",$supplier_payment_for,$supplier_payment_amount,$supplier_payment_date,$supplier_payment_description,$supplier_payment_document_no);
+                $stmt->execute();
+                echo "<p class='text-success'>Payment has been made successfully!</p>";
+            }else{
+                echo "<p class='text-danger'>You cannot pay more than the balance left!<input type='hidden' id='supplier_payment_error' value='false'></p>";
+            }
+        }elseif(isset($_POST['delete_supplier_payment'])){
+            include("../../connections/conn1.php");
+            include("../../connections/conn2.php");
+            $delete_supplier_payment = $_POST['delete_supplier_payment'];
+            $delete = "DELETE FROM `supplier_bill_payments` WHERE `payment_id` = '".$delete_supplier_payment."'";
+            $stmt = $conn2->prepare($delete);
+            $stmt->execute();
+            
+            echo "<p class='text-success'>Data has been deleted successfully!</p>";
+        }elseif(isset($_POST['delete_supplier_bill'])){
+            include("../../connections/conn1.php");
+            include("../../connections/conn2.php");
+
+            // DELETE THE SUPPLIER BILL
+            $delete_supplier_bill = $_POST['delete_supplier_bill'];
+            $delete = "DELETE FROM `supplier_bills` WHERE `bill_id` = ?";
+            $stmt = $conn2->prepare($delete);
+            $stmt->bind_param("s",$delete_supplier_bill);
+            $stmt->execute();
+
+            // delete the payments linked to that bill
+            $delete_supplier = "DELETE FROM `supplier_bill_payments` WHERE `payment_for` = ?";
+            $stmt = $conn2->prepare($delete_supplier);
+            $stmt->bind_param("s",$delete_supplier_bill);
+            $stmt->execute();
+            
+            echo "<p class='text-success'>Bill has been successfully deleted!</p>";
+        }elseif(isset($_POST['delete_supplier'])){
+            include("../../connections/conn1.php");
+            include("../../connections/conn2.php");
+            $delete_supplier = $_POST['delete_supplier'];
+            $select = "SELECT * FROM `suppliers` WHERE `supplier_id` = '".$delete_supplier."'";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            if($result){
+                while($row = $result->fetch_assoc()){
+                    // get the supplier bill
+                    $sel = "SELECT * FROM `supplier_bills` WHERE `supplier_id` = ?";
+                    $stmt1 = $conn2->prepare($sel);
+                    $stmt1->bind_param("s",$row['supplier_id']);
+                    $stmt1->execute();
+                    $res = $stmt1->get_result();
+                    if($res){
+                        while($row1 = $res->fetch_assoc()){
+                            // delete the supplier payment
+                            $delete = "DELETE FROM `supplier_bill_payments` WHERE `payment_for` = '".$row['bill_id']."'";
+                            $stmt = $conn2->prepare($delete);
+                            $stmt->execute();
+                        }
+                    }
+                }
+                // delete the supplier bill
+                $delete = "DELETE FROM `supplier_bills` WHERE `supplier_id` = '".$delete_supplier."'";
+                $stmt = $conn2->prepare($delete);
+                $stmt->execute();
+            }
+
+            // delete the supplier id
+            $delete = "DELETE FROM `suppliers` WHERE `supplier_id` = '".$delete_supplier."'";
+            $stmt = $conn2->prepare($delete);
+            $stmt->execute();
+
+            // show success message
+            echo "<p class='text-success'>Supplier has been deleted successfully!</p>";
+        }elseif(isset($_POST['get_expense_category'])){
+            include("../../connections/conn1.php");
+            include("../../connections/conn2.php");
+
+            // passed data
+            $get_expense_category = $_POST['get_expense_category'];
+            $get_expense_subcategory = $_POST['expense_category_id'];
+            $id = $_POST['id'];
+            $value = $_POST['value'];
+            
+            $select = "SELECT * FROM `expense_category` WHERE `expense_id` = '".$get_expense_subcategory."'";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $sub_categories = [];
+            if ($result) {
+                if($row = $result->fetch_assoc()){
+                    $expense_sub_categories = $row['expense_sub_categories'];
+                    $sub_categories = isJson($expense_sub_categories) ? json_decode($expense_sub_categories) : [];
+                }
+            }
+
+            // expense subcategories
+            $data_to_display = "<select class='form-control w-75' id='".$id."'><option hidden value=''>Select an Option</option>";
+            for($index = 0; $index < count($sub_categories); $index++){
+                $id = $sub_categories[$index]->id;
+                $name = $sub_categories[$index]->name;
+                $selected = $value == $id ? "selected" : "";
+                $data_to_display .= "<option ".$selected." value='".$id."' >".$name."</option>";
+            }
+            $data_to_display .= "</select>";
+
+            // display select
+            echo $data_to_display;
         }elseif(isset($_POST['update_revenue'])){
             include("../../connections/conn1.php");
             include("../../connections/conn2.php");

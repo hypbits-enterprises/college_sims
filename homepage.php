@@ -405,7 +405,8 @@ function checkPresnt($array, $string){
                         <button type='button' class="sidebtns <?php echo allowed("mpesaTrans"); ?> htbtn" id='mpesaTrans'><span><img class="icons" src="images/manage3.png"></span>MPESA transactions</button>
                         <button type='button' class="sidebtns <?php echo allowed("feestruct"); ?> htbtn" id='feestruct'><span><img class="icons" src="images/feestructure.png"></span>Fees structure</button>
                         <button type='button' class="sidebtns <?php echo allowed("expenses_btn"); ?> htbtn" id='expenses_btn'><span><img class="icons" src="images/feestructure.png"></span>Expense</button>
-                        <button type='button' class="sidebtns <?php echo allowed("expenses_btn"); ?> htbtn" id='supplier_btn'><span><img class="icons" src="images/findstud.png"></span> Suppliers</button>
+                        <button type='button' class="sidebtns <?php echo allowed("expenses_btn"); ?> htbtn" id='supplier_btn'><span><img class="icons" src="images/findstud.png"></span> Supplier Accounts</button>
+                        <button type='button' class="sidebtns <?php echo allowed("expenses_btn"); ?> htbtn" id='asset_account'><span><img class="icons" src="images/pay.png"></span> Asset Accounts</button>
                         <button type='button' class="sidebtns <?php echo allowed("finance_report_btn"); ?> htbtn" id='finance_report_btn'><span><img class="icons" src="images/report.png"></span>Financial report</button>
                     </div>
                 </div>
@@ -2176,11 +2177,236 @@ function checkPresnt($array, $string){
                 </div>
             </div>
         </div>
+        <div class="confirmpaymentwindow hide" style="overflow: auto;" id="add_supplier_biil">
+            <div class="changesubwindow editexams animate">
+                <div class="conts">
+                    <p class="funga" id="close_add_supplier_bill">&times</p>
+                    <h6 class="text-center">Add Supplier Bill</h6>
+                </div>
+                <div class="conts">
+                    <div class="message_contents">
+                        <label class="form-control-label"><u>Note:</u></label>
+                        <p>- Fill all fields as required!</p>
+                    </div>
+                    <form class="add_expense" id="add_supplier_bill">
+                        <h6 class="text-center" id="supplier_name_title"><u>Supplier Bill</u></h6>
+                        <div class="conts">
+                            <label class="form-control-label" for="supplier_bill_name">Bill name: <br></label>
+                            <input class="form-control w-75" type="text" name="supplier_bill_name" id="supplier_bill_name" placeholder="Bill Name">
+                        </div>
+                        <div class="conts">
+                            <label class="form-control-label" for="supplier_bill_amount">Bill Amount: <br></label>
+                            <input class="form-control w-75" type="text" name="supplier_bill_amount" id="supplier_bill_amount" placeholder="Bill Amount">
+                        </div>
+                        <div class="conts">
+                            <label class="form-control-label" for="supplier_expense_category">Bill Category: <img class="hide" src="images/ajax_clock_small.gif" id="display_supplier_expense_category"><br></label>
+                            <div id="supplier_expense_cat"></div>
+                        </div>
+                        <div class="conts">
+                            <label class="form-control-label" for="supplier_expense_sub_category">Bill Sub-Category: <img class="hide" src="images/ajax_clock_small.gif" id="display_supplier_expense_sub_category"><br></label>
+                            <div id="supplier_expense_sub_cat"><p class="text-danger">Please select the bill category to display the subcategories</p></div>
+                        </div>
+                        <div class="conts">
+                            <label class="form-control-label" for="date_assigned">Assigned Date: <br></label>
+                            <input class="form-control w-75" value="<?=date("Y-m-d")?>" type="date" name="date_assigned" id="date_assigned" placeholder="Bill Date">
+                        </div>
+                        <div class="conts">
+                            <label class="form-control-label" for="supplier_bill_due_date">Due Date: <br></label>
+                            <input class="form-control w-75" value="<?=date("Y-m-d",strtotime("30 days"))?>" type="date" name="supplier_bill_due_date" id="supplier_bill_due_date" placeholder="Bill Date">
+                        </div>
+                        <div class="conts">
+                            <label class="form-control-label" for="supplier_document_number">Document Number: <br></label>
+                            <input class="form-control w-75" type="text" name="supplier_document_number" id="supplier_document_number" placeholder="Document Number">
+                        </div>
+                    </form>
+                    <div class="conts">
+                        <p id="supplier_bill_error"></p>
+                    </div>
+                    <div class="btns">
+                        <button type="button" id="save_new_supplier_bill">Save Bill <img class="hide" src="images/ajax_clock_small.gif" id="save_bill_loader"></button>
+                        <button type="button" id="close_new_supplier_bill_window">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="confirmpaymentwindow hide" style="overflow: auto;" id="edit_supplier_biil">
+            <div class="changesubwindow editexams animate">
+                <div class="conts">
+                    <p class="funga" id="close_edit_supplier_bill">&times</p>
+                    <h6 class="text-center">Edit Supplier Bill</h6>
+                </div>
+                <div class="conts">
+                    <div class="cont my-2">
+                        <div class="container ml-3">
+                            <span class="btn btn-sm btn-secondary" id="delete_supplier_bill"><i class="fas fa-trash"></i></span>
+                        </div>
+                        <div class="message_contents hide" id="delete_bill_confirmation_window">
+                            <label class="form-control-label"><u>Confirm:</u></label>
+                            <p>Are you sure you want to delete this bill?</p>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <button id="confirm_bill_deletion"><i class="fas fa-trash"></i> Delete <img class="hide" src="images/ajax_clock_small.gif" id="delete_bill_loader"></button>
+                                </div>
+                                <div class="col-md-6">
+                                    <button id="cancel_bill_deletion"><i class="fas fa-x"></i> Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="message_contents">
+                        <label class="form-control-label"><u>Note:</u></label>
+                        <p>- Fill all fields as required!</p>
+                        <p>- Edit the supplier bill.</p>
+                    </div>
+                    <form class="add_expense" id="edit_supplier_bill">
+                        <h6 class="text-center" ><u>Supplier Bill</u></h6>
+                        <div class="conts">
+                            <label class="form-control-label" for="supplier_bill_name_edit">Bill name: <br></label>
+                            <input type="hidden" name="" id="supplier_bill_id_edit">
+                            <input class="form-control w-75" type="text" name="supplier_bill_name_edit" id="supplier_bill_name_edit" placeholder="Bill Name">
+                        </div>
+                        <div class="conts">
+                            <label class="form-control-label" for="supplier_bill_amount_edit">Bill Amount: <br></label>
+                            <input class="form-control w-75" type="text" name="supplier_bill_amount_edit" id="supplier_bill_amount_edit" placeholder="Bill Amount">
+                        </div>
+                        <div class="conts">
+                            <label class="form-control-label" for="supplier_expense_category_edit">Bill Category: <img class="hide" src="images/ajax_clock_small.gif" id="display_supplier_expense_category_edit"><br></label>
+                            <div id="supplier_expense_cat_edit"></div>
+                        </div>
+                        <div class="conts">
+                            <label class="form-control-label" for="supplier_expense_sub_category_edit">Bill Sub-Category: <img class="hide" src="images/ajax_clock_small.gif" id="display_supplier_expense_sub_category_edit"><br></label>
+                            <div id="supplier_expense_sub_cat_edit"><p class="text-danger">Please select the bill category to display the subcategories</p></div>
+                        </div>
+                        <div class="conts">
+                            <label class="form-control-label" for="date_assigned_edit">Assigned Date: <br></label>
+                            <input class="form-control w-75" value="<?=date("Y-m-d")?>" type="date" name="date_assigned_edit" id="date_assigned_edit" placeholder="Bill Date">
+                        </div>
+                        <div class="conts">
+                            <label class="form-control-label" for="supplier_bill_due_date_edit">Due Date: <br></label>
+                            <input class="form-control w-75" value="<?=date("Y-m-d",strtotime("30 days"))?>" type="date" name="supplier_bill_due_date_edit" id="supplier_bill_due_date_edit" placeholder="Bill Date">
+                        </div>
+                        <div class="conts">
+                            <label class="form-control-label" for="supplier_document_number_edit">Document Number: <br></label>
+                            <input class="form-control w-75" type="text" name="supplier_document_number_edit" id="supplier_document_number_edit" placeholder="Document Number">
+                        </div>
+                    </form>
+                    <div class="conts">
+                        <p id="supplier_bill_error_edit"></p>
+                    </div>
+                    <div class="btns">
+                        <button type="button" id="save_new_supplier_bill_edit">Update Bill <img class="hide" src="images/ajax_clock_small.gif" id="save_bill_loader_edit"></button>
+                        <button type="button" id="close_new_supplier_bill_window_edit">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="confirmpaymentwindow hide" style="overflow: auto;" id="make_payments_window">
+            <div class="changesubwindow editexams animate">
+                <div class="conts">
+                    <p class="funga" id="close_supplier_payments">&times</p>
+                    <h6 class="text-center">Make Payments</h6>
+                </div>
+                <div class="conts">
+                    <div class="message_contents">
+                        <label class="form-control-label"><u>Note:</u></label>
+                        <p>- Fill all fields as required!</p>
+                    </div>
+                    <form class="add_expense" >
+                        <h6 class="text-center" ><u>Make Payment</u></h6>
+                        <div class="conts">
+                            <label class="form-control-label" for="supplier_payment_for">Payment For: <img class="hide" src="images/ajax_clock_small.gif" id="supplier_payment_for_loader"><br></label>
+                            <div id="payment_for_details"></div>
+                        </div>
+                        <div class="conts">
+                            <label class="form-control-label" for="supplier_payment_amount">Payment Amount: <br></label>
+                            <input class="form-control w-75" type="text" name="supplier_payment_amount" id="supplier_payment_amount" placeholder="Bill Amount">
+                        </div>
+                        <div class="conts">
+                            <label class="form-control-label" for="supplier_payment_date">Assigned Date: <br></label>
+                            <input class="form-control w-75" value="<?=date("Y-m-d")?>" type="date" name="supplier_payment_date" id="supplier_payment_date" placeholder="Bill Date">
+                        </div>
+                        <div class="conts">
+                            <label class="form-control-label" for="supplier_payment_document_no">Document Number: <br></label>
+                            <input class="form-control w-75" type="text" name="supplier_payment_document_no" id="supplier_payment_document_no" placeholder="Document Number">
+                        </div>
+                        <div class="conts">
+                            <label class="form-control-label" for="supplier_payment_description">Payment Description: <br></label>
+                            <textarea name="" id="supplier_payment_description" cols="30" rows="4" class="form-control" placeholder="Give a narrative about this payment"></textarea>
+                        </div>
+                    </form>
+                    <div class="conts">
+                        <p id="supplier_payment_description_error"></p>
+                    </div>
+                    <div class="btns">
+                        <button type="button" id="make_supplier_payment">Confirm Payment <img class="hide" src="images/ajax_clock_small.gif" id="make_payment_loader"></button>
+                        <button type="button" id="close_supplier_payment">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="confirmpaymentwindow hide" style="overflow: auto;" id="edit_supplier_payments_window">
+            <div class="changesubwindow editexams animate">
+                <div class="conts">
+                    <p class="funga" id="close_edit_supplier_payments">&times</p>
+                    <h6 class="text-center">Edit Supplier Payments</h6>
+                </div>
+                <div class="conts">
+                    <div class="cont">
+                        <div class="container ml-3">
+                            <span class="btn btn-sm btn-secondary" id="delete_payments"><i class="fas fa-trash"></i></span>
+                        </div>
+                        <div class="message_contents hide" id="delete_payment_window">
+                            <label class="form-control-label"><u>Confirm:</u></label>
+                            <p>Are you sure you want to delete this payment?</p>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <button id="confirm_delete_payments"><i class="fas fa-trash"></i> Delete <img class="hide" src="images/ajax_clock_small.gif" id="delete_payment_loader"></button>
+                                </div>
+                                <div class="col-md-6">
+                                    <button id="cancel_delete_payments"><i class="fas fa-x"></i> Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <form class="add_expense" >
+                        <h6 class="text-center" ><u>Edit Payment</u></h6>
+                        <div class="conts">
+                            <label class="form-control-label" for="supplier_payment_for_edit">Payment For: <img class="hide" src="images/ajax_clock_small.gif" id="supplier_payment_for_loader_edit"><br></label>
+                            <div id="payment_for_details_edit"></div>
+                            <input type="hidden" name="" id="supplier_payment_id">
+                        </div>
+                        <div class="conts">
+                            <label class="form-control-label" for="supplier_payment_amount_edit">Payment Amount: <br></label>
+                            <input class="form-control w-75" type="text" name="supplier_payment_amount_edit" id="supplier_payment_amount_edit" placeholder="Bill Amount">
+                        </div>
+                        <div class="conts">
+                            <label class="form-control-label" for="supplier_payment_date_edit">Assigned Date: <br></label>
+                            <input class="form-control w-75" value="<?=date("Y-m-d")?>" type="date" name="supplier_payment_date_edit" id="supplier_payment_date_edit" placeholder="Bill Date">
+                        </div>
+                        <div class="conts">
+                            <label class="form-control-label" for="supplier_payment_document_no_edit">Document Number: <br></label>
+                            <input class="form-control w-75" type="text" name="supplier_payment_document_no_edit" id="supplier_payment_document_no_edit" placeholder="Document Number">
+                        </div>
+                        <div class="conts">
+                            <label class="form-control-label" for="supplier_payment_description_edit">Payment Description: <br></label>
+                            <textarea name="" id="supplier_payment_description_edit" cols="30" rows="4" class="form-control" placeholder="Give a narrative about this payment"></textarea>
+                        </div>
+                    </form>
+                    <div class="conts">
+                        <p id="supplier_payment_description_error_edit"></p>
+                    </div>
+                    <div class="btns">
+                        <button type="button" id="make_supplier_payment_edit">Update Payment <img class="hide" src="images/ajax_clock_small.gif" id="make_payment_loader_edit"></button>
+                        <button type="button" id="close_supplier_payment_edit">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="confirmpaymentwindow hide" style="overflow: auto;" id="add_expense_par">
             <div class="changesubwindow editexams animate">
                 <div class="conts">
                     <p class="funga" id="close_add_expense">&times</p>
-                    <h6>Add Votehead</h6>
+                    <h6 class="text-center">Add Votehead</h6>
                 </div>
                 <div class="conts" id="">
                     <div class="message_contents">

@@ -4756,8 +4756,13 @@ function view_supplier() {
 
     }
 
+    // display bill and supply
+    display_bills_n_payments(supplier_details.supplier_id);
+}
+
+function display_bills_n_payments(supplier_id) {
     // get the supplier bill and supplier payments
-    var datapass = "?get_supplier_data="+supplier_details.supplier_id;
+    var datapass = "?get_supplier_data="+supplier_id;
     sendData2("GET","/administration/admissions.php",datapass,cObj("supplier_payment_bills"),cObj("supplier_data_loaders"));
     setTimeout(() => {
         var timeout = 0;
@@ -4782,6 +4787,9 @@ function view_supplier() {
                     display_suppliers_bill(bills);
                     display_suppliers_payments(payments);
                     
+                }else{
+                    display_suppliers_bill([]);
+                    display_suppliers_payments([]);
                 }
                 stopInterval(ids);
             }
@@ -4795,11 +4803,11 @@ function display_suppliers_bill(bills) {
         for (let index = 0; index < bills.length; index++) {
             const element = bills[index];
             data_to_display+="<tr>";
-            data_to_display+="<td>"+(index+1)+"</td>";
+            data_to_display+="<td> <input type='hidden' id='each_bill_values_"+element.bill_id+"' value='"+JSON.stringify(element)+"'>"+(index+1)+"</td>";
             data_to_display+="<td>"+element.bill_name+"</td>";
             data_to_display+="<td>Kes "+element.bill_amount+"</td>";
             data_to_display+="<td>"+element.date+"</td>";
-            data_to_display+="<td><span class='link' id='"+element.bill_id+"'><i class='fas fa-eye'></i> View</span></td>";
+            data_to_display+="<td><span class='link supplier_bills' id='supplier_bills_"+element.bill_id+"'><i class='fas fa-eye'></i> View</span></td>";
             data_to_display+="</tr>";
         }
         data_to_display+="</table>";
@@ -4809,17 +4817,120 @@ function display_suppliers_bill(bills) {
 
     // inner html
     cObj("supplier_bill_tables").innerHTML = data_to_display;
+
+    // get the supplier bills
+    var supplier_bills = document.getElementsByClassName("supplier_bills");
+    for (let index = 0; index < supplier_bills.length; index++) {
+        const element = supplier_bills[index];
+        element.addEventListener("click",edit_supplier_bills);
+    }
 }
+
+function edit_supplier_bills() {
+    var this_id = this.id.substr(15);
+    var edit_supplier_bill = valObj("each_bill_values_"+this_id);
+
+    if (hasJsonStructure(edit_supplier_bill)) {
+        // edit_supplier_bill
+        edit_supplier_bill = JSON.parse(edit_supplier_bill);
+        cObj("supplier_bill_name_edit").value = edit_supplier_bill.bill_name;
+        cObj("supplier_bill_amount_edit").value = edit_supplier_bill.real_amount;
+        cObj("date_assigned_edit").value = edit_supplier_bill.real_date.substr(0,4)+"-"+edit_supplier_bill.real_date.substr(4,2)+"-"+edit_supplier_bill.real_date.substr(6,2);
+        cObj("supplier_bill_due_date_edit").value = edit_supplier_bill.due_date.substr(0,4)+"-"+edit_supplier_bill.due_date.substr(4,2)+"-"+edit_supplier_bill.due_date.substr(6,2);
+        cObj("supplier_document_number_edit").value = edit_supplier_bill.document_number;
+        cObj("supplier_bill_id_edit").value = edit_supplier_bill.bill_id;
+
+        // show the edit window
+        cObj("edit_supplier_biil").classList.remove("hide");
+
+        // get the expense category
+
+        // get the bill category
+        var datapass = "get_expense_categories=true&expense_category_id=supplier_expense_category_edit&selected_value="+ edit_supplier_bill.expense_category;
+        sendDataPost("POST","ajax/administration/admissions.php",datapass,cObj("supplier_expense_cat_edit"),cObj("display_supplier_expense_category_edit"));
+        setTimeout(() => {
+            var timeout = 0;
+            var ids = setInterval(() => {
+                timeout++;
+                //after two minutes of slow connection the next process wont be executed
+                if (timeout == 1200) {
+                    stopInterval(ids);
+                }
+                if (cObj("display_supplier_expense_category_edit").classList.contains("hide")) {
+                    if(cObj("supplier_expense_category_edit") != undefined){
+                        cObj("supplier_expense_category_edit").addEventListener("change", function () {
+                            display_expense_sub_category_edit("");
+                        });
+                    }
+
+                    // display subcategory
+                    display_expense_sub_category_edit(edit_supplier_bill.expense_sub_category);
+                    stopInterval(ids);
+                }
+            }, 100);
+        }, 200);
+    }
+}
+
+// update the bill
+cObj("save_new_supplier_bill_edit").onclick = function () {
+    var err = checkBlank("supplier_bill_name_edit");
+    err+=checkBlank("supplier_bill_amount_edit");
+    err+=checkBlank("date_assigned_edit");
+    err+=checkBlank("supplier_bill_due_date_edit");
+    err += cObj("supplier_expense_category_edit") != undefined ? checkBlank("supplier_expense_category_edit") : 0;
+    err += cObj("supplier_expense_sub_category_edit") != undefined ? checkBlank("supplier_expense_sub_category_edit") : 0;
+
+    // get error
+    if (err == 0) {
+        var supplier_bill_name_edit = valObj("supplier_bill_name_edit");
+        var supplier_bill_amount_edit = valObj("supplier_bill_amount_edit");
+        var date_assigned_edit = valObj("date_assigned_edit");
+        var supplier_bill_due_date_edit = valObj("supplier_bill_due_date_edit");
+
+        var datapass = "update_bill=true&bill_name="+supplier_bill_name_edit+"&bill_amount="+supplier_bill_amount_edit+"&date_assigned="+date_assigned_edit+"&due_date="+supplier_bill_due_date_edit+"&supplier_bill_id_edit="+valObj("supplier_bill_id_edit")+"&supplier_document_number="+valObj("supplier_document_number_edit");
+        datapass += "&supplier_expense_category_edit="+valObj("supplier_expense_category_edit")+"&supplier_expense_sub_category_edit="+valObj("supplier_expense_sub_category_edit");
+        sendDataPost("POST","ajax/finance/financial.php",datapass,cObj("supplier_bill_error_edit"),cObj("save_bill_loader_edit"));
+        setTimeout(() => {
+            var timeout = 0;
+            var ids = setInterval(() => {
+                timeout++;
+                //after two minutes of slow connection the next process wont be executed
+                if (timeout == 1200) {
+                    stopInterval(ids);
+                }
+                if (cObj("save_bill_loader_edit").classList.contains("hide")) {
+                    display_bills_n_payments(valObj("supplier_id"));
+                    setTimeout(() => {
+                        cObj("supplier_bill_error_edit").innerHTML = "";
+                        cObj("close_new_supplier_bill_window_edit").click();
+                    }, 1000);
+                    stopInterval(ids);
+                }
+            }, 100);
+        }, 200);
+    }
+}
+
+cObj("close_new_supplier_bill_window_edit").onclick = function () {
+    cObj("edit_supplier_biil").classList.add("hide");
+    cObj("supplier_expense_sub_cat_edit").innerHTML = "<p class='text-danger'>Please select the bill category to display the subcategories</p>";
+}
+// edit suppliers
+cObj("close_edit_supplier_bill").onclick = function () {
+    cObj("edit_supplier_biil").classList.add("hide");
+}
+
 function display_suppliers_payments(payments) {
     var data_to_display = "<table class='table'><tr><th>No.</th><th>Paid Amount</th><th>Date Paid</th><th>Action</th></tr>";
     if (payments.length > 0) {
         for (let index = 0; index < payments.length; index++) {
             const element = payments[index];
             data_to_display+="<tr>";
-            data_to_display+="<td>"+(index+1)+"</td>";
+            data_to_display+="<td><input type='hidden' id='supplier_payment_dets_"+element.payment_id+"' value='"+JSON.stringify(element)+"'> "+(index+1)+"</td>";
             data_to_display+="<td>Kes "+element.amount+"</td>";
-            data_to_display+="<td>"+element.date_paid+"</td>";
-            data_to_display+="<td><span class='link' id='"+element.bill_id+"'><i class='fas fa-eye'></i> View</span></td>";
+            data_to_display+="<td>"+element.date+"</td>";
+            data_to_display+="<td><span class='link supplier_payment' id='supplier_payment_"+element.payment_id+"'><i class='fas fa-eye'></i> View</span></td>";
             data_to_display+="</tr>";
         }
         data_to_display+="</table>";
@@ -4829,8 +4940,41 @@ function display_suppliers_payments(payments) {
 
     // inner html
     cObj("supplier_payment_table").innerHTML = data_to_display;
+
+    var supplier_payment = document.getElementsByClassName("supplier_payment");//edit_supplier_payments_window
+    for (let index = 0; index < supplier_payment.length; index++) {
+        const element = supplier_payment[index];
+        element.addEventListener("click", edit_supplier_payments);
+    }
 }
 
+function edit_supplier_payments() {
+
+    // display the payment for details
+    var supplier_payment_dets = valObj("supplier_payment_dets_"+this.id.substr(17));
+    if (hasJsonStructure(supplier_payment_dets)) {
+        cObj("edit_supplier_payments_window").classList.remove("hide");
+        supplier_payment_dets = JSON.parse(supplier_payment_dets);
+        cObj("supplier_payment_amount_edit").value = supplier_payment_dets.real_amount
+        cObj("supplier_payment_date_edit").value = supplier_payment_dets.date_paid.substr(0,4)+"-"+supplier_payment_dets.date_paid.substr(4,2)+"-"+supplier_payment_dets.date_paid.substr(6,2);
+        cObj("supplier_payment_document_no_edit").value = supplier_payment_dets.document_number
+        cObj("supplier_payment_description_edit").value = supplier_payment_dets.payment_description
+        cObj("supplier_payment_id").value = supplier_payment_dets.payment_id
+        
+        // get the payment option
+        get_payment_option("supplier_payment_for_edit",supplier_payment_dets.payment_for,"payment_for_details_edit","supplier_payment_for_loader_edit");
+    }else{
+        // display an error has occured!
+    }
+}
+
+cObj("close_edit_supplier_payments").onclick = function () {
+    cObj("edit_supplier_payments_window").classList.add("hide");
+}
+
+cObj("close_supplier_payment_edit").onclick = function () {
+    cObj("edit_supplier_payments_window").classList.add("hide");
+}
 cObj("return_to_supplier_list_2").onclick = function () {
     cObj("edit_suppliers").classList.add("hide");
     cObj("register_suppliers").classList.add("hide");
@@ -4854,6 +4998,305 @@ cObj("save_suppliers_2").onclick = function () {
                 setTimeout(() => {
                     cObj("supplier_errors_2").innerHTML = "";
                 }, 3000);
+                stopInterval(ids);
+            }
+        }, 100);
+    }, 200);
+}
+
+cObj("close_new_supplier_bill_window").onclick = function () {
+    cObj("add_supplier_biil").classList.add("hide");
+}
+
+cObj("close_add_supplier_bill").onclick = function () {
+    cObj("add_supplier_biil").classList.add("hide");
+}
+
+cObj("add_bills").onclick = function () {
+    cObj("add_supplier_biil").classList.remove("hide");
+
+    // get the bill category
+    var datapass = "get_expense_categories=true&expense_category_id=supplier_expense_category&selected_value=";
+    sendDataPost("POST","ajax/administration/admissions.php",datapass,cObj("supplier_expense_cat"),cObj("display_supplier_expense_category"));
+    setTimeout(() => {
+        var timeout = 0;
+        var ids = setInterval(() => {
+            timeout++;
+            //after two minutes of slow connection the next process wont be executed
+            if (timeout == 1200) {
+                stopInterval(ids);
+            }
+            if (cObj("display_supplier_expense_category").classList.contains("hide")) {
+                if(cObj("supplier_expense_category") != undefined){
+                    cObj("supplier_expense_category").addEventListener("change", display_expense_sub_category);
+                }
+                stopInterval(ids);
+            }
+        }, 100);
+    }, 200);
+}
+
+function display_expense_sub_category() {
+    // datapass
+    var datapass = "get_expense_category=true&expense_category_id="+this.value+"&id=supplier_expense_sub_category&value=";
+    sendDataPost("POST","ajax/finance/financial.php",datapass,cObj("supplier_expense_sub_cat"),cObj("display_supplier_expense_sub_category"));
+}
+
+function display_expense_sub_category_edit(expense_subcategories = "") {
+    // datapass
+    var datapass = "get_expense_category=true&expense_category_id="+valObj("supplier_expense_category_edit")+"&id=supplier_expense_sub_category_edit&value="+expense_subcategories;
+    sendDataPost("POST","ajax/finance/financial.php",datapass,cObj("supplier_expense_sub_cat_edit"),cObj("display_supplier_expense_sub_category_edit"));
+}
+
+cObj("save_new_supplier_bill").onclick = function () {
+    var err = checkBlank("supplier_bill_name");
+    err+=checkBlank("supplier_bill_amount");
+    err+=checkBlank("date_assigned");
+    err += cObj("supplier_expense_category") != undefined ? checkBlank("supplier_expense_category") : 1;
+    err += cObj("supplier_expense_sub_category") != undefined ? checkBlank("supplier_expense_sub_category") : 1;
+
+    if (err == 0) {
+        var datapass = "save_supplier_bill=true&supplier_id="+valObj("supplier_id")+"&supplier_bill_name="+valObj("supplier_bill_name")+"&supplier_bill_amount="+valObj("supplier_bill_amount")+"&date_assigned="+valObj("date_assigned")+"&supplier_document_number="+valObj("supplier_document_number")+"&supplier_bill_due_date="+valObj("supplier_bill_due_date");
+        datapass += "&supplier_expense_category="+valObj("supplier_expense_category")+"&supplier_expense_sub_category="+valObj("supplier_expense_sub_category");
+        sendDataPost("POST","ajax/finance/financial.php",datapass,cObj("supplier_bill_error"),cObj("save_bill_loader"));
+        setTimeout(() => {
+            var timeout = 0;
+            var ids = setInterval(() => {
+                timeout++;
+                //after two minutes of slow connection the next process wont be executed
+                if (timeout == 1200) {
+                    stopInterval(ids);
+                }
+                if (cObj("save_suppliers_loader_2").classList.contains("hide")) {
+                    // clear the form
+                    cObj("supplier_bill_name").value = "";
+                    cObj("supplier_bill_amount").value = "";
+                    cObj("supplier_document_number").value = "";
+
+                    // hide the window
+                    setTimeout(() => {
+                        cObj("close_add_supplier_bill").click();
+                        cObj("supplier_bill_error").innerHTML = "";
+                    }, 1000);
+
+                    // redisplay the data
+                    display_bills_n_payments(valObj("supplier_id"));
+                    stopInterval(ids);
+                }
+            }, 100);
+        }, 200);
+    }else{
+        cObj("supplier_bill_error").innerHTML = "<p class='text-danger'>Fill all fields covered with the red border!</p>";
+    }
+}
+
+cObj("close_supplier_payment").onclick = function () {
+    cObj("make_payments_window").classList.add("hide");
+}
+
+cObj("close_supplier_payments").onclick = function () {
+    cObj("make_payments_window").classList.add("hide");
+}
+
+cObj("add_payments").onclick = function () {
+    cObj("make_payments_window").classList.remove("hide");
+    // get the payment options
+    get_payment_option("supplier_payment_for","");
+}
+
+function get_payment_option(option_id,option_value, display_area = "payment_for_details", loader = "supplier_payment_for_loader") {
+    var datapass = "get_payment_for=true&option_id="+option_id+"&option_value="+option_value+"&supplier_id="+valObj("supplier_id");
+    sendDataPost("POST","ajax/finance/financial.php",datapass,cObj(display_area),cObj(loader));
+}
+
+cObj("make_supplier_payment_edit").onclick = function () {
+    var err = checkBlank("supplier_payment_for_edit");
+    err+=checkBlank("supplier_payment_amount_edit");
+    err+=checkBlank("supplier_payment_date_edit");
+
+    // check for errors
+    if(err == 0){
+        var datapass = "save_supplier_data=true&payment_amount="+valObj("supplier_payment_amount_edit")+"&payment_date="+valObj("supplier_payment_date_edit")+"&document_number="+valObj("supplier_payment_document_no_edit")+"&payment_description="+valObj("supplier_payment_description_edit")+"&supplier_payment_id="+valObj("supplier_payment_id")+"&supplier_payment_for="+valObj("supplier_payment_for_edit");
+        sendDataPost("POST","ajax/finance/financial.php",datapass,cObj("supplier_payment_description_error_edit"),cObj("make_payment_loader_edit"));
+        setTimeout(() => {
+            var timeout = 0;
+            var ids = setInterval(() => {
+                timeout++;
+                //after two minutes of slow connection the next process wont be executed
+                if (timeout == 1200) {
+                    stopInterval(ids);
+                }
+                if (cObj("make_payment_loader_edit").classList.contains("hide")) {
+                    if(cObj("supplier_payment_error_edit") != undefined){
+                        // show the window still
+                    }else{
+                        // clear the form
+                        // cObj("supplier_payment_amount_edit").value = "";
+                        // cObj("supplier_payment_date_edit").value = "";
+                        // cObj("supplier_payment_document_no_edit").value = "";
+                        // cObj("supplier_payment_description_edit").value = "";
+    
+                        // hide the window
+                        setTimeout(() => {
+                            cObj("close_supplier_payment_edit").click();
+                            cObj("supplier_payment_description_error_edit").innerHTML = "";
+                        }, 1000);
+                    }
+
+                    // redisplay the data
+                    display_bills_n_payments(valObj("supplier_id"));
+                    stopInterval(ids);
+                }
+            }, 100);
+        }, 200);
+    }else{
+
+    }
+}
+
+cObj("make_supplier_payment").onclick = function () {
+    var err = checkBlank("supplier_payment_for");
+    err += checkBlank("supplier_payment_amount");
+    err += checkBlank("supplier_payment_date");
+
+    if (err == 0) {
+        var datapass = "save_payment=true&supplier_payment_for="+valObj("supplier_payment_for")+"&supplier_payment_amount="+valObj("supplier_payment_amount")+"&supplier_payment_date="+valObj("supplier_payment_date")+"&supplier_payment_description="+valObj("supplier_payment_description")+"&supplier_payment_document_no="+valObj("supplier_payment_document_no");
+        sendDataPost("POST","ajax/finance/financial.php",datapass,cObj("supplier_payment_description_error"),cObj("make_payment_loader"));
+        setTimeout(() => {
+            var timeout = 0;
+            var ids = setInterval(() => {
+                timeout++;
+                //after two minutes of slow connection the next process wont be executed
+                if (timeout == 1200) {
+                    stopInterval(ids);
+                }
+                if (cObj("save_suppliers_loader_2").classList.contains("hide")) {
+                    if(cObj("supplier_payment_error") != undefined){
+                        // show the window still
+                    }else{
+                        // clear the form
+                        cObj("supplier_payment_amount").value = "";
+                        cObj("supplier_payment_date").value = "";
+                        cObj("supplier_payment_document_no").value = "";
+                        cObj("supplier_payment_description").value = "";
+                        cObj("supplier_payment_for").children[0].selected = true;
+    
+                        // hide the window
+                        setTimeout(() => {
+                            cObj("close_supplier_payment").click();
+                            cObj("supplier_payment_description_error").innerHTML = "";
+                        }, 1000);
+                    }
+
+                    // redisplay the data
+                    display_bills_n_payments(valObj("supplier_id"));
+                    stopInterval(ids);
+                }
+            }, 100);
+        }, 200);
+    }
+}
+
+cObj("delete_payments").onclick = function () {
+    cObj("delete_payment_window").classList.toggle("hide");
+}
+
+cObj("cancel_delete_payments").onclick = function () {
+    cObj("delete_payment_window").classList.toggle("hide");
+}
+
+cObj("confirm_delete_payments").onclick = function () {
+    // delete the payment
+    var datapass = "delete_supplier_payment="+valObj("supplier_payment_id");
+    sendDataPost("POST","ajax/finance/financial.php",datapass,cObj("supplier_payment_description_error_edit"),cObj("delete_payment_loader"));
+    setTimeout(() => {
+        var timeout = 0;
+        var ids = setInterval(() => {
+            timeout++;
+            //after two minutes of slow connection the next process wont be executed
+            if (timeout == 1200) {
+                stopInterval(ids);
+            }
+            if (cObj("delete_payment_loader").classList.contains("hide")) {
+                // hide the window
+                setTimeout(() => {
+                    cObj("close_supplier_payment_edit").click();
+                    cObj("supplier_payment_description_error_edit").innerHTML = "";
+                    cObj("cancel_delete_payments").click();
+                }, 2000);
+
+                // redisplay the data
+                display_bills_n_payments(valObj("supplier_id"));
+                stopInterval(ids);
+            }
+        }, 100);
+    }, 200);
+}
+
+cObj("delete_supplier_bill").onclick = function () {
+    cObj("delete_bill_confirmation_window").classList.toggle("hide");
+}
+
+cObj("cancel_bill_deletion").onclick = function () {
+    cObj("delete_bill_confirmation_window").classList.toggle("hide");
+}
+
+cObj("confirm_bill_deletion").onclick = function () {
+    var datapass = "delete_supplier_bill="+valObj("supplier_bill_id_edit");
+    sendDataPost("POST","ajax/finance/financial.php",datapass,cObj("supplier_bill_error_edit"),cObj("delete_bill_loader"));
+    setTimeout(() => {
+        var timeout = 0;
+        var ids = setInterval(() => {
+            timeout++;
+            //after two minutes of slow connection the next process wont be executed
+            if (timeout == 1200) {
+                stopInterval(ids);
+            }
+            if (cObj("delete_bill_loader").classList.contains("hide")) {
+                // hide the window
+                setTimeout(() => {
+                    cObj("close_new_supplier_bill_window_edit").click();
+                    cObj("supplier_bill_error_edit").innerHTML = "";
+                    cObj("cancel_bill_deletion").click();
+                }, 2000);
+
+                // redisplay the data
+                display_bills_n_payments(valObj("supplier_id"));
+                stopInterval(ids);
+            }
+        }, 100);
+    }, 200);
+}
+
+cObj("delete_supplier").onclick = function () {
+    cObj("delete_supplier_window").classList.toggle("hide");
+}
+
+cObj("cancel_delete_supplier").onclick = function () {
+    cObj("delete_supplier_window").classList.toggle("hide");
+}
+
+cObj("confirm_delete_supplier").onclick = function () {
+    var datapass = "delete_supplier="+valObj("supplier_id");
+    sendDataPost("POST","ajax/finance/financial.php",datapass,cObj("supplier_notices"),cObj("show_supplier_loader"));
+    setTimeout(() => {
+        var timeout = 0;
+        var ids = setInterval(() => {
+            timeout++;
+            //after two minutes of slow connection the next process wont be executed
+            if (timeout == 1200) {
+                stopInterval(ids);
+            }
+            if (cObj("delete_bill_loader").classList.contains("hide")) {
+                // hide the window
+                cObj("return_to_supplier_list_2").click();
+                cObj("cancel_delete_supplier").click();
+                setTimeout(() => {
+                    cObj("supplier_notices").innerHTML = "";
+                }, 3000);
+
+                // redisplay the data
+                display_bills_n_payments(valObj("supplier_id"));
                 stopInterval(ids);
             }
         }, 100);

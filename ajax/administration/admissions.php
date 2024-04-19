@@ -2665,9 +2665,13 @@
             // echo
             echo $data_to_display;
         }elseif(isset($_GET['get_supplier_data'])){
-            $select_payments = "SELECT * FROM `supplier_bill_payments` WHERE `payment_for` = '".$_GET['get_supplier_data']."'";
-            $select_bill = "SELECT * FROM `supplier_bills` WHERE `supplier_id` = '".$_GET['get_supplier_data']."'";
-
+            $select_payments = "SELECT SBP.* FROM `supplier_bill_payments` AS SBP
+                                LEFT JOIN `supplier_bills` AS SB
+                                ON SB.bill_id = SBP.payment_for
+                                WHERE SB.supplier_id = '".$_GET['get_supplier_data']."' ORDER BY SBP.payment_id DESC";
+                                
+            $select_bill = "SELECT * FROM `supplier_bills` WHERE `supplier_id` = '".$_GET['get_supplier_data']."' ORDER BY bill_id DESC";
+            // echo $select_bill;
             // get the bill
             $stmt = $conn2->prepare($select_bill);
             $stmt->execute();
@@ -2675,8 +2679,10 @@
             $supplier_bill = [];
             if ($result) {
                 while($row = $result->fetch_assoc()){
+                    $row['real_date'] = $row['date_assigned'];
                     $row['date'] = date("D dS M Y",strtotime($row['date_assigned']));
-                    $row['bill_amount'] = date("D dS M Y",strtotime($row['bill_amount']));
+                    $row['real_amount'] = $row['bill_amount'];
+                    $row['bill_amount'] = "".number_format($row['bill_amount']);
                     array_push($supplier_bill,$row);
                 }
             }
@@ -2688,8 +2694,10 @@
             $supplier_payment = [];
             if ($result) {
                 while($row = $result->fetch_assoc()){
+                    $row['real_date'] = strtotime($row['date_paid']);
                     $row['date'] = date("D dS M Y",strtotime($row['date_paid']));
-                    $row['amount'] = date("D dS M Y",strtotime($row['amount']));
+                    $row['real_amount'] = $row['amount'];
+                    $row['amount'] = number_format($row['amount']);
                     array_push($supplier_payment,$row);
                 }
             }
@@ -6336,6 +6344,26 @@
                 $data_to_display = "<select class='form-control ' name='edit_expense_category' id='edit_expense_category'><option value='' id='main_sele' hidden >Select..</option>";
                 while($row = $result->fetch_assoc()){
                     $data_to_display .= "<option class='exp_cats_exp' value='".$row['expense_id']."'>".ucwords(strtolower($row['expense_name']))."</option>";
+                }
+                $data_to_display.="</select>";
+            }
+            echo $data_to_display;
+        }elseif(isset($_POST['get_expense_categories'])){
+            $get_expense_categories = $_POST['get_expense_categories'];
+            $expense_category_id = $_POST['expense_category_id'];
+            $selected_value = $_POST['selected_value'];
+
+            // expense_categories
+            $select = "SELECT * FROM `expense_category`;";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $data_to_display = "<p class='text-danger border border-danger my-2 p-2'>Set expense categories in the settings before proceeding!.</p>";
+            if($result){
+                $data_to_display = "<select class='form-control w-75' name='".$expense_category_id."' id='".$expense_category_id."'><option value='' id='main_sele' hidden >Select..</option>";
+                while($row = $result->fetch_assoc()){
+                    $selected = $selected_value == $row['expense_id'] ? "selected" : "";
+                    $data_to_display .= "<option class='exp_cats_exp' ".$selected." value='".$row['expense_id']."'>".ucwords(strtolower($row['expense_name']))."</option>";
                 }
                 $data_to_display.="</select>";
             }
