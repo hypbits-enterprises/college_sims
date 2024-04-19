@@ -4996,6 +4996,29 @@
             $stmt->execute();
 
             echo "<p class='text-success'>Supplier bill updated successfully!</p>";
+        }elseif(isset($_POST['save_assets'])){
+            // connections
+            include("../../connections/conn1.php");
+            include("../../connections/conn2.php");
+
+            // data passed
+            $save_assets = $_POST['save_assets'];
+            $acquiry_date = $_POST['acquiry_date'];
+            $asset_original_value = $_POST['asset_original_value'];
+            $value_acquisition = $_POST['value_acquisition'];
+            $value_acquisition_rate = $_POST['value_acquisition_percentage'];
+            $asset_name = $_POST['asset_name'];
+            $asset_description = $_POST['asset_description'];
+            $asset_category = $_POST['asset_category'];
+            $asset_acquiry_date = date("YmdHis", strtotime($_POST['asset_acquiry_date']));
+            
+            // insert
+            $insert = "INSERT INTO `asset_table` (`asset_name`,`asset_category`,`date_of_acquiry`,`acquisition_option`,`acquisition_rate`,`orginal_value`) VALUES (?,?,?,?,?,?)";
+            $stmt = $conn2->prepare($insert);
+            $stmt->bind_param("ssssss",$asset_name,$asset_category,$asset_acquiry_date,$value_acquisition,$value_acquisition_rate,$asset_original_value);
+            $stmt->execute();
+
+            echo "<p class='text-success'>Asset registered successfully!</p>";
         }elseif(isset($_POST['get_payment_for'])){
             // connections
             include("../../connections/conn1.php");

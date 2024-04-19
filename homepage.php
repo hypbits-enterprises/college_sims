@@ -406,7 +406,7 @@ function checkPresnt($array, $string){
                         <button type='button' class="sidebtns <?php echo allowed("feestruct"); ?> htbtn" id='feestruct'><span><img class="icons" src="images/feestructure.png"></span>Fees structure</button>
                         <button type='button' class="sidebtns <?php echo allowed("expenses_btn"); ?> htbtn" id='expenses_btn'><span><img class="icons" src="images/feestructure.png"></span>Expense</button>
                         <button type='button' class="sidebtns <?php echo allowed("expenses_btn"); ?> htbtn" id='supplier_btn'><span><img class="icons" src="images/findstud.png"></span> Supplier Accounts</button>
-                        <button type='button' class="sidebtns <?php echo allowed("expenses_btn"); ?> htbtn" id='asset_account'><span><img class="icons" src="images/pay.png"></span> Asset Accounts</button>
+                        <button type='button' class="sidebtns <?php echo allowed("expenses_btn"); ?> htbtn" id='asset_account_btn'><span><img class="icons" src="images/pay.png"></span> Asset Accounts</button>
                         <button type='button' class="sidebtns <?php echo allowed("finance_report_btn"); ?> htbtn" id='finance_report_btn'><span><img class="icons" src="images/report.png"></span>Financial report</button>
                     </div>
                 </div>
@@ -528,6 +528,7 @@ function checkPresnt($array, $string){
             include("financepages/feesstructure.php");
             include("financepages/expenses.php");
             include("financepages/suppliers.php");
+            include("financepages/assets.php");
             include("financepages/financial_statements.php");
             include("financepages/payroll.php");
             include("transport/transport_route.php");

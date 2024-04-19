@@ -25,6 +25,17 @@ cObj("supplier_btn").onclick = function () {
     removesidebar();
 }
 
+// asset_accounts
+cObj("asset_account_btn").onclick = function () {
+    hideWindow();
+    unselectbtns();
+    addselected(this.id);
+
+    // unhide the main page
+    cObj("asset_accounts").classList.remove("hide");
+    display_supplier();
+    removesidebar();
+}
 function getDepartmentsList() {
     // get the departments
     var datapass = "?get_departments=true";

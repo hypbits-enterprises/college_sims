@@ -5302,3 +5302,48 @@ cObj("confirm_delete_supplier").onclick = function () {
         }, 100);
     }, 200);
 }
+
+cObj("save-assets-btn").onclick = function () {
+    var err = checkBlank("asset-acquiry-date");
+    err += checkBlank("asset-original-value");
+    err += checkBlank("value-acquisition-option");
+    err += checkBlank("value-acquisition-percentage");
+    
+    if (err == 0) {
+        var datapass = "save_assets=true&acquiry_date="+valObj("asset-acquiry-date")+"&asset_original_value="+valObj("asset-original-value")+"&value_acquisition="+valObj("value-acquisition-option")+"&value_acquisition_percentage="+valObj("value-acquisition-percentage");
+        datapass += "&asset_description="+valObj("asset-description")+"&asset_name="+valObj("asset-name")+"&asset_category="+valObj("asset-category")+"&asset_acquiry_date="+valObj("asset-acquiry-date");
+        sendDataPost("POST","ajax/finance/financial.php",datapass,cObj("asset-error"),cObj("save-assets-loader"));
+        setTimeout(() => {
+            var timeout = 0;
+            var ids = setInterval(() => {
+                timeout++;
+                //after two minutes of slow connection the next process wont be executed
+                if (timeout == 1200) {
+                    stopInterval(ids);
+                }
+                if (cObj("save-assets-loader").classList.contains("hide")) {
+                    // go bck to list
+                    cObj("back-to-assets").click();
+                    
+                    // hide the window
+                    setTimeout(() => {
+                        cObj("asset-error").innerHTML = "";
+                    }, 3000);
+                    // redisplay the data
+                    display_bills_n_payments(valObj("supplier_id"));
+                    stopInterval(ids);
+                }
+            }, 100);
+        }, 200);
+    }
+}
+
+cObj("register-new-asset").onclick = function () {
+    cObj("register-asset").classList.remove("hide");
+    cObj("asset-list").classList.add("hide");
+}
+
+cObj("back-to-assets").onclick = function () {
+    cObj("register-asset").classList.add("hide");
+    cObj("asset-list").classList.remove("hide");
+}
