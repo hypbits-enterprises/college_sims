@@ -5324,13 +5324,12 @@ cObj("save-assets-btn").onclick = function () {
                 if (cObj("save-assets-loader").classList.contains("hide")) {
                     // go bck to list
                     cObj("back-to-assets").click();
+                    display_assets();
                     
                     // hide the window
                     setTimeout(() => {
                         cObj("asset-error").innerHTML = "";
                     }, 3000);
-                    // redisplay the data
-                    display_bills_n_payments(valObj("supplier_id"));
                     stopInterval(ids);
                 }
             }, 100);
@@ -5341,9 +5340,236 @@ cObj("save-assets-btn").onclick = function () {
 cObj("register-new-asset").onclick = function () {
     cObj("register-asset").classList.remove("hide");
     cObj("asset-list").classList.add("hide");
+    cObj("edit-assets").classList.add("hide");
 }
 
 cObj("back-to-assets").onclick = function () {
     cObj("register-asset").classList.add("hide");
     cObj("asset-list").classList.remove("hide");
+    cObj("edit-assets").classList.add("hide");
+}
+function display_assets(page = 1){
+    var datapass = "get_assets="+page;
+    sendDataPost("POST","ajax/finance/financial.php",datapass,cObj("asset-data"),cObj("new-asset-loader"));
+    setTimeout(() => {
+        var timeout = 0;
+        var ids = setInterval(() => {
+            timeout++;
+            //after two minutes of slow connection the next process wont be executed
+            if (timeout == 1200) {
+                stopInterval(ids);
+            }
+            if (cObj("new-asset-loader").classList.contains("hide")) {
+                var data_to_display = hasJsonStructure(cObj("asset-data").innerText) ? JSON.parse(cObj("asset-data").innerText) : {"assets" : [],"total_pages" : 0};
+                display_all_assets(data_to_display.assets);
+                
+                cObj("asset-current-page").innerText = "Page "+page+" of "+data_to_display.total_pages;
+                cObj("asset-page").value = page;
+                cObj("maximum-page-asset").value = data_to_display.total_pages;
+                stopInterval(ids);
+            }
+
+            // navigation buttons
+            // cObj("next_supplier_page").addEventListener("click",navigate_right);
+            // cObj("previous_supplier_page").addEventListener("click",navigate_left);
+        }, 100);
+    }, 200);
+}
+
+function display_all_assets(data_to_display) {
+    var data_in_display = "";
+    if (data_to_display.length > 0) {
+        data_in_display = "<table id='assets-table-list' class='table'><thead><tr><th>No.</th><th>Assets Name</th><th>Asset Category</th><th>Date Acquired.</th><th>Original Value</th><th>Current Value</th><th>rate</th><th>Action</th></tr></thead><tbody>";
+        for (let index = 0; index < data_to_display.length; index++) {
+            const element = data_to_display[index];
+            var show = element.value_acquisition == "decrease" ? "<i class='fas fa-arrow-down text-danger'></i>" : "<i class='fas fa-arrow-up text-success'></i>";
+            data_in_display+="<tr><td><input type='hidden' id='assets-values-"+element.asset_id+"' value='"+JSON.stringify(element)+"'>"+(index+1)+"</td><td>"+element.asset_name+"</td><td>"+element.asset_category+"</td><td>"+element.date_of_acquiry+"</td><td>Kes "+element.orginal_value+"</td><td>Kes "+element.new_value+" <small>("+element.years+" years later)</small></td><td>"+element.acquisition_rate+"% "+show+"</td><td><span style='font-size:12px;' class='link view-assets' id='view-assets-"+element.asset_id+"'><i class='fa fa-eye'></i> View </span></td></tr>";        
+        }
+        data_in_display+="</table>";
+    }else{
+        data_in_display="<p class='text-danger'>No Asset data found!</p>";
+    }
+
+    // data to display
+    cObj("asset-data-table").innerHTML = data_in_display;
+
+    // add an event listener
+    var view_asset = document.getElementsByClassName("view-assets");
+    for (let index = 0; index < view_asset.length; index++) {
+        const element = view_asset[index];
+        element.addEventListener("click",view_assets);
+    }
+
+    // // search keyword
+    cObj("search-assets").addEventListener("keyup",search_school_assets);
+}
+
+function view_assets() {
+    // view assets
+    var asset_data = cObj("assets-values-"+this.id.substr(12)).value;
+    if(hasJsonStructure(asset_data)){
+        // display the edit page
+        cObj("edit-assets").classList.remove("hide");
+        cObj("register-asset").classList.add("hide");
+        cObj("asset-list").classList.add("hide");
+
+        // show the error
+        cObj("asset-notices-2").innerHTML = "";
+
+        asset_data = JSON.parse(asset_data);
+        // fill all the fields.
+
+        cObj("asset-name-edit").value = asset_data.asset_name;
+        cObj("asset-acquiry-date-edit").value = asset_data.real_acquisition_date.substr(0,4)+"-"+asset_data.real_acquisition_date.substr(4,2)+"-"+asset_data.real_acquisition_date.substr(6,2);
+        cObj("asset-original-value-edit").value = asset_data.real_orginal_value;
+        cObj("value-acquisition-percentage-edit").value = asset_data.acquisition_rate;
+        cObj("asset-description-edit").value = asset_data.description;
+        cObj("asset-id").value = asset_data.asset_id;
+
+        var children = cObj("asset-category-edit").children;
+        for (let index = 0; index < children.length; index++) {
+            const element = children[index];
+            if(element.value == asset_data.real_asset_category){
+                element.selected = true;
+            }
+        }
+
+        var children = cObj("value-acquisition-option-edit").children;
+        for (let index = 0; index < children.length; index++) {
+            const element = children[index];
+            if(element.value == asset_data.acquisition_option){
+                element.selected = true;
+            }
+        }
+
+        // display asset account
+        view_asset_account(asset_data.asset_id)
+    }else{
+        cObj("asset-notices-2").innerHTML = "<p class='text-danger'>An error has occured!<br> Reload your page and try again!</p>";
+    }
+}
+
+function view_asset_account(asset_id) {
+    // get the asset depreciation calculation
+    var datapass = "get_asset_account="+asset_id;
+    sendDataPost("POST","ajax/finance/financial.php",datapass,cObj("asset-accounts-holder"),cObj("asset-account-loaders"));
+    setTimeout(() => {
+        var timeout = 0;
+        var ids = setInterval(() => {
+            timeout++;
+            //after two minutes of slow connection the next process wont be executed
+            if (timeout == 1200) {
+                stopInterval(ids);
+            }
+            if (cObj("asset-account-loaders").classList.contains("hide")) {
+                var data_to_display = hasJsonStructure(cObj("asset-accounts-holder").innerText) ? JSON.parse(cObj("asset-accounts-holder").innerText) : [];
+                display_asset_account(data_to_display.account);
+                stopInterval(ids);
+            }
+
+            // navigation buttons
+            // cObj("next_supplier_page").addEventListener("click",navigate_right);
+            // cObj("previous_supplier_page").addEventListener("click",navigate_left);
+        }, 100);
+    }, 200);
+}
+
+function display_asset_account(datapass) {
+    if (datapass.length > 0) {
+        var data_to_display = "<table class='table'><tr><th>No</th><th>Name</th><th>Year</th><th>Debit (Dr)</th><th>Credit (Cr)</th><th>Balance</th></tr>";
+        for (let index = 0; index < datapass.length; index++) {
+            const element = datapass[index];
+            data_to_display+="<tr><td>"+(1+index)+". </td><td>"+element.name+"</td><td>"+element.year+"</td><td>"+(element.account == "debit" ? element.amount : "-")+"</td><td>"+(element.account == "credit" ? element.amount : "-")+"</td><td>"+element.balance+"</td></tr>";
+        }
+        data_to_display+="</table>";
+
+        cObj("asset_transaction_table").innerHTML = data_to_display;
+    }else{
+        cObj("asset_transaction_table").innerHTML = "<p class='text-success'>Account information is missing!</p>";
+    }
+}
+
+cObj("back-to-assets-edit").onclick = function () {
+    cObj("edit-assets").classList.add("hide");
+    cObj("register-asset").classList.add("hide");
+    cObj("asset-list").classList.remove("hide");
+
+    // display assets
+    display_assets();
+}
+
+function search_school_assets() {
+    var keyword = this.value.toLowerCase();
+    var row = cObj("assets-table-list").children;
+
+    // new row
+    var new_row = row;
+    for (let index = 0; index < 4; index++) {
+        new_row = new_row.length > 0 ? (new_row[0].tagName == "TR" ? new_row : new_row[0].children) : [];
+        if (new_row.length > 0) {
+            if (new_row[0].tagName == "TR") {
+                break;
+            }else{
+                new_row = new_row[0].children;
+            }
+        }else{
+            new_row = [];
+        }
+    }
+
+    // row length
+    row = new_row;
+    for (let index = 1; index < row.length; index++) {
+        const element = row[index];
+        var columns = element.children;
+
+        // check if in this row the column has what the keyword shows
+        var present = 0;
+        for (let index = 1; index < (columns.length-1); index++) {
+            const elem = columns[index];
+            if (elem.innerText.toLowerCase().includes(keyword)) {
+                present++;
+            }
+        }
+
+        // if the keyword is present show the row
+        if (present > 0) {
+            element.classList.remove("hide");
+        }else{
+            element.classList.add("hide");
+        }
+    }
+}
+
+cObj("update-assets-btn").onclick = function () {
+    var err = checkBlank("asset-name-edit");
+    err += checkBlank("asset-category-edit");
+    err += checkBlank("asset-acquiry-date-edit");
+    err += checkBlank("asset-original-value-edit");
+    err += checkBlank("value-acquisition-option-edit");
+    err += checkBlank("value-acquisition-percentage-edit");
+    
+    if (err == 0) {
+        cObj("asset-error-edit").innerHTML = "";
+
+        var datapass = "update_asset=true&asset_id="+valObj("asset-id")+"&asset_name="+valObj("asset-name-edit")+"&asset_category="+valObj("asset-category-edit")+"&acquiry_date="+valObj("asset-acquiry-date-edit")+"&original_value="+valObj("asset-original-value-edit")+"&acquisition_option="+valObj("value-acquisition-option-edit")+"&rate="+valObj("value-acquisition-percentage-edit")+"&description="+valObj("asset-description-edit");
+        sendDataPost("POST","ajax/finance/financial.php",datapass,cObj("asset-error-edit"),cObj("save-assets-loader-edit"));
+        setTimeout(() => {
+            var timeout = 0;
+            var ids = setInterval(() => {
+                timeout++;
+                //after two minutes of slow connection the next process wont be executed
+                if (timeout == 1200) {
+                    stopInterval(ids);
+                }
+                if (cObj("save-assets-loader-edit").classList.contains("hide")) {
+                    // display asset account
+                    view_asset_account(valObj("asset-id"));
+                    stopInterval(ids);
+                }
+            }, 100);
+        }, 200);
+    }else{
+        cObj("asset-error-edit").innerHTML = "<p class='text-danger'>Fill all fields covered with a red border!</p>";
+    }
 }

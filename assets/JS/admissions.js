@@ -33,7 +33,7 @@ cObj("asset_account_btn").onclick = function () {
 
     // unhide the main page
     cObj("asset_accounts").classList.remove("hide");
-    display_supplier();
+    display_assets();
     removesidebar();
 }
 function getDepartmentsList() {

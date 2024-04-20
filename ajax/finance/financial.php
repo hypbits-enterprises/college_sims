@@ -4955,6 +4955,119 @@
 
             // return the json encoded string to the front end
             echo json_encode($data);
+        }elseif(isset($_POST['get_assets'])){
+            $get_assets = $_POST['get_assets'];
+            // get the page limit
+            $page_req = $_POST['get_assets'];
+            $limit_1 = $_POST['get_assets'] * 1 > 1 ? (($_POST['get_assets']*1) - 1) * 50 : 0;
+            $limit_2 = $_POST['get_assets'] * 1 > 1 ? (($_POST['get_assets']*1)) * 50 : 50;
+
+            // save text
+            include("../../connections/conn1.php");
+            include("../../connections/conn2.php");
+
+            // get the page numbers and current page
+            $select = "SELECT COUNT(*) AS 'Total' FROM `asset_table`";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $count = 0;
+            if($result){
+                if($row = $result->fetch_assoc()){
+                    $count = $row['Total'];
+                }
+            }
+
+            $total_pages = round($count/50);
+            $total_pages += $count%50 == 0 ? 0 : 1;
+
+            // select
+            $select = "SELECT * FROM `asset_table` ORDER BY `asset_id` DESC LIMIT $limit_1,$limit_2";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $assets = [];
+            if($result){
+                while($row = $result->fetch_assoc()){
+                    $row['real_acquisition_date'] = $row['date_of_acquiry'];
+                    $row['real_asset_category'] = $row['asset_category'];
+                    $row['real_orginal_value'] = $row['orginal_value'];
+                    
+                    // get the asset category
+                    $asset_category = "N/A";
+                    if($row['asset_category'] == "1"){
+                        $asset_category = "Land";
+                    }elseif($row['asset_category'] == "2"){
+                        $asset_category = "Buildings";
+                    }elseif($row['asset_category'] == "3"){
+                        $asset_category = "Motor Vehicle";
+                    }elseif($row['asset_category'] == "4"){
+                        $asset_category = "Furniture & Fittings";
+                    }elseif($row['asset_category'] == "5"){
+                        $asset_category = "Computer & ICT Equipments";
+                    }elseif($row['asset_category'] == "6"){
+                        $asset_category = "Plant & Equipments";
+                    }elseif($row['asset_category'] == "7"){
+                        $asset_category = "Capital Work in Progress";
+                    }
+
+                    $row['asset_category'] = $asset_category;
+
+                    // get the current value
+                    $value_acquisition = get_current_value($row['acquisition_option'],$row['acquisition_rate'], $row['orginal_value'],$row['date_of_acquiry']);
+                    
+                    // real new value
+                    $row['real_new_value'] = $value_acquisition['new_value'];
+                    
+                    // get the date difference
+                    $financial_year_end = date("Y")."1231235959";
+                    $date_acquired = date("YmdHis",strtotime($row['date_of_acquiry']));
+                    $date1 = date_create($financial_year_end);
+                    $date2 = date_create($date_acquired);
+                    $diff = date_diff($date1,$date2);
+                    $difference_year = $diff->format("%y");
+
+                    $row['years'] = $difference_year;
+                    
+                    // change date
+                    $row['date_of_acquiry'] = date("D dS M Y",strtotime($row['date_of_acquiry']));
+                    $row['new_value'] = number_format($value_acquisition['new_value']);
+                    $row['value_acquisition'] = $value_acquisition['value_acquisition'];
+                    $row['orginal_value'] = number_format($row['orginal_value']);
+                    array_push($assets,$row);
+                }
+            }
+            $data = array("assets" => $assets, "total_pages" => $total_pages);
+
+            // return the json encoded string to the front end
+            echo json_encode($data);
+        }elseif(isset($_POST['get_asset_account'])){
+            include("../../connections/conn1.php");
+            include("../../connections/conn2.php");
+
+            // select statement
+            $select = "SELECT * FROM `asset_table` WHERE `asset_id` = ?";
+            $stmt = $conn2->prepare($select);
+            $stmt->bind_param("s",$_POST['get_asset_account']);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $asset_account = [];
+            if($result){
+                if($row = $result->fetch_assoc()){
+                    $orginal_value = $row['orginal_value'];
+                    $acquisition_rate = $row['acquisition_rate'];
+                    $date_of_acquiry = $row['date_of_acquiry'];
+                    $acquisition_option = $row['acquisition_option'];
+                    $current_value = get_current_value($acquisition_option,$acquisition_rate, $orginal_value,$date_of_acquiry);
+                    
+                    // echo current value
+                    echo json_encode($current_value);
+                }else{
+                    echo "[]";
+                }
+            }else{
+                echo "[]";
+            }
         }elseif(isset($_POST['save_supplier_bill'])){
             include("../../connections/conn1.php");
             include("../../connections/conn2.php");
@@ -5337,6 +5450,16 @@
                 }
             }
             echo $data_to_display;
+
+        }elseif(isset($_POST['update_asset'])){
+            include("../../connections/conn2.php");
+            $update = "UPDATE `asset_table` SET `asset_name` = ?, `asset_category` = ?, `date_of_acquiry` = ?, `description` = ?, `acquisition_option` = ?, `acquisition_rate` = ?, `orginal_value` = ? WHERE `asset_id` = ?";
+            $stmt = $conn2->prepare($update);
+            $acquiry_date = date("YmdHis",strtotime($_POST['acquiry_date']));
+            $stmt->bind_param("ssssssss",$_POST['asset_name'],$_POST['asset_category'],$acquiry_date,$_POST['description'],$_POST['acquisition_option'],$_POST['rate'],$_POST['original_value'],$_POST['asset_id']);
+            $stmt->execute();
+
+            echo "<p class='text-success'>Asset has been updated successfully!</p>";
         }
     }
 
@@ -8441,5 +8564,138 @@
             }else {
                 return "File not found!";
             }
+        }
+    }
+
+    function get_current_value($value_acquisition_option, $value_acquisition_rate, $original_value, $date_acquired){
+        $financial_year_end = date("Y")."1231235959";
+        $date_acquired = date("YmdHis",strtotime($date_acquired));
+
+        // get the date difference
+        $date1 = date_create($financial_year_end);
+        $date2 = date_create($date_acquired);
+        $diff = date_diff($date1,$date2);
+        $difference_year = $diff->format("%y");
+
+        $year = date("Y",strtotime($date_acquired));
+        
+        if($value_acquisition_option == "1"){
+            // straight line method increase
+            $reduction = 0;
+            $accounts = [];
+            $values = array("account" => "debit", "name" => "Purchase", "amount" => "Kes ".number_format($original_value), "balance" => "Kes ".number_format($original_value), "year" => $year);
+            $balance = $original_value;
+            array_push($accounts,$values);
+            for($index = 0; $index < $difference_year; $index++){
+                $reduce = round((($value_acquisition_rate / 100) * $original_value) , 2);
+                $reduction += $reduce;
+
+                // accounting
+                $balance -= $reduce;
+                $year += 1;
+                $values = array("account" => "credit", "name" => "Depreciation", "amount" => "Kes ".number_format($reduce), "balance" => "Kes ".number_format($balance), "year" => $year);
+                array_push($accounts,$values);
+                
+                // break if balance is 0
+                if($balance <= 0){
+                    break;
+                }
+            }
+
+            // reduce from the original
+            $balance_left = $original_value - $reduction;
+            return array("years" => $difference_year, "new_value" => $balance_left, "reduction_amount" => $reduction, "original_value" => $original_value, "value_acquisition_method" => "Straight Line Method", "value_acquisition" => "decrease", "accounts" => $accounts);
+        }elseif($value_acquisition_option == "2"){
+            // straight line method increase
+            $reduction = 0;
+            $store_original_value = $original_value;
+
+            // account
+            $accounts = [];
+            $values = array("account" => "debit", "name" => "Purchase", "amount" => "Kes ".number_format($original_value), "balance" => "Kes ".number_format($original_value), "year" => $year);
+            $balance = $original_value;
+            array_push($accounts,$values);
+            for($index = 0; $index < $difference_year; $index++){
+                $reduce = round((($value_acquisition_rate / 100) * $original_value) , 2);
+                $reduction += $reduce;
+
+                // get the original value
+                $original_value = $original_value - $reduce;
+
+                // accounting
+                $year += 1;
+                $values = array("account" => "credit", "name" => "Depreciation", "amount" => "Kes ".number_format($reduce), "balance" => "Kes ".number_format($original_value), "year" => $year);
+                array_push($accounts,$values);
+                
+                // balance
+                if($balance <= 0){
+                    break;
+                }
+            }
+
+            // reduce from the original
+            $balance_left = $original_value;
+            $original_value = $store_original_value;
+            return array("years" => $difference_year, "new_value" => $balance_left, "reduction_amount" => $reduction, "original_value" => $original_value, "value_acquisition_method" => "Straight Line Method", "value_acquisition" => "decrease", "account" => $accounts);
+        }elseif($value_acquisition_option == "3"){
+            // straight line method increase
+            $reduction = 0;
+            $accounts = [];
+            $values = array("account" => "debit", "name" => "Purchase", "amount" => "Kes ".number_format($original_value), "balance" => "Kes ".number_format($original_value), "year" => $year);
+            $balance = $original_value;
+            array_push($accounts,$values);
+            for($index = 0; $index < $difference_year; $index++){
+                $reduce = round((($value_acquisition_rate / 100) * $original_value) , 2);
+                $reduction += $reduce;
+
+                // accounting
+                $balance += $reduce;
+                $year += 1;
+                $values = array("account" => "debit", "name" => "Appreciation", "amount" => "Kes ".number_format($reduce), "balance" => "Kes ".number_format($balance), "year" => $year);
+                array_push($accounts,$values);
+
+                // balance
+                if($balance <= 0){
+                    break;
+                }
+            }
+
+            // reduce from the original
+            $balance_left = $original_value + $reduction;
+            return array("years" => $difference_year, "new_value" => $balance_left, "reduction_amount" => $reduction, "original_value" => $original_value, "value_acquisition_method" => "Straight Line Method", "value_acquisition" => "increase", "accounts" => $accounts);
+        }elseif($value_acquisition_option == "4"){
+            // reducing method increase
+            $reduction = 0;
+            $store_original_value = $original_value;
+
+            // account
+            $accounts = [];
+            $values = array("account" => "debit", "name" => "Purchase", "amount" => "Kes ".number_format($original_value), "balance" => "Kes ".number_format($original_value), "year" => $year);
+            $balance = $original_value;
+            array_push($accounts,$values);
+            for($index = 0; $index < $difference_year; $index++){
+                $reduce = round((($value_acquisition_rate / 100) * $original_value) , 2);
+                $reduction += $reduce;
+
+                // get the original value
+                $original_value = round(($original_value + $reduce), 2);
+
+                // accounting
+                $year += 1;
+                $values = array("account" => "debit", "name" => "Appreciation", "amount" => "Kes ".number_format($reduce), "balance" => "Kes ".number_format($original_value), "year" => $year);
+                array_push($accounts,$values);
+
+                // balance
+                if($balance <= 0){
+                    break;
+                }
+            }
+
+            // reduce from the original
+            $balance_left = $original_value;
+            $original_value = $store_original_value;
+            return array("years" => $difference_year, "new_value" => $balance_left, "reduction_amount" => $reduction, "original_value" => $original_value, "value_acquisition_method" => "Straight Line Method", "value_acquisition" => "increase", "account" => $accounts);
+        }else{
+            return array("years" => $difference_year, "new_value" => $original_value, "reduction_amount" => 0, "original_value" => $original_value, "value_acquisition_method" => "Straight Line Method", "value_acquisition" => "increase", "account" => []);
         }
     }
