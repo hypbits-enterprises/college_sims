@@ -2503,6 +2503,20 @@ function checkPresnt($array, $string){
                             <label for="budget_end_date" class="form-control-label">Budget End Time.</label>
                             <input type="date" name="" id="budget_end_date" class="form-control w-75" value="<?= date("Y")."-12-31" ?>">
                         </div>
+                        <div class="form-group my-2">
+                            <label for="expense_notes" class="form-control-label">Expense Notes <sup>IPSAS</sup></label>
+                            <select name="expense_notes" id="expense_notes" class="form-control w-75">
+                                <option value="" hidden>Select an Option</option>
+                                <option value="15">Note 15</option>
+                                <option value="16">Note 16</option>
+                                <option value="17">Note 17</option>
+                                <option value="18">Note 18</option>
+                                <option value="19">Note 19</option>
+                                <option value="20">Note 20</option>
+                                <option value="21">Note 21</option>
+                                <option value="22">Note 22</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="col-md-6">
                         <h6 class="text-center">Expense Categories</h6>
@@ -2554,6 +2568,21 @@ function checkPresnt($array, $string){
                     <div class="col-md-6 p-2" id="">
                         <label for="revenue_category_name" class="form-control-label">Revenue Category Name.</label>
                         <input type="text" name="" id="revenue_category_name" class="form-control" placeholder="E.x., Transfers from National Government entities">
+                        <div class="form-group">
+                            <label for="revenue_notes" class="form-control-label">Revenue Note <sup>IPSAS</sup></label>
+                            <select name="revenue_notes" id="revenue_notes" class="form-control w-75">
+                                <option value="" hidden>Select an option</option>
+                                <option value="6">Note 6</option>
+                                <option value="7">Note 7</option>
+                                <option value="8">Note 8</option>
+                                <option value="9">Note 9</option>
+                                <option value="10">Note 10</option>
+                                <option value="11">Note 11</option>
+                                <option value="12">Note 12</option>
+                                <option value="13">Note 13</option>
+                                <option value="14">Note 14</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="col-md-6">
                         <div class="container border border-rounded border-secondary row">
@@ -2673,6 +2702,21 @@ function checkPresnt($array, $string){
                         <label for="change_revenue_category_input_window" class="form-control-label">New Revenue Category Name</label>
                         <input type="text" class="form-control w-75" placeholder="Revenue Category" id="change_revenue_category_input_window">
                         <input type="hidden" id="revenue_indexes_update">
+                        <div class="form-group">
+                            <label for="revenue_notes_edit" class="form-control-label">Revenue Note <sup>IPSAS</sup></label>
+                            <select name="revenue_notes_edit" id="revenue_notes_edit" class="form-control w-75">
+                                <option value="" hidden>Select an option</option>
+                                <option value="6">Note 6</option>
+                                <option value="7">Note 7</option>
+                                <option value="8">Note 8</option>
+                                <option value="9">Note 9</option>
+                                <option value="10">Note 10</option>
+                                <option value="11">Note 11</option>
+                                <option value="12">Note 12</option>
+                                <option value="13">Note 13</option>
+                                <option value="14">Note 14</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="col-md-6">
                         <div class="container border border-rounded border-secondary row">
@@ -2739,6 +2783,20 @@ function checkPresnt($array, $string){
                         <div class="form-group my-2">
                             <label for="budget_end_date_edit" class="form-control-label">Budget End Time.</label>
                             <input type="date" name="" id="budget_end_date_edit" class="form-control" value="<?= date("Y")."-12-31" ?>">
+                        </div>
+                        <div class="form-group my-2">
+                            <label for="edit_expense_notes" class="form-control-label">Expense Notes <sup>IPSAS</sup></label>
+                            <select name="edit_expense_notes" id="edit_expense_notes" class="form-control w-75">
+                                <option value="" hidden>Select an Option</option>
+                                <option value="15">Note 15</option>
+                                <option value="16">Note 16</option>
+                                <option value="17">Note 17</option>
+                                <option value="18">Note 18</option>
+                                <option value="19">Note 19</option>
+                                <option value="20">Note 20</option>
+                                <option value="21">Note 21</option>
+                                <option value="22">Note 22</option>
+                            </select>
                         </div>
                         <input type="hidden" id="exp_indexes_update">
                     </div>

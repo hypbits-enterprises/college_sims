@@ -10,6 +10,18 @@
             {
                 "id": 2,
                 "name": "MAR2"
+            },
+            {
+                "id": 3,
+                "name": "MAR3"
+            },
+            {
+                "id": 4,
+                "name": "MAR4"
+            },
+            {
+                "id": 5,
+                "name": "MAR5"
             }
         ]
     },
@@ -34,7 +46,28 @@
     {
         "category_id": 7,
         "category_name": "Scumblers",
-        "sub_categories": null
+        "sub_categories": [
+            {
+                "id": 1,
+                "name": "SC1"
+            },
+            {
+                "id": 2,
+                "name": "SC2"
+            },
+            {
+                "id": 3,
+                "name": "SC3"
+            },
+            {
+                "id": 4,
+                "name": "SC4"
+            },
+            {
+                "id": 5,
+                "name": "SC5"
+            }
+        ]
     },
     {
         "category_id": 8,
@@ -85,6 +118,83 @@
             {
                 "id": 7,
                 "name": "SPEAKER"
+            }
+        ]
+    },
+    {
+        "category_id": 10,
+        "category_name": "Grants and other government entity",
+        "revenue_notes": "6",
+        "sub_categories": [
+            {
+                "id": 1,
+                "name": "1"
+            },
+            {
+                "id": 2,
+                "name": "2"
+            },
+            {
+                "id": 3,
+                "name": "3"
+            },
+            {
+                "id": 4,
+                "name": "4"
+            },
+            {
+                "id": 5,
+                "name": "5"
+            }
+        ]
+    },
+    {
+        "category_id": 11,
+        "category_name": "Revenue 100",
+        "revenue_notes": "7",
+        "sub_categories": [
+            {
+                "id": 1,
+                "name": "Revenue 100"
+            },
+            {
+                "id": 2,
+                "name": "Revenue 200"
+            },
+            {
+                "id": 3,
+                "name": "Revenue 300"
+            },
+            {
+                "id": 4,
+                "name": "Revenue 400"
+            }
+        ]
+    },
+    {
+        "category_id": 12,
+        "category_name": "Servere attache",
+        "revenue_notes": "7",
+        "sub_categories": [
+            {
+                "id": 1,
+                "name": "ss"
+            },
+            {
+                "id": 2,
+                "name": "sss"
+            },
+            {
+                "id": 3,
+                "name": "ssss"
+            },
+            {
+                "id": 4,
+                "name": "sssss"
+            },
+            {
+                "id": 5,
+                "name": "ssssss"
             }
         ]
     }

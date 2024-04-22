@@ -5463,6 +5463,7 @@ function view_asset_account(asset_id) {
             }
             if (cObj("asset-account-loaders").classList.contains("hide")) {
                 var data_to_display = hasJsonStructure(cObj("asset-accounts-holder").innerText) ? JSON.parse(cObj("asset-accounts-holder").innerText) : [];
+                // console.log(data_to_display);
                 display_asset_account(data_to_display.account);
                 stopInterval(ids);
             }

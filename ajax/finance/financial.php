@@ -8568,7 +8568,7 @@
     }
 
     function get_current_value($value_acquisition_option, $value_acquisition_rate, $original_value, $date_acquired){
-        $financial_year_end = date("Y")."1231235959";
+        $financial_year_end = date("Y")."0630235959";
         $date_acquired = date("YmdHis",strtotime($date_acquired));
 
         // get the date difference
@@ -8604,7 +8604,7 @@
 
             // reduce from the original
             $balance_left = $original_value - $reduction;
-            return array("years" => $difference_year, "new_value" => $balance_left, "reduction_amount" => $reduction, "original_value" => $original_value, "value_acquisition_method" => "Straight Line Method", "value_acquisition" => "decrease", "accounts" => $accounts);
+            return array("years" => $difference_year, "new_value" => $balance_left, "reduction_amount" => $reduction, "original_value" => $original_value, "value_acquisition_method" => "Straight Line Method", "value_acquisition" => "decrease", "account" => $accounts);
         }elseif($value_acquisition_option == "2"){
             // straight line method increase
             $reduction = 0;
@@ -8662,7 +8662,7 @@
 
             // reduce from the original
             $balance_left = $original_value + $reduction;
-            return array("years" => $difference_year, "new_value" => $balance_left, "reduction_amount" => $reduction, "original_value" => $original_value, "value_acquisition_method" => "Straight Line Method", "value_acquisition" => "increase", "accounts" => $accounts);
+            return array("years" => $difference_year, "new_value" => $balance_left, "reduction_amount" => $reduction, "original_value" => $original_value, "value_acquisition_method" => "Straight Line Method", "value_acquisition" => "increase", "account" => $accounts);
         }elseif($value_acquisition_option == "4"){
             // reducing method increase
             $reduction = 0;

@@ -7136,7 +7136,7 @@ cObj("save_expense_category").onclick = function () {
     err += checkBlank("budget_end_date");
     if (err == 0) {
         var datapass = "save_expense_category=true&category_name=" + escape(valObj("expense_category_name"))+"&expense_category_budget="+valObj("expense_category_budget")+"&expense_categories="+escape(valObj("expense_sub_categories_holder"));
-        datapass += "&budget_start_time="+valObj("budget_start_time")+"&budget_end_date="+valObj("budget_end_date");
+        datapass += "&budget_start_time="+valObj("budget_start_time")+"&budget_end_date="+valObj("budget_end_date")+"&expense_notes="+valObj("expense_notes");
         sendDataPost("POST", "ajax/administration/admissions.php", datapass, cObj("display_data_exp_category"), cObj("expense_categories_loaders"));
         setTimeout(() => {
             var timeout = 0;
@@ -7147,15 +7147,17 @@ cObj("save_expense_category").onclick = function () {
                     stopInterval(ids);
                 }
                 if (cObj("expense_categories_loaders").classList.contains("hide")) {
-                    setTimeout(() => {
-                        displayExpCategories();
-                        cObj("display_data_exp_category").innerHTML = "";
-                        cObj("expense_category_name").value = "";
-                        cObj("expense_category_budget").value = "";
-                        cObj("budget_start_time").value = "";
-                        cObj("budget_end_date").value = "";
-                    }, 1000);
-                    cObj("cancel_expense_category").click();
+                    if(cObj("expense_error_supplier") == undefined){
+                        setTimeout(() => {
+                            displayExpCategories();
+                            cObj("display_data_exp_category").innerHTML = "";
+                            cObj("expense_category_name").value = "";
+                            cObj("expense_category_budget").value = "";
+                            cObj("budget_start_time").value = "";
+                            cObj("budget_end_date").value = "";
+                        }, 1000);
+                        cObj("cancel_expense_category").click();
+                    }
                     stopInterval(ids);
                 }
             }, 100);
@@ -7168,6 +7170,7 @@ cObj("save_revenue_category").onclick = function () {
     var err = checkBlank("revenue_category_name");
     if (err == 0) {
         var datapass = "?save_revenue_category=true&category_name=" + escape(valObj("revenue_category_name"))+"&revenue_sub_category="+valObj("add_revenue_sub_categories_holder_1");
+        datapass+= "&revenue_notes="+valObj("revenue_notes");
         sendData2("GET", "administration/admissions.php", datapass, cObj("display_data_revenue_category"), cObj("revenue_categories_loaders"));
         setTimeout(() => {
             var timeout = 0;
@@ -7306,6 +7309,7 @@ cObj("save_change_revenue_category").onclick = function name() {
     var err = checkBlank("change_revenue_category_input_window");
     if (err == 0) {
         var datapass = "?change_revenue_categories=true&new_revenue_name=" + escape(valObj("change_revenue_category_input_window")) + "&revenue_indexes=" + escape(valObj("revenue_indexes_update"))+"&revenue_sub_categories="+valObj("add_revenue_sub_categories_holder");
+        datapass += "&revenue_notes="+valObj("revenue_notes_edit");
         sendData2("GET", "administration/admissions.php", datapass, cObj("display_data_revenue_category"), cObj("revenue_categories_loaders"));
         setTimeout(() => {
             var timeout = 0;
@@ -7316,10 +7320,12 @@ cObj("save_change_revenue_category").onclick = function name() {
                     stopInterval(ids);
                 }
                 if (cObj("revenue_categories_loaders").classList.contains("hide")) {
-                    displayRevenueCategories();
-                    setTimeout(() => {
-                        cObj("display_data_revenue_category").innerHTML = "";
-                    }, 3000);
+                    if(cObj("income_note_error") == undefined){
+                        displayRevenueCategories();
+                        setTimeout(() => {
+                            cObj("display_data_revenue_category").innerHTML = "";
+                        }, 3000);
+                    }
                     cObj("cancel_change_revenue_category").click();
                     stopInterval(ids);
                 }
@@ -7335,7 +7341,7 @@ cObj("save_change_expense_category").onclick = function name() {
     err += checkBlank("expense_category_budget_edit");
     if (err == 0) {
         var datapass = "change_expense_categories=true&new_exp_name=" + escape(valObj("change_expense_category_input_window")) + "&exp_indexes=" + escape(valObj("exp_indexes_update"))+"&expense_categories="+valObj("edit_expense_sub_categories_holder");
-        datapass += "&budget_start_time_edit="+valObj("budget_start_time_edit")+"&budget_end_date_edit="+valObj("budget_end_date_edit")+"&expense_category_budget_edit="+valObj("expense_category_budget_edit");
+        datapass += "&budget_start_time_edit="+valObj("budget_start_time_edit")+"&budget_end_date_edit="+valObj("budget_end_date_edit")+"&expense_category_budget_edit="+valObj("expense_category_budget_edit")+"&edit_expense_notes="+valObj("edit_expense_notes");
         sendDataPost("POST", "ajax/administration/admissions.php", datapass, cObj("display_data_exp_category"), cObj("expense_categories_loaders"));
         setTimeout(() => {
             var timeout = 0;
@@ -7346,8 +7352,12 @@ cObj("save_change_expense_category").onclick = function name() {
                     stopInterval(ids);
                 }
                 if (cObj("expense_categories_loaders").classList.contains("hide")) {
-                    displayExpCategories();
-                    cObj("display_data_exp_category").innerHTML = "";
+                    if(cObj("expense_note_selected_edit") == undefined){
+                        displayExpCategories();
+                        setTimeout(() => {
+                            cObj("display_data_exp_category").innerHTML = "";
+                        }, 5000);
+                    }
                     cObj("cancel_change_expense_category").click();
                     stopInterval(ids);
                 }
@@ -7373,6 +7383,15 @@ function edit_expense_category() {
         cObj("budget_start_time_edit").value = expense_category.start_date;
         cObj("budget_end_date_edit").value = expense_category.end_date;
         cObj("edit_expense_sub_categories_holder").value = expense_category.expense_sub_categories;
+        
+        var children = cObj("edit_expense_notes").children;
+        for (let index = 0; index < children.length; index++) {
+            const element = children[index];
+            if (element.value == expense_category.expense_note) {
+                element.selected = true;
+                break;
+            }
+        }
 
         // display expense category
         display_data_exp_category_edit();
@@ -7473,6 +7492,17 @@ function edit_revenue_category() {
     cObj("change_revenue_category_window").classList.remove("hide");
     cObj("revenue_indexes_update").value = this_id;
     cObj("add_revenue_sub_categories_holder").value = cObj("expense_sub_category_"+this_id).value;
+
+    var revenue_note = cObj("revenue_note_"+this_id).value;
+    console.log(revenue_note);
+    var children = cObj("revenue_notes_edit").children;
+    children[0].selected = true;
+    for (let index = 0; index < children.length; index++) {
+        const element = children[index];
+        if(element.value == revenue_note){
+            element.selected = true;
+        }
+    }
     display_revenue_subs();
 }
 
