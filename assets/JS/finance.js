@@ -4930,7 +4930,7 @@ function display_suppliers_payments(payments) {
             data_to_display+="<td><input type='hidden' id='supplier_payment_dets_"+element.payment_id+"' value='"+JSON.stringify(element)+"'> "+(index+1)+"</td>";
             data_to_display+="<td>Kes "+element.amount+"</td>";
             data_to_display+="<td>"+element.date+"</td>";
-            data_to_display+="<td><span class='link supplier_payment' id='supplier_payment_"+element.payment_id+"'><i class='fas fa-eye'></i> View</span></td>";
+            data_to_display+="<td><span class='link supplier_payment' id='supplier_payment_"+element.payment_id+"'><i class='fas fa-eye'></i> View</span> <br><a class='link text-sm' target='_blank' href='reports/reports.php?supplier_payment_id="+element.payment_id+"'><i class='fas fa-print'></i> Print</a></td>";
             data_to_display+="</tr>";
         }
         data_to_display+="</table>";
@@ -4960,6 +4960,15 @@ function edit_supplier_payments() {
         cObj("supplier_payment_document_no_edit").value = supplier_payment_dets.document_number
         cObj("supplier_payment_description_edit").value = supplier_payment_dets.payment_description
         cObj("supplier_payment_id").value = supplier_payment_dets.payment_id
+
+        var children = cObj("payment-method-edit").children;
+        children[0].selected = true;
+        for (let index = 0; index < children.length; index++) {
+            const element = children[index];
+            if(element.value == supplier_payment_dets.payment_method){
+                element.selected = true;
+            }
+        }
         
         // get the payment option
         get_payment_option("supplier_payment_for_edit",supplier_payment_dets.payment_for,"payment_for_details_edit","supplier_payment_for_loader_edit");
@@ -5113,10 +5122,12 @@ cObj("make_supplier_payment_edit").onclick = function () {
     var err = checkBlank("supplier_payment_for_edit");
     err+=checkBlank("supplier_payment_amount_edit");
     err+=checkBlank("supplier_payment_date_edit");
+    err+=checkBlank("payment-method-edit");
 
     // check for errors
     if(err == 0){
         var datapass = "save_supplier_data=true&payment_amount="+valObj("supplier_payment_amount_edit")+"&payment_date="+valObj("supplier_payment_date_edit")+"&document_number="+valObj("supplier_payment_document_no_edit")+"&payment_description="+valObj("supplier_payment_description_edit")+"&supplier_payment_id="+valObj("supplier_payment_id")+"&supplier_payment_for="+valObj("supplier_payment_for_edit");
+        datapass+="&payment_method="+valObj("payment-method-edit");
         sendDataPost("POST","ajax/finance/financial.php",datapass,cObj("supplier_payment_description_error_edit"),cObj("make_payment_loader_edit"));
         setTimeout(() => {
             var timeout = 0;
@@ -5158,9 +5169,11 @@ cObj("make_supplier_payment").onclick = function () {
     var err = checkBlank("supplier_payment_for");
     err += checkBlank("supplier_payment_amount");
     err += checkBlank("supplier_payment_date");
+    err += checkBlank("payment-method");
 
     if (err == 0) {
         var datapass = "save_payment=true&supplier_payment_for="+valObj("supplier_payment_for")+"&supplier_payment_amount="+valObj("supplier_payment_amount")+"&supplier_payment_date="+valObj("supplier_payment_date")+"&supplier_payment_description="+valObj("supplier_payment_description")+"&supplier_payment_document_no="+valObj("supplier_payment_document_no");
+        datapass += "&payment_method="+valObj("payment-method");
         sendDataPost("POST","ajax/finance/financial.php",datapass,cObj("supplier_payment_description_error"),cObj("make_payment_loader"));
         setTimeout(() => {
             var timeout = 0;

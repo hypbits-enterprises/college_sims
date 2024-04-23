@@ -13857,6 +13857,148 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
         $writer->save('php://output');
         exit;
         $pdf->Output();
+    }elseif(isset($_POST['print_statement_of_account'])){
+        // echo json_encode($_POST);
+        include("../connections/conn1.php");
+        include("../connections/conn2.php");
+        include_once("../ajax/finance/financial.php");
+        $asset_id = $_POST['asset_id'];
+        
+        // get the statement of accounts
+        $select = "SELECT * FROM `asset_table` WHERE `asset_id` = ?";
+        $stmt = $conn2->prepare($select);
+        $stmt->bind_param("s",$asset_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $present = false;
+        $asset_table = [];
+        if($result){
+            if($row = $result->fetch_assoc()){
+                $present = true;
+                $asset_table = $row;
+            }
+        }
+
+        // check if the asset table is present
+        if(!$present){
+            echo "<p style='color:red;'>The asset cannot be found!</p>";
+            return 0;
+        }
+
+        // proceed and print the asset account
+        $pdf = new PDF('P', 'mm', 'A4');
+        $pdf->setHeaderPos(200);
+        $title = "Asset \"(".ucwords(strtolower($asset_table['asset_name'])).")\" Account Statement";
+        $pdf->set_document_title($title);
+        $pdf->setSchoolLogo("../../" . schoolLogo($conn));
+        $pdf->set_school_name($_SESSION['schname']);
+        $pdf->set_school_po($_SESSION['po_boxs']);
+        $pdf->set_school_box_code($_SESSION['box_codes']);
+        $pdf->set_school_contact($_SESSION['school_contact']);
+        $pdf->AddPage();
+
+        // add the account details
+        $asset_data = get_current_value($asset_table['acquisition_option'],$asset_table['acquisition_rate'],$asset_table['orginal_value'],$asset_table['date_of_acquiry']);
+
+        // echo json_encode($asset_data);
+        // row 1
+        $pdf->SetFont('Times', 'BU', 10);
+        $pdf->Cell(45, 6, "Asset Details: ", 0, 'B', 'L',false);
+        $pdf->SetFont('Times', 'B', 10);
+        $pdf->Cell(40, 6, "Asset Name: ", 0);
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(45, 6, ucwords(strtolower($asset_table['asset_name'])), 0,1);
+        
+        // get the asset category
+        $asset_category = "N.A";
+        if($asset_table['asset_category'] == "1"){
+            $asset_category = "Land";
+        }elseif($asset_table['asset_category'] == "2"){
+            $asset_category = "Buildings";
+        }elseif($asset_table['asset_category'] == "3"){
+            $asset_category = "Motor Vehicle";
+        }elseif($asset_table['asset_category'] == "4"){
+            $asset_category = "Furniture & Fittings";
+        }elseif($asset_table['asset_category'] == "5"){
+            $asset_category = "Computer & ICT Equipments";
+        }elseif($asset_table['asset_category'] == "6"){
+            $asset_category = "Plant & Equipments";
+        }elseif($asset_table['asset_category'] == "7"){
+            $asset_category = "Capital Work in Progress";
+        }
+
+        // row 2
+        $pdf->SetFont('Times', 'B', 10);
+        $pdf->Cell(40, 6, "Asset Category: ", 0);
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(45, 6, ucwords(strtolower($asset_category)), 0,1);
+
+        // row 2
+        $pdf->SetFont('Times', 'B', 10);
+        $pdf->Cell(40, 6, "Asset Acquiry Date: ", 0);
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(45, 6, date("D dS M Y",strtotime($asset_table['date_of_acquiry'])), 0,1);
+
+        // row 2
+        $pdf->SetFont('Times', 'B', 10);
+        $pdf->Cell(40, 6, "Asset Original Value: ", 0);
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(45, 6, "Kes ".number_format($asset_table['orginal_value']), 0,1);
+
+        // row 2
+        $pdf->SetFont('Times', 'B', 10);
+        $pdf->Cell(40, 6, "Asset Acquisition Rate: ", 0);
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(45, 6, $asset_table['acquisition_rate']."%", 0,1);
+
+        // row 2
+        $pdf->SetFont('Times', 'B', 10);
+        $pdf->Cell(40, 6, "Current Value: ", 0);
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(45, 6, "Kes ".number_format(round(($asset_data['new_value']*1),2))." (".(date("Y",strtotime($asset_table['date_of_acquiry'])) * 1) + ($asset_data['years']*1).")", 0,1);
+        // echo json_encode($asset_data);
+
+        // row 2
+        $pdf->SetFont('Times', 'B', 10);
+        $pdf->Cell(40, 6, "Acquisition Method:", 0);
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(45, 6, $asset_data['value_acquisition_method'], 0,1);
+
+        // make a line
+        $pdf->Ln();
+        $pdf->Cell(190,1,"",1,1);
+        $pdf->Ln();
+        $pdf->Ln();
+        $pdf->Ln();
+        $pdf->Ln();
+        $pdf->SetFont('Times', 'B', 10);
+        $pdf->SetFillColor(216, 217, 218);
+        $pdf->Cell(190,6,$pdf->school_document_title,1,1,"C",TRUE);
+        $pdf->Cell(10,6,"QTY",1,0,"L",TRUE);
+        $pdf->Cell(45,6,"ITEM",1,0,"L",TRUE);
+        $pdf->Cell(45,6,"YEAR",1,0,"L",TRUE);
+        $pdf->Cell(30,6,"DEBIT",1,0,"L",TRUE);
+        $pdf->Cell(30,6,"CREDIT",1,0,"L",TRUE);
+        $pdf->Cell(30,6,"BALANCE",1,1,"L",TRUE);
+        $pdf->SetFont('Times', '', 10);
+
+        // GET THE ROW VALUE
+        $reductions = $asset_data['account'];
+        for($index = 0; $index < count($reductions); $index++){
+            $pdf->Cell(10,6,($index+1),1,0,"L",TRUE);
+            $pdf->Cell(45,6,$reductions[$index]['name'],1,0);
+            $pdf->Cell(45,6,$reductions[$index]['year'],1,0);
+            $pdf->Cell(30,6,$reductions[$index]['account'] == "debit" ? $reductions[$index]['amount'] : "-",1,0);
+            $pdf->Cell(30,6,$reductions[$index]['account'] == "credit" ? $reductions[$index]['amount'] : "-",1,0);
+            $pdf->Cell(30,6,$reductions[$index]['balance'],1,1);
+        }
+        $pdf->SetFont('Times', 'B', 10,"L");
+        $pdf->Cell(100,6,"Total:",0,0,"R",FALSE);
+        $pdf->Cell(30,6, substr($asset_data['value_acquisition_method'],-5) == "(+ve)" ? "Kes ". number_format(round($asset_data['reduction_amount'],2)) : "-",1,0,"L",TRUE);
+        $pdf->Cell(30,6, substr($asset_data['value_acquisition_method'],-5) == "(-ve)" ? "Kes ". number_format(round($asset_data['reduction_amount'],2)) : "-",1,0,"L",TRUE);
+        $pdf->Cell(30,6, "Kes ". number_format(round($asset_data['new_value'],2)),1,1,"L",TRUE);
+        // echo json_encode($asset_data);
+        $pdf->Output("I", str_replace(" ", "_", $pdf->school_document_title) . ".pdf");
     }
 } elseif ($_SERVER['REQUEST_METHOD'] == 'GET' && isset($_SESSION['schname'])) {
     include("../connections/conn1.php");
@@ -14617,6 +14759,459 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
         // start the receipt details
         $pdf->SetFont('Helvetica', '', 10);
         $pdf->Cell(65, 10, "CLIENT PAYMENT RECEIPT", 0, 0, "C", false);
+        $pdf->Cell(65, 10, "** CLIENT COPY **", 0, 0, "C", false);
+        $pdf->Cell(65, 10, "** ORIGINAL **", 0, 1, "C", false);
+
+        // RECEIPT DETAILS
+        // row 1
+        $pdf->SetFont('Helvetica', 'B', 9);
+        $pdf->Cell(25, 6, "Receipt No. : ", 1, 0, "L",true);
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(60, 6, $last_receipt_id_take, 1, 0, "L");
+        $pdf->SetFont('Helvetica', 'B', 9);
+        $pdf->Cell(20, 6, "Date : ", 1, 0, "L",true);
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(30, 6, $date_of_payments_fees , 1, 0, "L",false);
+        
+        $pdf->SetFont('Helvetica', 'B', 9);
+        $pdf->Cell(25, 6, "Time : ", 1, 0, "L",true);
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(40, 6, $time_of_payment_fees , "RTB", 1, "L",false);
+        // $pdf->Cell(53, 6, "", "RBT", 1, "L");
+
+        // row 2
+        $pdf->SetFont('Helvetica', 'B', 9);
+        $pdf->Cell(30, 6, "Client Name. : ", 1, 0, "L",true);
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(170, 6, $students_names, 1, 1, "L");
+        // $pdf->SetFont('Helvetica', 'B', 9);
+        // $pdf->Cell(25, 6, "Adm No. : ", 1, 0, "L",true);
+        // $pdf->SetFont('Helvetica', '', 9);
+        // $pdf->Cell(75, 6, $student_admission_no, 1, 1, "L");
+
+        // THIRD ROW
+        $pdf->SetFont('Helvetica', 'B', 9);
+        $pdf->Cell(22, 6, "Amount", 1, 0, "L",true);
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(30, 6, $amount_paid_by_student, 1, 0, "L");
+        $new_numbers = new NUmbers();
+        $new_number = returnNumbers($amount_paid_by_student);
+        $my_number = $new_number< 0 ? $new_numbers->convert_number($new_number*-1):$new_numbers->convert_number($new_number);
+        $prefix = $new_number < 0? "Negative ":"";
+
+        $text_width = $pdf->GetStringWidth("** ".$prefix." ".$my_number." Kenya Shillings Only **");
+        $font_size = round((148*100*9) / ($text_width * 100),3)-1;
+        $font_size = $font_size > 9 ? 9 : $font_size;
+        $pdf->SetFont('Helvetica', 'B', $font_size);
+        $pdf->Cell(148, 6, "** ".$prefix." ".$my_number." Kenya Shillings Only **", "BR", 1, "L");
+
+        // voteheads paid for
+        $pdf->SetFillColor(240, 240, 240);
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(200,7,"VOTEHEAD","TBLR",1,"C",true);
+
+        // another row
+        $pdf->Cell(155,7,$payments_for,1,0,"L",false);
+        $pdf->Cell(45,7,$amount_paid_by_student,"BR",1,"L",false);
+
+        // another row
+        $pdf->SetFont('Helvetica', 'B', 9);
+        $pdf->Cell(30,7,"Payment Mode : ",1,0,"L",true);
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(35,7,$mode_of_payments,1,0,"L",false);
+        $pdf->SetFont('Helvetica', 'B', 9);
+        $pdf->Cell(30,7,"Transaction Code:",1,0,"L",true);
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(60,7,"".$transaction_codes."",1,0,"L",false);
+        $pdf->SetFont('Helvetica', 'B', 9);
+        $pdf->Cell(15,7,"Total:",1,0,"L",false);
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(30,7,"".$amount_paid_by_student."",1,1,"L",false);
+
+        // ANOTHER ROW
+        $pdf->SetFont('Helvetica', 'B', 9);
+        $pdf->Cell(30,7,"Served By : ",1,0,"L",true);
+        $pdf->SetFont('Helvetica', '', 9);
+        $staff_infor = getStaffInformations_report($conn,$_SESSION['userids']);
+        $pdf->Cell(170,7,explode(" ",ucwords(strtolower($staff_infor['fullname'])))[0],1,1,"L",false);
+
+        // DISCLAIMER
+        $pdf->SetFont('Helvetica', 'I', 9);
+        $pdf->Cell(200,7,"** Receipts are not valid unless signed OR Stamped with the Official School Stamp  **","",1,"C",false);
+        // $pdf->Ln(5);
+
+        $pdf->Output();
+    
+    }elseif (isset($_GET['supplier_payment_id'])){
+        include("../connections/conn1.php");
+        include("../connections/conn2.php");
+
+        if(!isset($_GET['supplier_payment_id'])){
+            echo "<p style='color:red;'>Invalid revenue details!</p>";
+            return 0;
+        }
+        $supplier_payment_id = $_GET['supplier_payment_id'];
+        // check if the payment is valid
+        $select = "SELECT * FROM `supplier_bill_payments` WHERE `payment_id` = ?";
+        $stmt = $conn2->prepare($select);
+        $stmt->bind_param("s",$supplier_payment_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $present = false;
+        $bill_details = [];
+        if($result){
+            if($row = $result->fetch_assoc()){
+                $present = true;
+                $bill_details = $row;
+            }
+        }
+        
+        // check if not present
+        if(!$present){
+            echo "<p style='color:red;'>The payment is invalid, select another payment to print receipt!</p>";
+            return 0;
+        }
+
+        // get the supplier details
+        $select = "SELECT * FROM `suppliers` AS S WHERE `supplier_id` = (SELECT `supplier_id` FROM `supplier_bills` AS SB WHERE `bill_id` = '".$bill_details['payment_for']."')";
+        $stmt = $conn2->prepare($select);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $supplier_details = [];
+        $supplier_present = false;
+        if($result){
+            if($row = $result->fetch_assoc()){
+                $supplier_details = $row;
+                $supplier_present = true;
+            }
+        }
+        
+        if(!$supplier_present){
+            echo "<p style='color:red;'>Supplier is invalid, We can`t provide receipt for an invalid supplier!</p>";
+            return 0;
+        }
+
+        // get the bill details
+        $select = "SELECT * FROM `supplier_bills` AS SB WHERE `bill_id` = '".$bill_details['payment_for']."'";
+        $stmt = $conn2->prepare($select);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $supplier_bill_validity = false;
+        $supplier_bill = [];
+        if($result){
+            if($row = $result->fetch_assoc()){
+                $supplier_bill_validity = true;
+                $supplier_bill = $row;
+            }
+        }
+        
+        if(!$supplier_bill_validity){
+            echo "<p style='color:red;'>Bill is invalid, We can`t provide receipt for an invalid bill!</p>";
+            return 0;
+        }
+
+        $students_names = $supplier_details['supplier_name']." - (".ucwords(strtolower($supplier_details['company_name'])).")";
+        $student_admission_no = "Nan";
+        $amount_paid_by_student = "Kes ". number_format($bill_details['amount']);
+        $new_student_balance = 0;
+        $mode_of_payments = $bill_details['payment_method'] == 1 ? "Bank Transfer" : ($bill_details['payment_method'] == 2 ? "Cheque" : ($bill_details['payment_method'] == 3 ? "Cash" : ($bill_details['payment_method'] == 4 ? "M-Pesa (Paybill)" : ($bill_details['payment_method'] == 5 ? "M-Pesa (Buy Goods)" : ($bill_details['payment_method'] == 6 ? "M-Pesa (Pochi)" : ($bill_details['payment_method'] == 7 ? "M-Pesa (Send Money)" : "Not-Defined"))))));
+        $transaction_codes = $bill_details['document_number'];
+        $payments_for = $supplier_bill['bill_name'];
+        $fees_payment_receipt = "Nan";
+        $reciept_size = "Nan";
+        $fees_payment_opt_holder = "Nan";
+        $last_receipt_id_take = $bill_details['payment_id'];
+        $date_of_payments_fees = date("D dS-M-Y", strtotime($bill_details['date_paid']));
+        $time_of_payment_fees = date("H:i:s");
+        
+        // echo $fees_payment_opt_holder;
+        include("fees_reminder.php");
+        // create the pdf file
+        $pdf = new PDF2('P', 'mm', 'A4');
+        $pdf->setHeaderPos(200);
+        $tittle = $students_names . " Fees Receipt.";
+        $pdf->set_document_title($tittle);
+        $pdf->setSchoolLogo("../../" . schoolLogo($conn));
+        $pdf->set_school_name($_SESSION['schname']);
+        $pdf->set_school_po($_SESSION['po_boxs']);
+        $pdf->set_school_box_code($_SESSION['box_codes']);
+        $pdf->set_school_contact($_SESSION['school_contact']);
+        $pdf->AddPage();
+        $pdf->SetMargins(5, 5);
+
+        // get the school information
+        $school_info = getSchoolInfo($conn);
+        $school_name = ucwords(strtoupper($school_info['school_name']));
+        $school_motto = ucwords(strtolower($school_info['school_motto']));
+        $school_admin_name = $school_info['school_admin_name'];
+        $school_mail = $school_info['school_mail'];
+        $county = $school_info['county'];
+        $physicall_address = $school_info['physicall_address'];
+        $country = $school_info['country'];
+        $school_profile_image = "../" . $school_info['school_profile_image'];
+        $po_box = $school_info['po_box'];
+        $box_code = $school_info['box_code'];
+        $school_contact = $school_info['school_contact'];
+        $website_name = $school_info['website_name'];
+
+        $pdf->Image($school_profile_image, 5, 10, 20, 20);
+        $pdf->Image($pdf->arm_of_gov, 100, 15, 12, 12);
+        $pdf->SetFont('Helvetica', 'B', 14);
+        $pdf->SetFillColor(100, 100, 100);
+        $pdf->SetTitle("Receipt for ".$students_names." Reg No. ".$student_admission_no.".");
+        $pdf->Cell(15, 10, "", 0, 0, "L", false);
+
+        $X = $pdf->GetX();
+        $y = $pdf->GetY();
+        $pdf->SetXY($X, $y + 5);
+
+        $pdf->Cell(100, 6, $school_name, 0, 0, "L", false);
+        $pdf->SetFont('Helvetica', '', 8);
+
+        $X = $pdf->GetX();
+        $y = $pdf->GetY();
+        $pdf->SetXY($X, $y - 5);
+
+        $pdf->Cell(80, 4, "P.O Box " . $po_box . " - " . $box_code . " " . $county . " " . $country, 0, 1, "R", false);
+
+
+        $X = $pdf->GetX();
+        $y = $pdf->GetY();
+        $pdf->SetXY($X, $y + 5);
+
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(20, 10, "", 0, 0, "L", false);
+        $pdf->Cell(100, 10, $school_motto, 0, 0, "L", false);
+
+        $X = $pdf->GetX();
+        $y = $pdf->GetY();
+        $pdf->SetXY($X, $y - 5);
+        $pdf->SetFont('Helvetica', '', 8);
+        $pdf->Cell(80, 4, $physicall_address, 0, 1, "R", false);
+
+
+        $X = $pdf->GetX();
+        $y = $pdf->GetY();
+        $pdf->SetXY($X, $y + 5);
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(20, 5, "", 0, 0, "L", false);
+        $pdf->Cell(100, 5, "", 0, 0, "L", false);
+
+        $X = $pdf->GetX();
+        $y = $pdf->GetY();
+        $pdf->SetXY($X, $y - 5);
+        $pdf->SetFont('Helvetica', '', 8);
+        $pdf->Cell(80, 4, "Tel: " . $school_contact, 0, 1, "R", false);
+
+
+        $X = $pdf->GetX();
+        $y = $pdf->GetY();
+        $pdf->SetXY($X, $y + 5);
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(20, 5, "", 0, 0, "L", false);
+        $pdf->Cell(100, 5, "", 0, 0, "L", false);
+        $pdf->SetFont('Helvetica', '', 8);
+        $X = $pdf->GetX();
+        $y = $pdf->GetY();
+        $pdf->SetXY($X, $y - 5);
+        $pdf->Cell(80, 4, "Email : " . $school_mail, 0, 1, "R", false);
+
+
+        $X = $pdf->GetX();
+        $y = $pdf->GetY();
+        $pdf->SetXY($X, $y + 5);
+
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(20, 5, "", 0, 0, "L", false);
+        $pdf->Cell(100, 5, "", 0, 0, "L", false);
+        $pdf->SetFont('Helvetica', '', 8);
+        $X = $pdf->GetX();
+        $y = $pdf->GetY();
+        $pdf->SetXY($X, $y - 5);
+        $pdf->Cell(80, 4, "Website : " . $website_name, 0, 1, "R", false);
+        // divider strip
+        $pdf->SetFillColor(220, 220, 220);
+        $pdf->Ln(5);
+        $pdf->Cell(200, 2, "", 0, 1, 0, true);
+        $pdf->SetFillColor(240, 240, 240);
+
+        // start the receipt details
+        $pdf->SetFont('Helvetica', '', 10);
+        $pdf->Cell(65, 10, "SUPPLIER PAYMENT RECEIPT", 0, 0, "C", false);
+        $pdf->Cell(65, 10, "** SCHOOL COPY **", 0, 0, "C", false);
+        $pdf->Cell(65, 10, "** ORIGINAL **", 0, 1, "C", false);
+
+        // RECEIPT DETAILS
+        // row 1
+        $pdf->SetFont('Helvetica', 'B', 9);
+        $pdf->Cell(25, 6, "Receipt No. : ", 1, 0, "L",true);
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(60, 6, $last_receipt_id_take, 1, 0, "L");
+        $pdf->SetFont('Helvetica', 'B', 9);
+        $pdf->Cell(20, 6, "Date : ", 1, 0, "L",true);
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(30, 6, $date_of_payments_fees , 1, 0, "L",false);
+        
+        $pdf->SetFont('Helvetica', 'B', 9);
+        $pdf->Cell(25, 6, "Time : ", 1, 0, "L",true);
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(40, 6, $time_of_payment_fees , "RTB", 1, "L",false);
+        // $pdf->Cell(53, 6, "", "RBT", 1, "L");
+
+        // row 2
+        $pdf->SetFont('Helvetica', 'B', 9);
+        $pdf->Cell(30, 6, "Client Name. : ", 1, 0, "L",true);
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(170, 6, $students_names, 1, 1, "L");
+        // $pdf->SetFont('Helvetica', 'B', 9);
+        // $pdf->Cell(25, 6, "Adm No. : ", 1, 0, "L",true);
+        // $pdf->SetFont('Helvetica', '', 9);
+        // $pdf->Cell(75, 6, $student_admission_no, 1, 1, "L");
+
+        // THIRD ROW
+        $pdf->SetFont('Helvetica', 'B', 9);
+        $pdf->Cell(22, 6, "Amount", 1, 0, "L",true);
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(30, 6, $amount_paid_by_student, 1, 0, "L");
+        $new_numbers = new NUmbers();
+        $new_number = returnNumbers($amount_paid_by_student);
+        $my_number = $new_number< 0 ? $new_numbers->convert_number($new_number*-1):$new_numbers->convert_number($new_number);
+        $prefix = $new_number < 0? "Negative ":"";
+
+        $text_width = $pdf->GetStringWidth("** ".$prefix." ".$my_number." Kenya Shillings Only **");
+        $font_size = round((148*100*9) / ($text_width * 100),3)-1;
+        $font_size = $font_size > 9 ? 9 : $font_size;
+        $pdf->SetFont('Helvetica', 'B', $font_size);
+        $pdf->Cell(148, 6, "** ".$prefix." ".$my_number." Kenya Shillings Only **", "BR", 1, "L");
+
+        // voteheads paid for
+        $pdf->SetFillColor(240, 240, 240);
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(200,7,"VOTEHEAD","TBLR",1,"C",true);
+
+        // another row
+        $pdf->Cell(155,7,$payments_for,1,0,"L",false);
+        $pdf->Cell(45,7,$amount_paid_by_student,"BR",1,"L",false);
+
+        // another row
+        $pdf->SetFont('Helvetica', 'B', 9);
+        $pdf->Cell(30,7,"Payment Mode : ",1,0,"L",true);
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(35,7,$mode_of_payments,1,0,"L",false);
+        $pdf->SetFont('Helvetica', 'B', 9);
+        $pdf->Cell(30,7,"Transaction Code:",1,0,"L",true);
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(60,7,"".$transaction_codes."",1,0,"L",false);
+        $pdf->SetFont('Helvetica', 'B', 9);
+        $pdf->Cell(15,7,"Total:",1,0,"L",false);
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(30,7,"".$amount_paid_by_student."",1,1,"L",false);
+
+        // ANOTHER ROW
+        $pdf->SetFont('Helvetica', 'B', 9);
+        $pdf->Cell(30,7,"Served By : ",1,0,"L",true);
+        $pdf->SetFont('Helvetica', '', 9);
+        $staff_infor = getStaffInformations_report($conn,$_SESSION['userids']);
+        $pdf->Cell(170,7,explode(" ",ucwords(strtolower($staff_infor['fullname'])))[0],1,1,"L",false);
+
+        // DISCLAIMER
+        $pdf->SetFont('Helvetica', 'I', 9);
+        $pdf->Cell(200,7,"** Receipts are not valid unless signed OR Stamped with the Official School Stamp  **","",1,"C",false);
+        // $pdf->Ln(5);
+        
+        $remaining_lines = 6;
+
+        for($i = 0; $i < $remaining_lines; $i++){
+            $pdf->Ln();
+        }
+        $pdf->Cell(200,0,"",1,1);
+        $pdf->Ln(5);
+        
+        // space between
+        $y = $pdf->GetY();
+        $pdf->Image($school_profile_image, 5, $y, 20, 20);
+        $pdf->Image($pdf->arm_of_gov, 100, $y+5, 12, 12);
+        $pdf->SetFont('Helvetica', 'B', 14);
+        $pdf->SetFillColor(100, 100, 100);
+        $pdf->Cell(20, 10, "", 0, 0, "L", false);
+
+        $X = $pdf->GetX();
+        $y = $pdf->GetY();
+        $pdf->SetXY($X, $y + 5);
+
+        $pdf->Cell(100, 6, $school_name, 0, 0, "L", false);
+        $pdf->SetFont('Helvetica', '', 8);
+
+        $X = $pdf->GetX();
+        $y = $pdf->GetY();
+        $pdf->SetXY($X, $y - 5);
+
+        $pdf->Cell(80, 4, "P.O Box " . $po_box . " - " . $box_code . " " . $county . " " . $country, 0, 1, "R", false);
+
+
+        $X = $pdf->GetX();
+        $y = $pdf->GetY();
+        $pdf->SetXY($X, $y + 5);
+
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(20, 10, "", 0, 0, "L", false);
+        $pdf->Cell(100, 10, $school_motto, 0, 0, "L", false);
+
+        $X = $pdf->GetX();
+        $y = $pdf->GetY();
+        $pdf->SetXY($X, $y - 5);
+        $pdf->SetFont('Helvetica', '', 8);
+        $pdf->Cell(80, 4, $physicall_address, 0, 1, "R", false);
+
+
+        $X = $pdf->GetX();
+        $y = $pdf->GetY();
+        $pdf->SetXY($X, $y + 5);
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(20, 5, "", 0, 0, "L", false);
+        $pdf->Cell(100, 5, "", 0, 0, "L", false);
+
+        $X = $pdf->GetX();
+        $y = $pdf->GetY();
+        $pdf->SetXY($X, $y - 5);
+        $pdf->SetFont('Helvetica', '', 8);
+        $pdf->Cell(80, 4, "Tel: " . $school_contact, 0, 1, "R", false);
+
+
+        $X = $pdf->GetX();
+        $y = $pdf->GetY();
+        $pdf->SetXY($X, $y + 5);
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(20, 5, "", 0, 0, "L", false);
+        $pdf->Cell(100, 5, "", 0, 0, "L", false);
+        $pdf->SetFont('Helvetica', '', 8);
+        $X = $pdf->GetX();
+        $y = $pdf->GetY();
+        $pdf->SetXY($X, $y - 5);
+        $pdf->Cell(80, 4, "Email : " . $school_mail, 0, 1, "R", false);
+
+
+        $X = $pdf->GetX();
+        $y = $pdf->GetY();
+        $pdf->SetXY($X, $y + 5);
+
+        $pdf->SetFont('Helvetica', '', 9);
+        $pdf->Cell(20, 5, "", 0, 0, "L", false);
+        $pdf->Cell(100, 5, "", 0, 0, "L", false);
+        $pdf->SetFont('Helvetica', '', 8);
+        $X = $pdf->GetX();
+        $y = $pdf->GetY();
+        $pdf->SetXY($X, $y - 5);
+        $pdf->Cell(80, 4, "Website : " . $website_name, 0, 1, "R", false);
+        // divider strip
+        $pdf->SetFillColor(220, 220, 220);
+        $pdf->Ln(5);
+        $pdf->Cell(200, 2, "", 0, 1, 0, true);
+        $pdf->SetFillColor(240, 240, 240);
+
+        // start the receipt details
+        $pdf->SetFont('Helvetica', '', 10);
+        $pdf->Cell(65, 10, "SUPPLIER PAYMENT RECEIPT", 0, 0, "C", false);
         $pdf->Cell(65, 10, "** CLIENT COPY **", 0, 0, "C", false);
         $pdf->Cell(65, 10, "** ORIGINAL **", 0, 1, "C", false);
 

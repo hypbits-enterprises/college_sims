@@ -146,9 +146,20 @@
                     <div class="col-md-12 my-2">
                         <h6 class="text-center"><u>Edit Asset</u></h6>
                     </div>
+                    <form class="col-md-12" target="_blank" method="POST" action="reports/reports.php">
+                        <div class="border border-secondary rounded mx-auto w-50 py-2 px-2 my-2">
+                            <h6 class="text-secondary text-center"><u>Print Statement of Asset Accounts</u></h6>
+                            <input type="hidden" name="print_statement_of_account" value="true">
+                            <input type="hidden" name="asset_id" id="asset-id">
+                            <div class="row">
+                                <div class="col-md-6 mx-auto">
+                                    <input type="submit" class="btn btn-sm btn-primary text-white" value="Print Statement of Accounts">
+                                </div>
+                            </div>
+                        </div>
+                    </form>
                     <div class="col-md-4 form-group">
                         <label for="asset-name-edit" class="form-label"><b>Asset Name</b></label>
-                        <input type="hidden" name="" id="asset-id">
                         <input type="text" name="asset-name-edit" id="asset-name-edit" class="form-control w-100" placeholder="Asset Name">
                     </div>
                     <div class="col-md-4 form-group">

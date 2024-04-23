@@ -5185,6 +5185,7 @@
             $payment_description = $_POST['payment_description'];
             $supplier_payment_for = $_POST['supplier_payment_for'];
             $supplier_payment_id = $_POST['supplier_payment_id'];
+            $payment_method = $_POST['payment_method'];
 
             // select
             $select = "SELECT SUM(`amount`) AS 'Total' FROM `supplier_bill_payments` WHERE `payment_for` = '".$supplier_payment_for."' AND `payment_id` != '".$supplier_payment_id."'";
@@ -5211,9 +5212,9 @@
 
             $balance = $bill_amount - $paid_amount;
             if($balance >= $payment_amount){
-                $update = "UPDATE `supplier_bill_payments` SET `payment_for` = ?, `amount` = ?, `date_paid` = ?, `payment_description` = ?, `document_number` = ? WHERE `payment_id` = ?";
+                $update = "UPDATE `supplier_bill_payments` SET `payment_for` = ?, `amount` = ?,`payment_method` = ?, `date_paid` = ?, `payment_description` = ?, `document_number` = ? WHERE `payment_id` = ?";
                 $stmt = $conn2->prepare($update);
-                $stmt->bind_param("ssssss", $supplier_payment_for, $payment_amount, $payment_date, $payment_description, $document_number, $supplier_payment_id);
+                $stmt->bind_param("sssssss", $supplier_payment_for, $payment_amount, $payment_method, $payment_date, $payment_description, $document_number, $supplier_payment_id);
                 $stmt->execute();
                 
                 echo "<p class='text-success'>Payment has been updated successfully!</p>";
@@ -5232,6 +5233,7 @@
             $supplier_payment_amount = $_POST['supplier_payment_amount'];
             $supplier_payment_date = date("YmdHis", strtotime($_POST['supplier_payment_date']));
             $supplier_payment_description = $_POST['supplier_payment_description'];
+            $payment_method = $_POST['payment_method'];
             $supplier_payment_document_no = $_POST['supplier_payment_document_no'];
 
             // get what you are paying for
@@ -5265,9 +5267,9 @@
             // check if the amount paid is greater than the balance
             if($balance >= $supplier_payment_amount){
                 // SAVE THE PAYMENT
-                $insert = "INSERT INTO `supplier_bill_payments` (`payment_for`,`amount`,`date_paid`,`payment_description`,`document_number`) VALUES (?,?,?,?,?)";
+                $insert = "INSERT INTO `supplier_bill_payments` (`payment_for`,`payment_method`,`amount`,`date_paid`,`payment_description`,`document_number`) VALUES (?,?,?,?,?,?)";
                 $stmt = $conn2->prepare($insert);
-                $stmt->bind_param("sssss",$supplier_payment_for,$supplier_payment_amount,$supplier_payment_date,$supplier_payment_description,$supplier_payment_document_no);
+                $stmt->bind_param("ssssss",$supplier_payment_for,$payment_method,$supplier_payment_amount,$supplier_payment_date,$supplier_payment_description,$supplier_payment_document_no);
                 $stmt->execute();
                 echo "<p class='text-success'>Payment has been made successfully!</p>";
             }else{
@@ -8604,7 +8606,7 @@
 
             // reduce from the original
             $balance_left = $original_value - $reduction;
-            return array("years" => $difference_year, "new_value" => $balance_left, "reduction_amount" => $reduction, "original_value" => $original_value, "value_acquisition_method" => "Straight Line Method", "value_acquisition" => "decrease", "account" => $accounts);
+            return array("years" => $difference_year, "new_value" => $balance_left, "reduction_amount" => $reduction, "original_value" => $original_value, "value_acquisition_method" => "Straight Line Method (-ve)", "value_acquisition" => "decrease", "account" => $accounts);
         }elseif($value_acquisition_option == "2"){
             // straight line method increase
             $reduction = 0;
@@ -8636,7 +8638,7 @@
             // reduce from the original
             $balance_left = $original_value;
             $original_value = $store_original_value;
-            return array("years" => $difference_year, "new_value" => $balance_left, "reduction_amount" => $reduction, "original_value" => $original_value, "value_acquisition_method" => "Straight Line Method", "value_acquisition" => "decrease", "account" => $accounts);
+            return array("years" => $difference_year, "new_value" => $balance_left, "reduction_amount" => $reduction, "original_value" => $original_value, "value_acquisition_method" => "Reducing Balance Method (-ve)", "value_acquisition" => "decrease", "account" => $accounts);
         }elseif($value_acquisition_option == "3"){
             // straight line method increase
             $reduction = 0;
@@ -8662,7 +8664,7 @@
 
             // reduce from the original
             $balance_left = $original_value + $reduction;
-            return array("years" => $difference_year, "new_value" => $balance_left, "reduction_amount" => $reduction, "original_value" => $original_value, "value_acquisition_method" => "Straight Line Method", "value_acquisition" => "increase", "account" => $accounts);
+            return array("years" => $difference_year, "new_value" => $balance_left, "reduction_amount" => $reduction, "original_value" => $original_value, "value_acquisition_method" => "Straight Line Method (+ve)", "value_acquisition" => "increase", "account" => $accounts);
         }elseif($value_acquisition_option == "4"){
             // reducing method increase
             $reduction = 0;
@@ -8694,8 +8696,8 @@
             // reduce from the original
             $balance_left = $original_value;
             $original_value = $store_original_value;
-            return array("years" => $difference_year, "new_value" => $balance_left, "reduction_amount" => $reduction, "original_value" => $original_value, "value_acquisition_method" => "Straight Line Method", "value_acquisition" => "increase", "account" => $accounts);
+            return array("years" => $difference_year, "new_value" => $balance_left, "reduction_amount" => $reduction, "original_value" => $original_value, "value_acquisition_method" => "Reducing Balance Method (+ve)", "value_acquisition" => "increase", "account" => $accounts);
         }else{
-            return array("years" => $difference_year, "new_value" => $original_value, "reduction_amount" => 0, "original_value" => $original_value, "value_acquisition_method" => "Straight Line Method", "value_acquisition" => "increase", "account" => []);
+            return array("years" => $difference_year, "new_value" => $original_value, "reduction_amount" => 0, "original_value" => $original_value, "value_acquisition_method" => "No Method", "value_acquisition" => "increase", "account" => []);
         }
     }

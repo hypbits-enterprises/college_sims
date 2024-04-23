@@ -2318,6 +2318,19 @@ function checkPresnt($array, $string){
                             <label class="form-control-label" for="supplier_payment_for">Payment For: <img class="hide" src="images/ajax_clock_small.gif" id="supplier_payment_for_loader"><br></label>
                             <div id="payment_for_details"></div>
                         </div>
+                        <div class="cont">
+                            <label for="payment-method" class="form-control-label">Payment Method</label>
+                            <select name="payment-method" id="payment-method" class="form-control w-75">
+                                <option value="" hidden>Select an Option</option>
+                                <option value="1">Bank Transfer</option>
+                                <option value="2">Cheque</option>
+                                <option value="3">Cash</option>
+                                <option value="4">M-Pesa (Paybill)</option>
+                                <option value="5">M-Pesa (Buy Goods)</option>
+                                <option value="6">M-Pesa (Pochi)</option>
+                                <option value="7">M-Pesa (Send Money)</option>
+                            </select>
+                        </div>
                         <div class="conts">
                             <label class="form-control-label" for="supplier_payment_amount">Payment Amount: <br></label>
                             <input class="form-control w-75" type="text" name="supplier_payment_amount" id="supplier_payment_amount" placeholder="Bill Amount">
@@ -2379,6 +2392,19 @@ function checkPresnt($array, $string){
                         <div class="conts">
                             <label class="form-control-label" for="supplier_payment_amount_edit">Payment Amount: <br></label>
                             <input class="form-control w-75" type="text" name="supplier_payment_amount_edit" id="supplier_payment_amount_edit" placeholder="Bill Amount">
+                        </div>
+                        <div class="cont">
+                            <label for="payment-method-edit" class="form-control-label">Payment Method</label>
+                            <select name="payment-method-edit" id="payment-method-edit" class="form-control w-75">
+                                <option value="" hidden>Select an Option</option>
+                                <option value="1">Bank Transfer</option>
+                                <option value="2">Cheque</option>
+                                <option value="3">Cash</option>
+                                <option value="4">M-Pesa (Paybill)</option>
+                                <option value="5">M-Pesa (Buy Goods)</option>
+                                <option value="6">M-Pesa (Pochi)</option>
+                                <option value="7">M-Pesa (Send Money)</option>
+                            </select>
                         </div>
                         <div class="conts">
                             <label class="form-control-label" for="supplier_payment_date_edit">Assigned Date: <br></label>
