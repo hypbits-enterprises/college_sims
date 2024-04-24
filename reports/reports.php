@@ -15212,7 +15212,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
         // start the receipt details
         $pdf->SetFont('Helvetica', '', 10);
         $pdf->Cell(65, 10, "SUPPLIER PAYMENT RECEIPT", 0, 0, "C", false);
-        $pdf->Cell(65, 10, "** CLIENT COPY **", 0, 0, "C", false);
+        $pdf->Cell(65, 10, "** SUPPLIER COPY **", 0, 0, "C", false);
         $pdf->Cell(65, 10, "** ORIGINAL **", 0, 1, "C", false);
 
         // RECEIPT DETAILS
@@ -15295,6 +15295,173 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
 
         $pdf->Output();
     
+    }elseif(isset($_GET['supplier_account_id'])){
+        $supplier_account_id = $_GET['supplier_account_id'];
+
+        // check if its a valid supplier
+        $my_supplier = "SELECT * FROM `suppliers` WHERE `supplier_id` = '".$supplier_account_id."'";
+        $stmt = $conn2->prepare($my_supplier);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $present = false;
+        $supplier_data = [];
+        if($result){
+            if($row = $result->fetch_assoc()){
+                $present = true;
+                $supplier_data = $row;
+            }
+        }
+
+        if(!$present){
+            echo "<p style='color:red;'>In-valid supplier!</p>";
+            return 0;
+        }
+        
+        // GET ALL THE SUPPLIER BILLS
+        $select = "SELECT * FROM `supplier_bills` WHERE `supplier_id` = ?";
+        $stmt = $conn2->prepare($select);
+        $stmt->bind_param("s",$supplier_account_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row_data = [];
+        if($result){
+            while($row = $result->fetch_assoc()){
+                // data
+                $data = array("account" => "debit","amount" => $row['bill_amount'],"date" => $row['date_assigned'], "usage" => $row['bill_name']);
+                array_push($row_data, $data);
+
+                $select = "SELECT * FROM `supplier_bill_payments` WHERE `payment_for` = '".$row['bill_id']."'";
+                $statement = $conn2->prepare($select);
+                $statement -> execute();
+                $res = $statement->get_result();
+                if($res){
+                    while($rowed = $res->fetch_assoc()){
+                        $data = array("account" => "credit","amount" => $rowed['amount'],"date" => $rowed['date_paid'], "usage" => "Paid - (". $row['bill_name'].")");
+                        array_push($row_data, $data);
+                    }
+                }
+            }
+        }
+
+        $key = "date";
+        $row_data = sortByKey($row_data,$key,true);
+        // echo json_encode($row_data);
+        // return 0;
+
+        // display the records
+
+        // display the data pn the pdf
+        $pdf = new PDF("P","mm","A4");
+        $pdf->setHeaderPos(200);
+        $tittle = "Supplier Accounts Statements \"".$supplier_data['supplier_name']."\"";
+        
+        $data = $data;
+        $pdf->set_document_title($tittle);
+        $pdf->setSchoolLogo("../../" . schoolLogo($conn));
+        $pdf->set_school_name($_SESSION['schname']);
+        $pdf->set_school_po($_SESSION['po_boxs']);
+        $pdf->set_school_box_code($_SESSION['box_codes']);
+        $pdf->set_school_contact($_SESSION['school_contact']);
+        $pdf->AddPage();
+        // row 1
+        $pdf->SetFont('Times', 'BU', 10);
+        $pdf->Cell(45, 6, "Supplier Details: ", 0, 'B', 'L',false);
+        $pdf->SetFont('Times', 'B', 10);
+        $pdf->Cell(40, 6, "Supplier Name: ", 0);
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(45, 6, ucwords(strtolower($supplier_data['supplier_name'])), 0,1);
+
+        // row 2
+        $pdf->SetFont('Times', 'B', 10);
+        $pdf->Cell(40, 6, "Supplier Company: ", 0);
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(45, 6, ucwords(strtolower($supplier_data['company_name'])), 0,1);
+        
+        // row 2
+        $pdf->SetFont('Times', 'B', 10);
+        $pdf->Cell(40, 6, "Supplier Address: ", 0);
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(45, 6, $supplier_data['supplier_address']."", 0,1);
+
+        // row 2
+        $pdf->SetFont('Times', 'B', 10);
+        $pdf->Cell(40, 6, "Registration Date: ", 0);
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(45, 6, date("D dS M Y",strtotime($supplier_data['date_registered'])), 0,1);
+
+        // row 2
+        $pdf->SetFont('Times', 'B', 10);
+        $pdf->Cell(40, 6, "Supplier Contact: ", 0);
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(45, 6, $supplier_data['supplier_phone'], 0,1);
+
+        // supplier balance
+        $select = "SELECT SUM(SB.bill_amount) AS 'Due', SUM((SELECT SUM(SBP.amount) AS 'Paid' FROM `supplier_bill_payments` AS SBP WHERE SBP.payment_for = SB.bill_id )) AS 'Paid' FROM `supplier_bills` AS SB WHERE SB.supplier_id = '".$supplier_account_id."'";
+        // echo $select;
+        $statement = $conn2->prepare($select);
+        $statement->execute();
+        $res = $statement->get_result();
+        $billing_amount = 0;
+        $paid_amount = 0;
+        if ($res) {
+            if($rows = $res->fetch_assoc()){
+                $billing_amount = $rows['Due'];
+                $paid_amount = $rows['Paid'];
+            }
+        }
+
+        $amount_owed = $billing_amount-$paid_amount;
+
+        // row 2
+        $pdf->SetFont('Times', 'B', 10);
+        $pdf->Cell(40, 6, "Supplier Balance: ", 0);
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(45, 6, "Kes ".number_format($amount_owed), 0,1);
+
+        // make a line
+        $pdf->Ln();
+        $pdf->Cell(190,1,"",1,1);
+        $pdf->Ln();
+        $pdf->Ln();
+        $pdf->Ln();
+        $pdf->Ln();
+        $pdf->SetFont('Times', 'B', 10);
+        $pdf->SetFillColor(216, 217, 218);
+        $pdf->Cell(190,6,$pdf->school_document_title,1,1,"C",TRUE);
+        $pdf->Cell(10,6,"QTY",1,0,"L",TRUE);
+        $pdf->Cell(60,6,"ITEM",1,0,"L",TRUE);
+        $pdf->Cell(30,6,"DATE",1,0,"L",TRUE);
+        $pdf->Cell(30,6,"DEBIT",1,0,"L",TRUE);
+        $pdf->Cell(30,6,"CREDIT",1,0,"L",TRUE);
+        $pdf->Cell(30,6,"BALANCE",1,1,"L",TRUE);
+        $pdf->SetFont('Times', '', 10);
+
+        // GET THE ROW VALUE
+        // $data = array("account" => "credit","amount" => $rowed['amount'],"date" => $rowed['date_paid'], "usage" => $row['bill_name']);
+        $debit = 0;
+        $credit = 0;
+        $balance = 0;
+        for($index = 0; $index < count($row_data); $index++){
+            $pdf->Cell(10,6,($index+1),1,0,"L",TRUE);
+            $pdf->Cell(60,6,$row_data[$index]['usage'],1,0);
+            $pdf->Cell(30,6,date("D dS M Y",strtotime($row_data[$index]['date'])),1,0);
+            $pdf->Cell(30,6,$row_data[$index]['account'] == "debit" ? "Kes ".number_format($row_data[$index]['amount']) : "-",1,0);
+            $pdf->Cell(30,6,$row_data[$index]['account'] == "credit" ? "Kes ".number_format($row_data[$index]['amount']) : "-",1,0);
+            if($row_data[$index]['account'] == "debit"){
+                $debit += $row_data[$index]['amount'];
+            }else{
+                $credit += $row_data[$index]['amount'];
+            }
+            $balance = $row_data[$index]['account'] == "credit" ? ($balance - $row_data[$index]['amount']*1) : ($row_data[$index]['account'] == "debit" ? ($balance + $row_data[$index]['amount']*1) : $balance);
+            $pdf->Cell(30,6,"Kes ".number_format($balance),1,1);
+        }
+        $pdf->SetFont('Times', 'B', 10,"L");
+        $pdf->Cell(100,6,"Total:",0,0,"R",FALSE);
+        $pdf->Cell(30,6, "Kes ". number_format($debit) ,1,0,"L",TRUE);
+        $pdf->Cell(30,6, "Kes ". number_format($credit) ,1,0,"L",TRUE);
+        $pdf->Cell(30,6, "Kes ". number_format($balance),1,1,"L",TRUE);
+        $pdf->Output();
+        
     }
 }
 
@@ -15303,6 +15470,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
  * @param string $folder the path being checked.
  * @return mixed returns the canonicalized absolute pathname on success otherwise FALSE is returned
  */
+function sortByKey($array, $key, $ascending = true) {
+    // Create a copy of the input array
+    $sortedArray = $array;
+
+    // Sort the copy of the array
+    usort($sortedArray, function($a, $b) use ($key, $ascending) {
+        $comparison = strcmp($a[$key], $b[$key]);
+        return $ascending ? $comparison : -$comparison;
+    });
+
+    // Return the sorted array
+    return $sortedArray;
+}
 
 function editComments($comments, $student_details)
 {

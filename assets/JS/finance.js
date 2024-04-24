@@ -4724,6 +4724,7 @@ function view_supplier() {
     if (hasJsonStructure(supplier_details)) {
         // supplier details
         supplier_details = JSON.parse(supplier_details);
+        cObj("supplier_href_link").href = "reports/reports.php?supplier_account_id="+supplier_details.supplier_id;
 
         // set the values
         cObj("supplier_phone_2").value = supplier_details.supplier_phone;

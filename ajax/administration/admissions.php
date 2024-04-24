@@ -2668,9 +2668,9 @@
             $select_payments = "SELECT SBP.* FROM `supplier_bill_payments` AS SBP
                                 LEFT JOIN `supplier_bills` AS SB
                                 ON SB.bill_id = SBP.payment_for
-                                WHERE SB.supplier_id = '".$_GET['get_supplier_data']."' ORDER BY SBP.payment_id DESC";
+                                WHERE SB.supplier_id = '".$_GET['get_supplier_data']."' ORDER BY SBP.date_paid DESC";
                                 
-            $select_bill = "SELECT * FROM `supplier_bills` WHERE `supplier_id` = '".$_GET['get_supplier_data']."' ORDER BY bill_id DESC";
+            $select_bill = "SELECT * FROM `supplier_bills` WHERE `supplier_id` = '".$_GET['get_supplier_data']."' ORDER BY date_assigned DESC";
             // echo $select_bill;
             // get the bill
             $stmt = $conn2->prepare($select_bill);

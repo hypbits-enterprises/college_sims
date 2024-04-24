@@ -143,6 +143,7 @@
                     <div class="cont my-2">
                         <div class="container ml-3">
                             <span class="btn btn-sm btn-secondary" id="delete_supplier"><i class="fas fa-trash"></i> Delete</span>
+                            <a href="reports/reports.php?supplier_account_id=" id="supplier_href_link" target="_blank" class="btn btn-sm btn-primary text-white"><i class="fas fa-print"></i> Print Supplier Accounts</a>
                         </div>
                         <div class="message_contents mt-3 hide" id="delete_supplier_window">
                             <label class="form-control-label"><u>Confirm:</u></label>
