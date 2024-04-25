@@ -5588,3 +5588,14 @@ cObj("update-assets-btn").onclick = function () {
         cObj("asset-error-edit").innerHTML = "<p class='text-danger'>Fill all fields covered with a red border!</p>";
     }
 }
+
+cObj("select_financial_document").onchange = function () {
+    // income_statement_window
+    if (this.value == "cashflow_statement") {
+        cObj("income_statement_window").classList.remove("hide");
+        cObj("financial_performance").classList.add("hide");
+    }else{
+        cObj("income_statement_window").classList.add("hide");
+        cObj("financial_performance").classList.remove("hide");
+    }
+}

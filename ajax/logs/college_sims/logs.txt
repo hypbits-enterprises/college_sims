@@ -1,3 +1,14 @@
+25th Apr 2024 14:13:47PM : Revenue "BRISKEY MASKATEERS" has been updated successfully! - {HILLARY NGIGE}
+25th Apr 2024 10:04:54AM : Revenue category "Miscellaneous income" has been added successfully! - {HILLARY NGIGE}
+25th Apr 2024 10:04:31AM : Revenue category "Finance income" has been added successfully! - {HILLARY NGIGE}
+25th Apr 2024 10:04:06AM : Revenue category "Rental Revenue From Facilities And Equipment" updated successfully! - {HILLARY NGIGE}
+25th Apr 2024 10:03:43AM : Revenue category "Rendering Of Services- Fees From Students" updated successfully! - {HILLARY NGIGE}
+25th Apr 2024 10:03:06AM : Revenue category "Cafeteria Sales" updated successfully! - {HILLARY NGIGE}
+25th Apr 2024 10:02:48AM : Revenue category "Public Contributions And Donations" updated successfully! - {HILLARY NGIGE}
+25th Apr 2024 10:02:26AM : Revenue category "Transfers From Other Levels Of Government" updated successfully! - {HILLARY NGIGE}
+25th Apr 2024 09:59:15AM : Revenue category "Grants From Donors And Development Partners" updated successfully! - {HILLARY NGIGE}
+25th Apr 2024 09:58:57AM : Revenue category "Transfers From Other National Government Entities" updated successfully! - {HILLARY NGIGE}
+25th Apr 2024 09:44:21AM : HILLARY NGIGE successfully logged into the system as System Administrator - {HILLARY NGIGE}
 24th Apr 2024 13:15:40PM : HILLARY NGIGE successfully logged into the system as System Administrator - {HILLARY NGIGE}
 23rd Apr 2024 11:27:39AM : HILLARY NGIGE successfully logged into the system as System Administrator - {HILLARY NGIGE}
 22nd Apr 2024 19:13:54PM : Revenue category "Revenue Category 1" updated successfully! - {HILLARY NGIGE}
