@@ -568,15 +568,11 @@ class PDF extends FPDF
             $this->Cell($w[5], 6, (is_integer($row[5]) ? "Kes " . number_format($row[5]) : $row[5]), 1, 0, 'L', $fill);
             $this->Cell($w[6], 6, (is_integer($row[6]) ? "Kes " . number_format($row[6]) : $row[6]), 1, 0, 'L', $fill);
             $this->Cell($w[7], 6, (is_integer($row[7]) ? "Kes " . number_format($row[7]) : $row[7]), 1, 0, 'L', $fill);
-            $this->Cell($w[8], 6, (is_integer($row[8]) ? "Kes " . number_format($row[8]) : $row[8]), 1, 0, 'L', $fill);
-            $this->Cell($w[9], 6, (is_integer($row[9]) ? "Kes " . number_format($row[9]) : $row[9]), 1, 0, 'L', $fill);
             $this->Ln();
             $fill = !$fill;
             $total_1 += is_integer($row[5]) ? $row[5] : 0;
             $total_2 += is_integer($row[6]) ? $row[6] : 0;
             $total_3 += is_integer($row[7]) ? $row[7] : 0;
-            $total_4 += is_integer($row[8]) ? $row[8] : 0;
-            $total_5 += is_integer($row[9]) ? $row[9] : 0;
         }
         $this->SetFont('Helvetica', 'BI', 7);
         $this->Cell(($w[0] + $w[1] + $w[2]), 6, "", 0, 0, "R");
@@ -584,8 +580,6 @@ class PDF extends FPDF
         $this->Cell(($w[5]), 6, "Kes " . number_format($total_1), 1, 0, "L");
         $this->Cell(($w[6]), 6, "Kes " . number_format($total_2), 1, 0, "L");
         $this->Cell(($w[7]), 6, "Kes " . number_format($total_3), 1, 0, "L");
-        $this->Cell(($w[8]), 6, "Kes " . number_format($total_4), 1, 0, "L");
-        $this->Cell(($w[9]), 6, "Kes " . number_format($total_5), 1, 0, "L");
         // CALCULATE TOTAL
         // Closing line
         // $this->Cell(array_sum($w), 0, '', 'T');
@@ -4289,7 +4283,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                         $acad_balance = ($last_acad_yr);
                         $border = isBoarding($student_data[$index]['adm_no'], $conn2) ? (getBoardingFees($conn2, $student_class_fin, "null", $student_data[$index]['adm_no']) * 1) : "Not-enrolled";
                         $transport = isTransport($conn2, $student_data[$index]['adm_no']) ? (transportBalanceSinceAdmission($conn2, $student_data[$index]['adm_no']) * 1) : "Not-enrolled";
-                        $data = array($number, $Fullname, $student_data[$index]['adm_no'], $classes, $gender, $fees_paid, $balance, $border, $transport, $acad_balance);
+                        $data = array($number, $Fullname, $student_data[$index]['adm_no'], $classes, $gender, $fees_paid, $balance, $acad_balance);
                         array_push($stud_data, $data);
                         $number++;
                     }
@@ -4334,7 +4328,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                         $pdf = new PDF('P', 'mm', 'A4');
                         $pdf->setHeaderPos(200);
                         // Column headings
-                        $header = array('No', 'Fullname', 'Reg No.', 'Class', 'Sex', 'Fees paid', 'Balance', 'Boarding', 'Transport', 'Last Yrs Bal');
+                        $header = array('No', 'Fullname', 'Reg No.', 'Class', 'Sex', 'Fees paid', 'Balance', 'Last Yrs Bal');
                         // Data loading
                         // $data = $pdf->LoadData('countries.txt');
                         $tittle = "Fees list for - " . classNameReport($student_class_fin)." ".$course_names;
@@ -4370,7 +4364,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                         $pdf->Cell(200, 8, "Fees Balances for - " . classNameReport($student_class_fin) . "".$course_names. " - as of " . ucwords(strtolower($term)), 0, 0, 'C', false);
                         $pdf->Ln();
                         $pdf->SetFont('Helvetica', 'B', 8);
-                        $width = array(8, 33, 18, 15, 8, 23, 23, 23, 23, 23);
+                        $width = array(8, 33, 18, 15, 8, 38, 38, 38);
                         $pdf->balancesTable($header, $data, $width);
                         $pdf->Output("I", str_replace(" ", "_", $pdf->school_document_title) . ".pdf");
                     } else {
@@ -4426,7 +4420,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                         $course_names = strlen($course_name) > 0 ? " in ".$courses_name : null;
 
                         // Column headings
-                        $header = array('No', 'Fullname', 'Reg No.', 'Class', 'Sex', 'Fees paid', 'Balance', 'Boarding', 'Transport', 'Last Yrs Bal');
+                        $header = array('No', 'Fullname', 'Reg No.', 'Class', 'Sex', 'Fees paid', 'Balance', 'Last Yrs Bal');
                         for ($ind = 0; $ind < count($school_classes); $ind++) {
                             // get per class
                             $student_class_fin = $school_classes[$ind];
@@ -4456,7 +4450,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                                 $acad_balance = ($last_acad_yr);
                                 $border = isBoarding($student_data[$index]['adm_no'], $conn2) ? (getBoardingFees($conn2, $student_class_fin) * 1) : "Not-enrolled";
                                 $transport = isTransport($conn2, $student_data[$index]['adm_no']) ? (transportBalanceSinceAdmission($conn2, $student_data[$index]['adm_no']) * 1) : "Not-enrolled";
-                                $data = array($number, $Fullname, $student_data[$index]['adm_no'], $classes, $gender, $fees_paid, $balance, $border, $transport, $acad_balance);
+                                $data = array($number, $Fullname, $student_data[$index]['adm_no'], $classes, $gender, $fees_paid, $balance, $acad_balance);
                                 array_push($stud_data, $data);
                                 $number++;
                             }
@@ -4489,7 +4483,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                                 $pdf->Cell(200, 8, "Fees Balances for " . classNameReport($student_class_fin) . "".$course_names."" . " as of " . ucwords(strtolower($term)), 0, 0, 'C', false);
                                 $pdf->Ln();
                                 $pdf->SetFont('Helvetica', 'B', 8);
-                                $width = array(8, 33, 18, 15, 8, 23, 23, 23, 23, 23);
+                                $width = array(8, 33, 18, 15, 8, 38, 38, 38);
                                 $pdf->balancesTable($header, $data, $width);
                             }
                         }
@@ -11320,7 +11314,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
         
         // get the periods
         $periods = [$year_of_perfomance, (($year_of_perfomance*1)-1),(($year_of_perfomance*1)-2)];
-        $tittle = "Statement of Financial Performance for The Year Ended Jun 30th ".$year_of_perfomance;
+        $tittle = "Financial Statement.";
         if($financial_performace == "annual_report"){
             $periods = [[$periods[0]."0630",$periods[1]."0701"],[$periods[1]."0630",$periods[2]."0701"]];
         }elseif($financial_performace == "quarterly_report_sep"){
@@ -11343,6 +11337,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
         $pdf->set_school_box_code($_SESSION['box_codes']);
         $pdf->set_school_contact($_SESSION['school_contact']);
         $pdf->AddPage();
+        $pdf->SetFont('Times', 'BU', 10);
+        $tittle = "Statement of Financial Performance for The Year Ended Jun 30th ".$year_of_perfomance;
+        $pdf->Cell(190,7,$tittle,0,1,"C");
         $pdf->SetFont('Times', '', 10);
         $pdf->Cell(275, 8, "Date Generated : ".date("l dS M Y : h:i:sA"), 0, 0, 'L', false);
         $pdf->ln();
@@ -11350,11 +11347,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
         // SET FILL COLLOR
         $pdf->SetFillColor(0, 112, 192);
         $pdf->SetTextColor(255, 255, 255);
-        $pdf->Cell(85,6,"","TL",0,"L",TRUE);
+        $pdf->Cell(85,6,"Description","TL",0,"C",TRUE);
         $pdf->Cell(15,6,"Notes",1,0,"L",TRUE);
         $pdf->SetFont('Times', 'B', 10);
-        $pdf->Cell(45,6,date("dS Y M",strtotime($periods[0][1]))." / ".date("dS Y M",strtotime($periods[0][0])),1,0,"L",TRUE);
-        $pdf->Cell(45,6,date("dS Y M",strtotime($periods[1][1]))." / ".date("dS Y M",strtotime($periods[1][0])),1,1,"L",TRUE);
+        $pdf->Cell(45,6,date("dS Y",strtotime($periods[0][1]))." / ".date("dS Y",strtotime($periods[0][0])),1,0,"C",TRUE);
+        $pdf->Cell(45,6,date("dS Y",strtotime($periods[1][1]))." / ".date("dS Y",strtotime($periods[1][0])),1,1,"C",TRUE);
 
 
         $pdf->Cell(85,6,"","BL",0,"L",TRUE);
@@ -11660,6 +11657,523 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
         $income_2 = ($total_revenue2+$total_revenue_2) - $total_expense_2;
         $pdf->Cell(45,6,"Kes ". number_format($income_1),1,0,"R",FALSE);
         $pdf->Cell(45,6,"Kes ". number_format($income_2),1,1,"R",FALSE);
+
+        // assets
+        $pdf->AddPage();
+        $pdf->SetFont('Times', 'BU', 10);
+        $tittle = "Statement of Financial Position as at 30th June ". date("Y", strtotime($year_of_perfomance));
+        $pdf->Cell(190,6,$tittle,0,1,'C');
+        
+        // SET FILL COLLOR
+        $pdf->SetFont('Times', 'B', 10);
+        $pdf->SetFillColor(0, 112, 192);
+        $pdf->SetTextColor(255, 255, 255);
+        $pdf->Cell(85,6,"Description","TL",0,"C",TRUE);
+        $pdf->Cell(15,6,"Notes",1,0,"L",TRUE);
+        $pdf->Cell(45,6,date("dS Y",strtotime($periods[0][1]))." / ".date("dS Y",strtotime($periods[0][0])),1,0,"C",TRUE);
+        $pdf->Cell(45,6,date("dS Y",strtotime($periods[1][1]))." / ".date("dS Y",strtotime($periods[1][0])),1,1,"C",TRUE);
+
+
+        $pdf->Cell(85,6,"","BL",0,"L",TRUE);
+        $pdf->Cell(15,6,"",1,0,"L",TRUE);
+        $pdf->Cell(45,6,"Ksh",1,0,"C",TRUE);
+        $pdf->Cell(45,6,"Ksh",1,1,"C",TRUE);
+
+        // set text color back to black
+        $pdf->SetTextColor(0, 0, 0);
+        $pdf->Cell(85,6,"Assets","BL",0,"L",FALSE);
+        $pdf->Cell(15,6,"",1,0,"C",FALSE);
+        $pdf->Cell(45,6,"",1,0,"R",FALSE);
+        $pdf->Cell(45,6,"",1,1,"R",FALSE);
+
+        // set text color back to black
+        $pdf->SetTextColor(0, 0, 0);
+        $pdf->Cell(85,6,"Current Assets","BL",0,"L",FALSE);
+        $pdf->Cell(15,6,"",1,0,"C",FALSE);
+        $pdf->Cell(45,6,"",1,0,"R",FALSE);
+        $pdf->Cell(45,6,"",1,1,"R",FALSE);
+
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(85,6,"Cash and cash equivalents","BL",0,"L",FALSE);
+        $pdf->Cell(15,6,"26",1,0,"C",FALSE);
+        $income_1 = ($total_revenue1+$total_revenue_1) - $total_expense_1;
+        $income_2 = ($total_revenue2+$total_revenue_2) - $total_expense_2;
+        $pdf->Cell(45,6,"Kes ". number_format($income_1),1,0,"R",FALSE);
+        $pdf->Cell(45,6,"Kes ". number_format($income_2),1,1,"R",FALSE);
+        
+        
+        // Get student balances
+        include_once("../ajax/finance/financial.php");
+        $student_balances = get_school_balances($conn2);
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(85,6,"Current portion of receivables from exchange transactions","BL",0,"L",FALSE);
+        $pdf->Cell(15,6,"27(a)",1,0,"C",FALSE);
+        $true_balance = (95 * $student_balances['total_balance']) / 100;
+        $pdf->Cell(45,6,"Kes ". number_format($true_balance),1,0,"R",FALSE);
+        $pdf->Cell(45,6,"",1,1,"R",FALSE);
+
+
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(85,6,"Receivables from non-exchange transactions","BL",0,"L",FALSE);
+        $pdf->Cell(15,6,"28",1,0,"C",FALSE);
+        $pdf->Cell(45,6,"",1,0,"R",FALSE);
+        $pdf->Cell(45,6,"",1,1,"R",FALSE);
+
+
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(85,6,"Inventories","BL",0,"L",FALSE);
+        $pdf->Cell(15,6,"29",1,0,"C",FALSE);
+        $pdf->Cell(45,6,"",1,0,"R",FALSE);
+        $pdf->Cell(45,6,"",1,1,"R",FALSE);
+
+
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(85,6,"Investments in financial assets","BL",0,"L",FALSE);
+        $pdf->Cell(15,6,"30",1,0,"C",FALSE);
+        $pdf->Cell(45,6,"",1,0,"R",FALSE);
+        $pdf->Cell(45,6,"",1,1,"R",FALSE);
+
+
+        $pdf->SetFont('Times', 'B', 10);
+        $pdf->Cell(85,6,"Total Current Assets","BL",0,"L",FALSE);
+        $pdf->Cell(15,6,"",1,0,"C",FALSE);
+        $pdf->Cell(45,6,"",1,0,"R",FALSE);
+        $pdf->Cell(45,6,"",1,1,"R",FALSE);
+
+
+        $pdf->SetFont('Times', 'B', 10);
+        $pdf->Cell(85,6,"","BL",0,"L",FALSE);
+        $pdf->Cell(15,6,"",1,0,"C",FALSE);
+        $pdf->Cell(45,6,"",1,0,"R",FALSE);
+        $pdf->Cell(45,6,"",1,1,"R",FALSE);
+
+
+        $pdf->SetFont('Times', 'B', 10);
+        $pdf->Cell(85,6,"Non-Current Assets","BL",0,"L",FALSE);
+        $pdf->Cell(15,6,"",1,0,"C",FALSE);
+        $pdf->Cell(45,6,"",1,0,"R",FALSE);
+        $pdf->Cell(45,6,"",1,1,"R",FALSE);
+
+
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(85,6,"Long term receivables from exchange transactions","BL",0,"L",FALSE);
+        $pdf->Cell(15,6,"27(b)",1,0,"C",FALSE);
+        $pdf->Cell(45,6,"",1,0,"R",FALSE);
+        $pdf->Cell(45,6,"",1,1,"R",FALSE);
+
+
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(85,6,"Investments","BL",0,"L",FALSE);
+        $pdf->Cell(15,6,"30",1,0,"C",FALSE);
+        $pdf->Cell(45,6,"",1,0,"R",FALSE);
+        $pdf->Cell(45,6,"",1,1,"R",FALSE);
+
+
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(85,6,"Property ,plant, and  equipment","BL",0,"L",FALSE);
+        $pdf->Cell(15,6,"31",1,0,"C",FALSE);
+        $pdf->Cell(45,6,"",1,0,"R",FALSE);
+        $pdf->Cell(45,6,"",1,1,"R",FALSE);
+
+
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(85,6,"Intangible assets","BL",0,"L",FALSE);
+        $pdf->Cell(15,6,"32",1,0,"C",FALSE);
+        $pdf->Cell(45,6,"",1,0,"R",FALSE);
+        $pdf->Cell(45,6,"",1,1,"R",FALSE);
+
+
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(85,6,"Investment property","BL",0,"L",FALSE);
+        $pdf->Cell(15,6,"33",1,0,"C",FALSE);
+        $pdf->Cell(45,6,"",1,0,"R",FALSE);
+        $pdf->Cell(45,6,"",1,1,"R",FALSE);
+
+
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(85,6,"Biological Assets","BL",0,"L",FALSE);
+        $pdf->Cell(15,6,"34",1,0,"C",FALSE);
+        $pdf->Cell(45,6,"",1,0,"R",FALSE);
+        $pdf->Cell(45,6,"",1,1,"R",FALSE);
+
+
+        $pdf->SetFont('Times', 'B', 10);
+        $pdf->Cell(85,6,"Total Non-Current Assets","BL",0,"L",FALSE);
+        $pdf->Cell(15,6,"",1,0,"C",FALSE);
+        $pdf->Cell(45,6,"",1,0,"R",FALSE);
+        $pdf->Cell(45,6,"",1,1,"R",FALSE);
+
+
+        $pdf->SetFont('Times', 'B', 10);
+        $pdf->Cell(85,6,"","BL",0,"L",FALSE);
+        $pdf->Cell(15,6,"",1,0,"C",FALSE);
+        $pdf->Cell(45,6,"",1,0,"R",FALSE);
+        $pdf->Cell(45,6,"",1,1,"R",FALSE);
+
+
+        $pdf->SetFont('Times', 'B', 10);
+        $pdf->Cell(85,6,"Total Assets","BL",0,"L",FALSE);
+        $pdf->Cell(15,6,"",1,0,"C",FALSE);
+        $pdf->Cell(45,6,"",1,0,"R",FALSE);
+        $pdf->Cell(45,6,"",1,1,"R",FALSE);
+
+
+        $pdf->SetFont('Times', 'B', 10);
+        $pdf->Cell(85,6,"","BL",0,"L",FALSE);
+        $pdf->Cell(15,6,"",1,0,"C",FALSE);
+        $pdf->Cell(45,6,"",1,0,"R",FALSE);
+        $pdf->Cell(45,6,"",1,1,"R",FALSE);
+
+
+        $pdf->SetFont('Times', 'B', 10);
+        $pdf->Cell(85,6,"Liabilities","BL",0,"L",FALSE);
+        $pdf->Cell(15,6,"",1,0,"C",FALSE);
+        $pdf->Cell(45,6,"",1,0,"R",FALSE);
+        $pdf->Cell(45,6,"",1,1,"R",FALSE);
+
+
+        $pdf->SetFont('Times', 'B', 10);
+        $pdf->Cell(85,6,"Current Liabilities","BL",0,"L",FALSE);
+        $pdf->Cell(15,6,"",1,0,"C",FALSE);
+        $pdf->Cell(45,6,"",1,0,"R",FALSE);
+        $pdf->Cell(45,6,"",1,1,"R",FALSE);
+
+
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(85,6,"Trade and other payables from exchange transactions","BL",0,"L",FALSE);
+        $pdf->Cell(15,6,"35",1,0,"C",FALSE);
+        $pdf->Cell(45,6,"",1,0,"R",FALSE);
+        $pdf->Cell(45,6,"",1,1,"R",FALSE);
+
+
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(85,6,"Refundable deposits from customers","BL",0,"L",FALSE);
+        $pdf->Cell(15,6,"36",1,0,"C",FALSE);
+        $pdf->Cell(45,6,"",1,0,"R",FALSE);
+        $pdf->Cell(45,6,"",1,1,"R",FALSE);
+
+
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(85,6,"Current provisions","BL",0,"L",FALSE);
+        $pdf->Cell(15,6,"37",1,0,"C",FALSE);
+        $pdf->Cell(45,6,"",1,0,"R",FALSE);
+        $pdf->Cell(45,6,"",1,1,"R",FALSE);
+
+
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(85,6,"Finance lease obligation","BL",0,"L",FALSE);
+        $pdf->Cell(15,6,"38",1,0,"C",FALSE);
+        $pdf->Cell(45,6,"",1,0,"R",FALSE);
+        $pdf->Cell(45,6,"",1,1,"R",FALSE);
+
+
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(85,6,"Deferred income","BL",0,"L",FALSE);
+        $pdf->Cell(15,6,"39",1,0,"C",FALSE);
+        $pdf->Cell(45,6,"",1,0,"R",FALSE);
+        $pdf->Cell(45,6,"",1,1,"R",FALSE);
+
+
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(85,6,"Employee benefit obligation","BL",0,"L",FALSE);
+        $pdf->Cell(15,6,"40",1,0,"C",FALSE);
+        $pdf->Cell(45,6,"",1,0,"R",FALSE);
+        $pdf->Cell(45,6,"",1,1,"R",FALSE);
+
+
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(85,6,"Payments received in advance","BL",0,"L",FALSE);
+        $pdf->Cell(15,6,"41",1,0,"C",FALSE);
+        $pdf->Cell(45,6,"",1,0,"R",FALSE);
+        $pdf->Cell(45,6,"",1,1,"R",FALSE);
+
+
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(85,6,"Current portion of borrowings","BL",0,"L",FALSE);
+        $pdf->Cell(15,6,"43",1,0,"C",FALSE);
+        $pdf->Cell(45,6,"",1,0,"R",FALSE);
+        $pdf->Cell(45,6,"",1,1,"R",FALSE);
+
+
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(85,6,"Social Benefits","BL",0,"L",FALSE);
+        $pdf->Cell(15,6,"45",1,0,"C",FALSE);
+        $pdf->Cell(45,6,"",1,0,"R",FALSE);
+        $pdf->Cell(45,6,"",1,1,"R",FALSE);
+
+
+        $pdf->SetFont('Times', 'B', 10);
+        $pdf->Cell(85,6,"Total Current Liabilities","BL",0,"L",FALSE);
+        $pdf->Cell(15,6,"",1,0,"C",FALSE);
+        $pdf->Cell(45,6,"",1,0,"R",FALSE);
+        $pdf->Cell(45,6,"",1,1,"R",FALSE);
+
+
+        $pdf->SetFont('Times', 'B', 10);
+        $pdf->Cell(85,6,"Non-Current Liabilities","BL",0,"L",FALSE);
+        $pdf->Cell(15,6,"",1,0,"C",FALSE);
+        $pdf->Cell(45,6,"",1,0,"R",FALSE);
+        $pdf->Cell(45,6,"",1,1,"R",FALSE);
+
+        // add page
+        $pdf->AddPage();
+        
+        // SET FILL COLLOR
+        $pdf->SetFont('Times', 'B', 10);
+        $pdf->SetFillColor(0, 112, 192);
+        $pdf->SetTextColor(255, 255, 255);
+        $pdf->Cell(85,6,"Description","TL",0,"C",TRUE);
+        $pdf->Cell(15,6,"Notes",1,0,"L",TRUE);
+        $pdf->Cell(45,6,date("dS Y",strtotime($periods[0][1]))." / ".date("dS Y",strtotime($periods[0][0])),1,0,"C",TRUE);
+        $pdf->Cell(45,6,date("dS Y",strtotime($periods[1][1]))." / ".date("dS Y",strtotime($periods[1][0])),1,1,"C",TRUE);
+
+
+        $pdf->SetTextColor(0, 0, 0);
+        $pdf->Cell(85,6,"","BL",0,"L",TRUE);
+        $pdf->Cell(15,6,"",1,0,"L",TRUE);
+        $pdf->Cell(45,6,"Ksh",1,0,"C",TRUE);
+        $pdf->Cell(45,6,"Ksh",1,1,"C",TRUE);
+
+
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(85,6,"Deferred income","BL",0,"L",FALSE);
+        $pdf->Cell(15,6,"39",1,0,"C",FALSE);
+        $pdf->Cell(45,6,"",1,0,"R",FALSE);
+        $pdf->Cell(45,6,"",1,1,"R",FALSE);
+
+
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(85,6,"Non-Current Employee Benefit Obligation","BL",0,"L",FALSE);
+        $pdf->Cell(15,6,"40",1,0,"C",FALSE);
+        $pdf->Cell(45,6,"",1,0,"R",FALSE);
+        $pdf->Cell(45,6,"",1,1,"R",FALSE);
+
+
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(85,6,"Non-Current Provisions","BL",0,"L",FALSE);
+        $pdf->Cell(15,6,"42",1,0,"C",FALSE);
+        $pdf->Cell(45,6,"",1,0,"R",FALSE);
+        $pdf->Cell(45,6,"",1,1,"R",FALSE);
+
+
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(85,6,"Non- Current Borrowings","BL",0,"L",FALSE);
+        $pdf->Cell(15,6,"43",1,0,"C",FALSE);
+        $pdf->Cell(45,6,"",1,0,"R",FALSE);
+        $pdf->Cell(45,6,"",1,1,"R",FALSE);
+
+
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(85,6,"Service Concession Liability","BL",0,"L",FALSE);
+        $pdf->Cell(15,6,"44",1,0,"C",FALSE);
+        $pdf->Cell(45,6,"",1,0,"R",FALSE);
+        $pdf->Cell(45,6,"",1,1,"R",FALSE);
+
+
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(85,6,"Social benefits","BL",0,"L",FALSE);
+        $pdf->Cell(15,6,"45",1,0,"C",FALSE);
+        $pdf->Cell(45,6,"",1,0,"R",FALSE);
+        $pdf->Cell(45,6,"",1,1,"R",FALSE);
+
+
+        $pdf->SetFont('Times', 'B', 10);
+        $pdf->Cell(85,6,"Total non- current liabilities","BL",0,"L",FALSE);
+        $pdf->Cell(15,6,"",1,0,"C",FALSE);
+        $pdf->Cell(45,6,"",1,0,"R",FALSE);
+        $pdf->Cell(45,6,"",1,1,"R",FALSE);
+
+
+        $pdf->SetFont('Times', 'B', 10);
+        $pdf->Cell(85,6,"","BL",0,"L",FALSE);
+        $pdf->Cell(15,6,"",1,0,"C",FALSE);
+        $pdf->Cell(45,6,"",1,0,"R",FALSE);
+        $pdf->Cell(45,6,"",1,1,"R",FALSE);
+
+
+        $pdf->SetFont('Times', 'B', 10);
+        $pdf->Cell(85,6,"Total liabilities","BL",0,"L",FALSE);
+        $pdf->Cell(15,6,"",1,0,"C",FALSE);
+        $pdf->Cell(45,6,"",1,0,"R",FALSE);
+        $pdf->Cell(45,6,"",1,1,"R",FALSE);
+
+
+        $pdf->Cell(85,6,"","BL",0,"L",FALSE);
+        $pdf->Cell(15,6,"",1,0,"C",FALSE);
+        $pdf->Cell(45,6,"",1,0,"R",FALSE);
+        $pdf->Cell(45,6,"",1,1,"R",FALSE);
+
+
+        $pdf->SetFont('Times', 'B', 10);
+        $pdf->Cell(85,6,"Net Assets","BL",0,"L",FALSE);
+        $pdf->Cell(15,6,"",1,0,"C",FALSE);
+        $pdf->Cell(45,6,"",1,0,"R",FALSE);
+        $pdf->Cell(45,6,"",1,1,"R",FALSE);
+
+
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(85,6,"Revaluation Reserves","BL",0,"L",FALSE);
+        $pdf->Cell(15,6,"",1,0,"C",FALSE);
+        $pdf->Cell(45,6,"",1,0,"R",FALSE);
+        $pdf->Cell(45,6,"",1,1,"R",FALSE);
+
+
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(85,6,"Accumulated Surplus","BL",0,"L",FALSE);
+        $pdf->Cell(15,6,"",1,0,"C",FALSE);
+        $pdf->Cell(45,6,"",1,0,"R",FALSE);
+        $pdf->Cell(45,6,"",1,1,"R",FALSE);
+
+
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(85,6,"Capital Fund","BL",0,"L",FALSE);
+        $pdf->Cell(15,6,"",1,0,"C",FALSE);
+        $pdf->Cell(45,6,"",1,0,"R",FALSE);
+        $pdf->Cell(45,6,"",1,1,"R",FALSE);
+
+
+        $pdf->SetFont('Times', 'B', 10);
+        $pdf->Cell(85,6,"Total Net Assets and Liabilities","BL",0,"L",FALSE);
+        $pdf->Cell(15,6,"",1,0,"C",FALSE);
+        $pdf->Cell(45,6,"",1,0,"R",FALSE);
+        $pdf->Cell(45,6,"",1,1,"R",FALSE);
+
+        // Display notes
+        // echo json_encode($note_7);
+        
+        // display note 6
+        $note_title = "6.	Transfers from other National Government entities";
+        display_notes($note_6, $pdf, $periods, $note_title);
+        
+        // display note 7
+        $note_title = "7.	Grants from Donors and Development Partners";
+        display_notes($note_7, $pdf, $periods, $note_title);
+        
+        // display note 8
+        $note_title = "8.	Transfers from Other Levels of Government";
+        display_notes($note_8, $pdf, $periods, $note_title);
+        
+        // display note 9
+        $note_title = "9.	Public Contributions and Donations";
+        display_notes($note_9, $pdf, $periods, $note_title);
+        
+        // display note 10
+        $note_title = "10.	Rendering of Services";
+        display_notes($note_10, $pdf, $periods, $note_title);
+        
+        // display note 11
+        $note_title = "11.	Sale of Goods";
+        display_notes($note_11, $pdf, $periods, $note_title);
+        
+        // display note 11
+        $note_title = "12.	Rental revenue from facilities and equipment";
+        display_notes($note_12, $pdf, $periods, $note_title);
+        
+        // display note 11
+        $note_title = "13.	Finance Income ";
+        display_notes($note_13, $pdf, $periods, $note_title);
+        
+        // display note 11
+        $note_title = "14.	Miscellaneous Income";
+        display_notes($note_14, $pdf, $periods, $note_title);
+        
+        // display note 11
+        $note_title = "15.	Use of Goods and Services";
+        display_notes($note_15, $pdf, $periods, $note_title);
+        
+        // display note 11
+        $note_title = "16.	Employee Costs";
+        display_notes($note_16, $pdf, $periods, $note_title);
+        
+        // display note 11
+        $note_title = "17.	Board/Council Expenses";
+        display_notes($note_17, $pdf, $periods, $note_title);
+        
+        // display note 11
+        $note_title = "18.	Depreciation and Amortization expense";
+        display_notes($note_18, $pdf, $periods, $note_title);
+        
+        // display note 11
+        $note_title = "19.	Repairs and Maintenance";
+        display_notes($note_19, $pdf, $periods, $note_title);
+        
+        // display note 11
+        $note_title = "20.	Contracted Services";
+        display_notes($note_20, $pdf, $periods, $note_title);
+        
+        // display note 11
+        $note_title = "21.	Grants and Subsidies";
+        display_notes($note_21, $pdf, $periods, $note_title);
+        
+        // display note 11
+        $note_title = "22.	Finance Costs";
+        display_notes($note_22, $pdf, $periods, $note_title);
+        
+        // // display note 11
+        $note_title = "23.	Gain On Sale of Assets";
+        $row = 7;
+        create_note_table($pdf, $periods, $row, $note_title);
+        
+        // // display note 11
+        $note_title = "24.	Gain/(loss) on Fair Value Investments";
+        $row = 6;
+        create_note_table($pdf, $periods, $row, $note_title);
+        
+        // // display note 11
+        $note_title = "25.	Impairment Loss";
+        $row = 6;
+        create_note_table($pdf, $periods, $row, $note_title);
+        
+        // // display note 11
+        $note_title = "26 (a). Detailed Analysis of Cash and Cash equivalents";
+        $row = 6;
+        create_note_table($pdf, $periods, $row, $note_title);
+        
+        // // display note 11
+        $note_title = "27(a) Current Receivables from Exchange transactions";
+        $row = 5;
+        create_note_table($pdf, $periods, $row, $note_title);
+        
+        // // display note 11
+        $note_title = "27(b) Long- term Receivables from Exchange transactions";
+        $row = 5;
+        create_note_table($pdf, $periods, $row, $note_title);
+        
+        // // display note 11
+        $note_title = "27 (c) Ageing Analysis of Receivables from Exchange transactions";
+        $row = 5;
+        create_note_table($pdf, $periods, $row, $note_title);
+        
+        // // display note 11
+        $note_title = "27 (d) Reconciliation for impairment Allowance on Receivables from Exchange Transactions";
+        $row = 5;
+        create_note_table($pdf, $periods, $row, $note_title);
+        
+        // // display note 11
+        $note_title = "28.	Receivables from Non-Exchange transactions";
+        $row = 5;
+        create_note_table($pdf, $periods, $row, $note_title);
+        
+        // // display note 11
+        $note_title = "28 (a) Ageing Analysis on Receivables from Non-Exchange Transactions";
+        $row = 5;
+        create_note_table($pdf, $periods, $row, $note_title);
+        
+        // // display note 11
+        $note_title = "28 (b) Reconciliation for Impairment Allowance on Receivables from Non-Exchange Transactions";
+        $row = 5;
+        create_note_table($pdf, $periods, $row, $note_title);
+        
+        // // display note 11
+        $note_title = "29.	Inventories";
+        $row = 10;
+        create_note_table($pdf, $periods, $row, $note_title);
+        
+        // // display note 11
+        $note_title = "30.	Investments in financial assets";
+        $row = 10;
+        create_note_table($pdf, $periods, $row, $note_title);
+
 
         // output
         $pdf->Output();
@@ -15818,6 +16332,117 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
     }
 }
 
+function display_notes($note, $pdf, $periods, $note_title){
+        
+    // NOTE 6
+    $pdf->AddPage();
+    $pdf->Cell(190,7,$note_title,0,1,"L");
+    
+    // SET FILL COLLOR
+    $pdf->SetFont('Times', 'B', 10);
+    $pdf->SetFillColor(0, 112, 192);
+    $pdf->SetTextColor(255, 255, 255);
+    $pdf->Cell(85,6,"Description","TL",0,"C",TRUE);
+    $pdf->Cell(45,6,date("dS Y",strtotime($periods[0][1]))." / ".date("dS Y",strtotime($periods[0][0])),1,0,"C",TRUE);
+    $pdf->Cell(45,6,date("dS Y",strtotime($periods[1][1]))." / ".date("dS Y",strtotime($periods[1][0])),1,1,"C",TRUE);
+
+    $pdf->Cell(85,6,"","BL",0,"L",TRUE);
+    $pdf->Cell(45,6,"Ksh",1,0,"C",TRUE);
+    $pdf->Cell(45,6,"Ksh",1,1,"C",TRUE);
+
+    $pdf->SetTextColor(0, 0, 0);
+
+    // max index
+    $longest = count($note['current_year_value']) > count($note['last_year_value']) ? $note['current_year_value'] : $note['last_year_value'];
+    $values = [];
+    
+    // longest
+    for($index = 0; $index < count($longest); $index++){
+        $present = false; 
+        for($ind = 0; $ind < count($values); $ind++){
+            if($values[$ind] == $longest[$index]['item']){
+                $present = true;
+                break;
+            }
+        }
+        if(!$present){
+            array_push($values, $longest[$index]['item']);
+        }
+    }
+
+    $pdf->SetFont('Times', '', 10);
+    for($index = 0; $index < count($values); $index++){
+        $pdf->Cell(85,6,$values[$index],"BL",0,"L",false);
+
+        // current value
+        $current_value = 0;
+        for($ind = 0; $ind < count($note['current_year_value']); $ind++){
+            if($note['current_year_value'][$ind]['item'] == $values[$index]){
+                $current_value = $note['current_year_value'][$ind]['Total'];
+            }
+        }
+
+        // last year value
+        $last_year_value = 0;
+        for($ind = 0; $ind < count($note['last_year_value']); $ind++){
+            if($note['last_year_value'][$ind]['item'] == $values[$index]){
+                $last_year_value = $note['last_year_value'][$ind]['Total'];
+            }
+        }
+        $pdf->Cell(45,6,"Ksh ".number_format($current_value),1,0,"C",false);
+        $pdf->Cell(45,6,"Ksh ".number_format($last_year_value),1,1,"C",false);
+    }
+    $pdf->SetFont('Times', 'B', 10);
+
+    $pdf->Cell(85,6,"Total","BL",0,"L",false);
+    $pdf->Cell(45,6,"Ksh ".number_format($note['current_year_total']),1,0,"C",false);
+    $pdf->Cell(45,6,"Ksh ".number_format($note['last_year_total']),1,1,"C",false);
+
+}
+
+function get_school_balances($conn2){
+    $school_classes = getSchoolCLass($conn2);
+    if (count($school_classes) > 0) {
+        $term = getTermV2($conn2);
+        $student_count  = 0;
+        $total_balance = 0;
+        $total_fees_to_pay = 0;
+        $per_course_balance = [];
+        
+        // go through every class
+        for ($ind = 0; $ind < count($school_classes); $ind++) {
+            // get per class
+            $student_class_fin = $school_classes[$ind];
+            $student_data = getStudents($student_class_fin, $conn2);
+            $number = 1;
+            $total_fees = 0;
+            $fees_repo_paid = 0;
+            $total_balances = 0;
+            for ($index = 0; $index < count($student_data); $index++) {
+                // get fees to pay by the student
+                $feespaidbystud = getFeespaidByStudent($student_data[$index]['adm_no'], $conn2);
+                $balanced = getBalanceReports($student_data[$index]['adm_no'], $term, $conn2);
+                $total_fees += $balanced + $feespaidbystud;
+                $fees_repo_paid += $feespaidbystud;
+                $total_balances += $balanced;
+                
+                // LAST ACADEMIC YEAR BALANCE
+                $last_acad_yr = lastACADyrBal($student_data[$index]['adm_no'], $conn2);
+                $number++;
+            }
+            // student count
+            $student_count += count($student_data);
+            $total_balance += $total_balances;
+            $total_fees_to_pay += $total_fees;
+            if (count($student_data) > 0) {
+                $data = array("student_count" => count($student_data), "total_balance" => $total_balances, "total_fees" => $total_fees,"course_name" => ucwords(strtolower($student_class_fin)));
+                array_push($per_course_balance, $data);
+            }
+        }
+        return array("student_count" => $student_count, "total_balance" => $total_balance, "total_fees" => $total_fees_to_pay, "per_course_balances" => $per_course_balance);
+    }
+    return array("student_count" => 0, "total_balance" => 0, "total_fees" => 0, "per_course_balances" => []);
+}
 function get_note($periods, $conn2, $note){
     $select = "SELECT * FROM `settings` WHERE `sett` = 'revenue_categories'";
     $stmt = $conn2->prepare($select);
@@ -16036,6 +16661,40 @@ function get_note_10($periods, $conn2){
     }
     array_push($last_revenue_notes, array("Total" => $prev_tuition, "item" => "Student Tuition Fees Invoiced"));
     return array("current_year_total" => $current_year,"last_year_total" => $previous_year,"current_year_value" => $current_revenue_notes,"last_year_value" => $last_revenue_notes);
+}
+
+function create_note_table($pdf, $periods, $row, $note_title){
+    // NOTE 6
+    $pdf->AddPage();
+    $pdf->Cell(190,7,$note_title,0,1,"L");
+
+    // SET FILL COLLOR
+    $pdf->SetFont('Times', 'B', 10);
+    $pdf->SetFillColor(0, 112, 192);
+    $pdf->SetTextColor(255, 255, 255);
+    $pdf->Cell(85,6,"Description","TL",0,"C",TRUE);
+    $pdf->Cell(45,6,date("dS Y",strtotime($periods[0][1]))." / ".date("dS Y",strtotime($periods[0][0])),1,0,"C",TRUE);
+    $pdf->Cell(45,6,date("dS Y",strtotime($periods[1][1]))." / ".date("dS Y",strtotime($periods[1][0])),1,1,"C",TRUE);
+
+    $pdf->Cell(85,6,"","BL",0,"L",TRUE);
+    $pdf->Cell(45,6,"Ksh",1,0,"C",TRUE);
+    $pdf->Cell(45,6,"Ksh",1,1,"C",TRUE);
+
+    $pdf->SetTextColor(0, 0, 0);
+
+    $pdf->SetFont('Times', '', 10);
+    for($index = 0; $index < $row; $index ++){
+        $pdf->Cell(85,6,"",1,0,"L",false);
+        $pdf->Cell(45,6,"",1,0,"C",false);
+        $pdf->Cell(45,6,"",1,1,"C",false);
+    }
+    
+    // times
+    $pdf->SetFont('Times', 'B', 10);
+
+    $pdf->Cell(85,6,"Total","BL",0,"L",false);
+    $pdf->Cell(45,6," ",1,0,"C",false);
+    $pdf->Cell(45,6," ",1,1,"C",false);
 }
 
 function get_expense_note($periods, $conn2, $note){

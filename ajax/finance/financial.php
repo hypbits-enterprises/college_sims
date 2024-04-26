@@ -7131,7 +7131,7 @@
         return $balance;
     }
     function lastBalance($admno,$conn2){
-        $select = "SELECT `balance` ,`date_of_transaction`FROM `finance` WHERE `stud_admin` = ? ORDER BY `transaction_id` DESC LIMIT 1";
+        $select = "SELECT `balance` ,`date_of_transaction` FROM `finance` WHERE `stud_admin` = ? ORDER BY `transaction_id` DESC LIMIT 1";
         $stmt = $conn2->prepare($select);
         $stmt->bind_param("s",$admno);
         $stmt->execute();
