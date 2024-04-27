@@ -12174,6 +12174,198 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
         $row = 10;
         create_note_table($pdf, $periods, $row, $note_title);
 
+        // $pdf->Close();
+        $pdf->setHeaderPos(290);
+        $pdf->AddPage("L","A4");
+    
+        // SET FILL COLLOR
+        $pdf->SetFont('Times', 'B', 10);
+        $pdf->SetFillColor(0, 112, 192);
+        $pdf->SetTextColor(255, 255, 255);
+        $pdf->Cell(45,6,"Cost","TL",0,"C",TRUE);
+        $pdf->SetFont('Times', 'B', 6);
+        $pdf->Cell(30,6,"Land",1,0,"C",TRUE);
+        $pdf->Cell(30,6,"Building",1,0,"C",TRUE);
+        $pdf->Cell(30,6,"Motor Vehicle",1,0,"C",TRUE);
+        $pdf->Cell(30,6,"Furniture & Fitting",1,0,"C",TRUE);
+        $pdf->Cell(30,6,"Computer & ICT Equipments",1,0,"C",TRUE);
+        $pdf->Cell(30,6,"Plant and equipment",1,0,"C",TRUE);
+        $pdf->Cell(30,6,"Capital Work in progress",1,0,"C",TRUE);
+        $pdf->Cell(30,6,"Total",1,1,"C",TRUE);
+    
+        $pdf->Cell(45,6,"","BL",0,"L",TRUE);
+        $pdf->Cell(30,6,"Ksh",1,0,"C",TRUE);
+        $pdf->Cell(30,6,"Ksh",1,0,"C",TRUE);
+        $pdf->Cell(30,6,"Ksh",1,0,"C",TRUE);
+        $pdf->Cell(30,6,"Ksh",1,0,"C",TRUE);
+        $pdf->Cell(30,6,"Ksh",1,0,"C",TRUE);
+        $pdf->Cell(30,6,"Ksh",1,0,"C",TRUE);
+        $pdf->Cell(30,6,"Ksh",1,0,"C",TRUE);
+        $pdf->Cell(30,6,"Ksh",1,1,"C",TRUE);
+
+        // get asset history
+        $pdf->SetTextColor(0, 0, 0);
+        $assets = [];
+        for($index = 1; $index <= 7; $index++){
+            $asset_category = $index."";
+            $asset_history = asset_history($conn2, $asset_category,$periods);
+            array_push($assets, $asset_history);
+        }
+
+        // assets
+        // echo json_encode($assets);
+        $pdf->SetFont('Times', 'B', 10);
+        $pdf->Cell(45,6,"At 1st July ".date("Y", strtotime($periods[1][1])),"BL",0,"L",FALSE);
+        $total = 0;
+        for($index = 0; $index < count($assets); $index++){
+            $index_asset = $assets[$index];
+            for($ind = 0; $ind < count($index_asset); $ind++){
+                if($index_asset[$ind]['year'] == date("Y", strtotime($periods[1][1]))){
+                    $pdf->Cell(30,6,"". number_format($index_asset[$ind]['balance']),1,0,"L",FALSE);
+                    $total += $index_asset[$ind]['balance'];
+                }
+            }
+        }
+        $pdf->Cell(30,6,"Ksh ". number_format($total),1,0,"L",FALSE);
+        $pdf->Ln();
+
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(45,6,"Additions","BL",0,"L",FALSE);
+        for($index = 0; $index < count($assets); $index++){
+            $pdf->Cell(30,6,"0",1,0,"L",FALSE);
+        }
+        $pdf->Cell(30,6,"Ksh ". number_format(0),1,0,"L",FALSE);
+        $pdf->Ln();
+
+        $pdf->Cell(45,6,"Disposals","BL",0,"L",FALSE);
+        for($index = 0; $index < count($assets); $index++){
+            $pdf->Cell(30,6,"0",1,0,"L",FALSE);
+        }
+        $pdf->Cell(30,6,"Ksh ". number_format(0),1,0,"L",FALSE);
+        $pdf->Ln();
+
+
+        $pdf->Cell(45,6,"Transfers/Adjustments","BL",0,"L",FALSE);
+        for($index = 0; $index < count($assets); $index++){
+            $pdf->Cell(30,6,"0",1,0,"L",FALSE);
+        }
+        $pdf->Cell(30,6,"Ksh ". number_format(0),1,0,"L",FALSE);
+        $pdf->Ln();
+
+        // next year
+        $pdf->SetFont('Times', 'B', 10);
+        $pdf->Cell(45,6,"At 30th June ".date("Y", strtotime($periods[0][1])),"BL",0,"L",FALSE);
+        $total = 0;
+        for($index = 0; $index < count($assets); $index++){
+            $index_asset = $assets[$index];
+            for($ind = 0; $ind < count($index_asset); $ind++){
+                if($index_asset[$ind]['year'] == date("Y", strtotime($periods[0][1]))){
+                    $pdf->Cell(30,6,"". number_format($index_asset[$ind]['balance']),1,0,"L",FALSE);
+                    $total += $index_asset[$ind]['balance'];
+                }
+            }
+        }
+        $pdf->Cell(30,6,"Ksh ". number_format($total),1,0,"L",FALSE);
+        $pdf->Ln();
+
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(45,6,"Additions","BL",0,"L",FALSE);
+        for($index = 0; $index < count($assets); $index++){
+            $pdf->Cell(30,6,"0",1,0,"L",FALSE);
+        }
+        $pdf->Cell(30,6,"Ksh ". number_format(0),1,0,"L",FALSE);
+        $pdf->Ln();
+
+        $pdf->Cell(45,6,"Disposals","BL",0,"L",FALSE);
+        for($index = 0; $index < count($assets); $index++){
+            $pdf->Cell(30,6,"0",1,0,"L",FALSE);
+        }
+        $pdf->Cell(30,6,"Ksh ". number_format(0),1,0,"L",FALSE);
+        $pdf->Ln();
+
+
+        $pdf->Cell(45,6,"Transfers/Adjustments","BL",0,"L",FALSE);
+        for($index = 0; $index < count($assets); $index++){
+            $pdf->Cell(30,6,"0",1,0,"L",FALSE);
+        }
+        $pdf->Cell(30,6,"Ksh ". number_format(0),1,0,"L",FALSE);
+        $pdf->Ln();
+
+        // next year
+        $pdf->SetFont('Times', 'B', 10);
+        $pdf->Cell(45,6,"At 30th June ".date("Y", strtotime($periods[0][0])),"BL",0,"L",FALSE);
+        $total = 0;
+        for($index = 0; $index < count($assets); $index++){
+            $index_asset = $assets[$index];
+            for($ind = 0; $ind < count($index_asset); $ind++){
+                if($index_asset[$ind]['year'] == date("Y", strtotime($periods[0][0]))){
+                    $pdf->Cell(30,6,"". number_format($index_asset[$ind]['balance']),1,0,"L",FALSE);
+                    $total += $index_asset[$ind]['balance'];
+                }
+            }
+        }
+        $pdf->Cell(30,6,"Ksh ". number_format($total),1,0,"L",FALSE);
+        $pdf->Ln();
+    
+        $pdf->Cell(45,6,"",1,0,"L",false);
+        $pdf->Cell(30,6,"",1,0,"C",false);
+        $pdf->Cell(30,6,"",1,0,"C",false);
+        $pdf->Cell(30,6,"",1,0,"C",false);
+        $pdf->Cell(30,6,"",1,0,"C",false);
+        $pdf->Cell(30,6,"",1,0,"C",false);
+        $pdf->Cell(30,6,"",1,0,"C",false);
+        $pdf->Cell(30,6,"",1,0,"C",false);
+        $pdf->Cell(30,6,"",1,1,"C",false);
+    
+        $pdf->Cell(45,6,"Depreciation And Impairment",1,0,"L",false);
+        $pdf->Cell(30,6,"",1,0,"C",false);
+        $pdf->Cell(30,6,"",1,0,"C",false);
+        $pdf->Cell(30,6,"",1,0,"C",false);
+        $pdf->Cell(30,6,"",1,0,"C",false);
+        $pdf->Cell(30,6,"",1,0,"C",false);
+        $pdf->Cell(30,6,"",1,0,"C",false);
+        $pdf->Cell(30,6,"",1,0,"C",false);
+        $pdf->Cell(30,6,"",1,1,"C",false);
+
+        // next year
+        // echo json_encode($assets[0]);
+        $pdf->SetFont('Times', 'B', 10);
+        $pdf->Cell(45,6,"At 1st July ".date("Y", strtotime($periods[1][1])),"BL",0,"L",FALSE);
+        $total = 0;
+        for($index = 0; $index < count($assets); $index++){
+            $index_asset = $assets[$index];
+            for($ind = 0; $ind < count($index_asset); $ind++){
+                if($index_asset[$ind]['year'] == date("Y", strtotime($periods[1][1]))){
+                    $pdf->Cell(30,6,"". number_format($index_asset[$ind]['credit']),1,0,"L",FALSE);
+                    $total += $index_asset[$ind]['credit'];
+                }
+            }
+        }
+        $pdf->Cell(30,6,"Ksh ". number_format($total),1,0,"L",FALSE);
+        $pdf->Ln();
+
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(45,6,"Additions","BL",0,"L",FALSE);
+        for($index = 0; $index < count($assets); $index++){
+            $pdf->Cell(30,6,"0",1,0,"L",FALSE);
+        }
+        $pdf->Cell(30,6,"Ksh ". number_format(0),1,0,"L",FALSE);
+        $pdf->Ln();
+
+        $pdf->Cell(45,6,"Disposals","BL",0,"L",FALSE);
+        for($index = 0; $index < count($assets); $index++){
+            $pdf->Cell(30,6,"0",1,0,"L",FALSE);
+        }
+        $pdf->Cell(30,6,"Ksh ". number_format(0),1,0,"L",FALSE);
+        $pdf->Ln();
+
+
+        $pdf->Cell(45,6,"Transfers/Adjustments","BL",0,"L",FALSE);
+        for($index = 0; $index < count($assets); $index++){
+            $pdf->Cell(30,6,"0",1,0,"L",FALSE);
+        }
+        $pdf->Cell(30,6,"Ksh ". number_format(0),1,0,"L",FALSE);
+        $pdf->Ln();
 
         // output
         $pdf->Output();
@@ -16330,6 +16522,81 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
         $pdf->Output();
         
     }
+}
+
+// get the asset history
+function asset_history($conn2, $asset_category, $periods){
+    // get the asset categories
+    $select = "SELECT * FROM `asset_table` WHERE `asset_category` = '".$asset_category."'";
+    $stmt = $conn2->prepare($select);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $asset_acquisitions = [];
+    $asset_category_name = $asset_category == "1" ? "Land" : ($asset_category == "2" ? "Buildings" : ($asset_category == "3" ? "Motor Vehicle" : ($asset_category == "4" ? "Furniture & Fittings" : ($asset_category == "5" ? "Computer & ICT Equipments" : ($asset_category == "6" ? "Plant & Equipments" : ($asset_category == "7" ? "Capital Work in Progress" : "N/A"))))));
+    if($result){
+        while($row = $result->fetch_assoc()){
+            $value_acquisition = get_current_value($row['acquisition_option'],$row['acquisition_rate'], $row['orginal_value'],$row['date_of_acquiry']);
+            array_push($asset_acquisitions,$value_acquisition);
+        }
+    }
+    
+    $earliest_year = date("Y");
+    $highest_years = 1;
+    for($index = 0; $index < count($asset_acquisitions); $index++){
+        $earliest_year = count($asset_acquisitions[$index]['account']) > 0 ? ($asset_acquisitions[$index]['account'][0]['year'] < $earliest_year ? $asset_acquisitions[$index]['account'][0]['year'] : $earliest_year) : $earliest_year;
+        $highest_years = $asset_acquisitions[$index]['years'] > $highest_years ? $asset_acquisitions[$index]['years'] : $highest_years;
+    }
+
+    // json encode
+    $highest_years*1;
+    $highest_years+= $earliest_year;
+    // echo json_encode($asset_acquisitions);
+
+    // get the total years they have been active
+    
+    $asset_accounted = [];
+    for($index = $earliest_year; $index <= ($highest_years); $index ++){
+        $data = array("asset_name" => ucwords(strtolower($asset_category_name)),"asset_category" => $asset_category, "debit" => 0, "credit" => 0, "balance" => 0, "year" => $index);
+        for($ind = 0; $ind < count($asset_acquisitions); $ind++){
+            $asset = $asset_acquisitions[$ind];
+            // echo json_encode($asset['account'])."<br>";
+            for($i = 0; $i < count($asset['account']); $i++){
+                // get the year
+                $asset_account = $asset['account'][$i];
+                if($asset_account['year'] == $index){
+                    $data['debit'] += $asset_account['account'] == "debit" ? substr(str_replace(",","",$asset_account['amount']),4)*1 : 0;
+                    $data['credit'] += $asset_account['account'] == "credit" ? substr(str_replace(",","",$asset_account['amount']),4)*1 : 0;
+                    $data['balance'] += substr(str_replace(",","",$asset_account['balance']),4)*1;
+                }
+            }
+        }
+        array_push($asset_accounted, $data);
+    }
+
+    // start time and end time
+    $start_time = date("Y",strtotime($periods[1][1]));
+    $end_time = date("Y",strtotime($periods[0][0]));
+
+    // get the asset during that period
+    $asset_account_return = [];
+    for($index = $start_time; $index <= $end_time; $index++){
+        $present = false;
+        for($ind = 0; $ind < count($asset_accounted); $ind++){
+            if($asset_accounted[$ind]['year'] == $index.""){
+                array_push($asset_account_return,$asset_accounted[$ind]);
+                $present = true;
+            }
+        }
+
+        // not present
+        if(!$present){
+            $data = array("asset_name" => ucwords(strtolower($asset_category_name)),"asset_category" => $asset_category, "debit" => 0, "credit" => 0, "balance" => 0, "year" => $index);
+            array_push($asset_account_return,$data);
+        }
+    }
+
+    // return value
+    return $asset_account_return;
 }
 
 function display_notes($note, $pdf, $periods, $note_title){

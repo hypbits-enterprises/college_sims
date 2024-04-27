@@ -8569,7 +8569,10 @@
         }
     }
 
-    function get_current_value($value_acquisition_option, $value_acquisition_rate, $original_value, $date_acquired){
+    function get_current_value($value_acquisition_option, $value_acquisition_rate, $original_value, $date_acquired, $final_year = null){
+        if($final_year == null){
+            $final_year = date("Y");
+        }
         $financial_year_end = date("Y")."0630235959";
         $date_acquired = date("YmdHis",strtotime($date_acquired));
 
@@ -8597,6 +8600,11 @@
                 $year += 1;
                 $values = array("account" => "credit", "name" => "Depreciation", "amount" => "Kes ".number_format($reduce), "balance" => "Kes ".number_format($balance), "year" => $year);
                 array_push($accounts,$values);
+
+                // final year break
+                if($final_year == $year){
+                    break;
+                }
                 
                 // break if balance is 0
                 if($balance <= 0){
@@ -8628,6 +8636,11 @@
                 $year += 1;
                 $values = array("account" => "credit", "name" => "Depreciation", "amount" => "Kes ".number_format($reduce), "balance" => "Kes ".number_format($original_value), "year" => $year);
                 array_push($accounts,$values);
+
+                // final year break
+                if($final_year == $year){
+                    break;
+                }
                 
                 // balance
                 if($balance <= 0){
@@ -8655,6 +8668,11 @@
                 $year += 1;
                 $values = array("account" => "debit", "name" => "Appreciation", "amount" => "Kes ".number_format($reduce), "balance" => "Kes ".number_format($balance), "year" => $year);
                 array_push($accounts,$values);
+
+                // final year break
+                if($final_year == $year){
+                    break;
+                }
 
                 // balance
                 if($balance <= 0){
@@ -8686,6 +8704,11 @@
                 $year += 1;
                 $values = array("account" => "debit", "name" => "Appreciation", "amount" => "Kes ".number_format($reduce), "balance" => "Kes ".number_format($original_value), "year" => $year);
                 array_push($accounts,$values);
+
+                // final year break
+                if($final_year == $year){
+                    break;
+                }
 
                 // balance
                 if($balance <= 0){
