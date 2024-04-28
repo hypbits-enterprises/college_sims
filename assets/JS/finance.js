@@ -4161,6 +4161,7 @@ cObj("delete_expense_entry").onclick = function () {
             }
             if (cObj("expense_editor_loader").classList.contains("hide")) {
                 setTimeout(() => {
+                    cObj("delete_exp_window").classList.add("hide");
                     cObj("close_edit_expense_window").click();
                     cObj("error_handlers_expenses").innerHTML = "";
                     displayTodaysExpense();
@@ -4397,12 +4398,12 @@ function display_revenue_subs() {
         add_revenue_sub_categories_holder = JSON.parse(add_revenue_sub_categories_holder);
         if (add_revenue_sub_categories_holder.length > 0) {
             // display table
-            data_to_display = "<table class='table col-md-12'><tr><th>No.</th><th>Revenue Sub-Categories</th><th>Action</th></tr>";
+            data_to_display = "<div class='container my-2 tableme'><table class='table col-md-12'><tr><th>No.</th><th>Revenue Sub-Categories</th><th>Action</th></tr>";
             for (let index = 0; index < add_revenue_sub_categories_holder.length; index++) {
                 const element = add_revenue_sub_categories_holder[index];
                 data_to_display+="<tr><td>"+ (index+1) +".</td><td>"+element.name+"</td><td><span class='link edit_revenue' id='edit_revenue_"+element.id+"'><i class='fas fa-trash'></i> Delete</span></td></tr>";
             }
-            data_to_display+="</table>";
+            data_to_display+="</table></div>";
         }else{
             data_to_display += "<p class='text-danger'>No revenue sub-categories to display!<br>Revenue sub-category list will appear here!</p>";
         }

@@ -71,10 +71,10 @@
                         <select required name="financial_performace" id="financial_performace" class="form-control w-100">
                             <option value="" hidden>Select an Option</option>
                             <option value="annual_report">Annual Financial Perfomance Report</option>
-                            <option value="quarterly_report_sep">Quaterly Financial Perfomance Report September</option>
+                            <!-- <option value="quarterly_report_sep">Quaterly Financial Perfomance Report September</option>
                             <option value="quarterly_report_dec">Quaterly Financial Perfomance Report December</option>
                             <option value="quarterly_report_mar">Quaterly Financial Perfomance Report March</option>
-                            <option value="quarterly_report_jun">Quaterly Financial Perfomance Report June</option>
+                            <option value="quarterly_report_jun">Quaterly Financial Perfomance Report June</option> -->
                         </select>
                     </div>
                     <div class="col-md-4">

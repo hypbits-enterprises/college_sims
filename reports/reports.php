@@ -16414,7 +16414,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
         $pdf->setHeaderPos(200);
         $tittle = "Supplier Accounts Statements \"".$supplier_data['supplier_name']."\"";
         
-        $data = $data;
         $pdf->set_document_title($tittle);
         $pdf->setSchoolLogo("../../" . schoolLogo($conn));
         $pdf->set_school_name($_SESSION['schname']);
@@ -16453,6 +16452,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
         $pdf->Cell(40, 6, "Supplier Contact: ", 0);
         $pdf->SetFont('Times', '', 10);
         $pdf->Cell(45, 6, $supplier_data['supplier_phone'], 0,1);
+
+        // row 2
+        $pdf->SetFont('Times', 'B', 10);
+        $pdf->Cell(40, 6, "Date Generated: ", 0);
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(45, 6, date("D dS M Y @ H:i:sA"), 0,1);
 
         // supplier balance
         $select = "SELECT SUM(SB.bill_amount) AS 'Due', SUM((SELECT SUM(SBP.amount) AS 'Paid' FROM `supplier_bill_payments` AS SBP WHERE SBP.payment_for = SB.bill_id )) AS 'Paid' FROM `supplier_bills` AS SB WHERE SB.supplier_id = '".$supplier_account_id."'";

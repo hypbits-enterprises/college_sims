@@ -7086,12 +7086,12 @@ function display_subcategories() {
     var array = store_subcategories;
     var data_to_display = "";
     if (array.length > 0) {
-        data_to_display = "<table class='table col-md-12'><tr><th>No.</th><th>Expense Sub-Categories</th><th>Action</th></tr>";
+        data_to_display = "<div class='container my-2 tableme'><table class='table col-md-12'><tr><th>No.</th><th>Expense Sub-Categories</th><th>Action</th></tr>";
         for (let index = 0; index < array.length; index++) {
             const element = array[index];
             data_to_display += "<tr><td>"+(index+1)+".</td><td>"+element.name+"</td><td><span class='link exit_expense_sub_cat' id='exit_expense_sub_cat_"+element.id+"'><i class='fas fa-trash'></i> Delete</span></td></tr>";
         }
-        data_to_display+="</table>";
+        data_to_display+="</table></div>";
     }else{
         data_to_display = "<p class='text-danger'>No expense categories to display!<br>Add expense category list will appear here!</p>";
     }
@@ -7155,6 +7155,8 @@ cObj("save_expense_category").onclick = function () {
                             cObj("expense_category_budget").value = "";
                             cObj("budget_start_time").value = "";
                             cObj("budget_end_date").value = "";
+                            cObj("expense_sub_categories_holder").value = "[]"
+                            display_subcategories();
                         }, 1000);
                         cObj("cancel_expense_category").click();
                     }

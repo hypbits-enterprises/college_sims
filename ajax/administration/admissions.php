@@ -4176,7 +4176,7 @@
                     $data_to_display.="<tr><td>".($index).". </td><td><input type='hidden' value='".json_encode($row)."' id='exp_name_".$row['expense_id']."'>".$row['expense_name']."</td><td>Kes ".(number_format($row['expense_budget']))."</td><td>Kes ".number_format($used_amount)." (".$percentage.")</td><td>".$subcategories." subcategories</td><td><p><span class='mx-1 link edit_exp_cat' id='edit_exp_cat_".$row['expense_id']."'><i class='fas fa-pen-fancy'></i></span> <span class='mx-1 link delete_exp_cat' id = 'delete_exp_cat_".$row['expense_id']."'><i class='fas fa-trash'></i></span></p></td></tr>";
                     $index++;
                 }
-                $data_to_display .= "</table></div>";
+                $data_to_display .= "</table>";
             }
             echo $data_to_display;
         }
