@@ -68,6 +68,30 @@
             }else {
                 echo "<p style='color:green;'>Display a student with their admission number to display their available votehead!</p>";
             }
+        }elseif(isset($_GET['dispose_asset'])){
+            $asset_id = $_GET['asset_id'];
+            $select = "SELECT * FROM `asset_table` WHERE `asset_id` = ?";
+            $stmt = $conn2->prepare($select);
+            $stmt->bind_param("s", $_GET['asset_id']);
+            $stmt->execute();
+            
+            $result = $stmt->get_result();
+            if($result){
+                if($row = $result->fetch_assoc()){
+                    // if the asset if found update the dispose date and the dispose status
+                    $update = "UPDATE `asset_table` SET `disposed_on` = ?, `disposed_status` = ? WHERE `asset_id` = ?";
+                    $stmt = $conn2->prepare($update);
+                    $dispose_status = 1;
+                    $disposed_on = date("YmdHis"); // now
+                    $stmt->bind_param("sss",$disposed_on,$dispose_status,$asset_id);
+                    $stmt->execute();
+
+                    echo "<p class='text-success'>The asset (".ucwords(strtolower($row['asset_name'])).") has been successfully disposed!</p>";
+                    return 0;
+                }
+            }
+
+            echo "<p class='text-danger'>Invalid asset!</p>";
         }elseif (isset($_GET['update_academic_balance'])) {
             // select the last taransaction made by the stsudent
             $student_admission = $_GET['student_admission'];
@@ -5014,7 +5038,7 @@
                     $row['asset_category'] = $asset_category;
 
                     // get the current value
-                    $value_acquisition = get_current_value($row['acquisition_option'],$row['acquisition_rate'], $row['orginal_value'],$row['date_of_acquiry']);
+                    $value_acquisition = get_current_value($row);
                     
                     // real new value
                     $row['real_new_value'] = $value_acquisition['new_value'];
@@ -5058,7 +5082,7 @@
                     $acquisition_rate = $row['acquisition_rate'];
                     $date_of_acquiry = $row['date_of_acquiry'];
                     $acquisition_option = $row['acquisition_option'];
-                    $current_value = get_current_value($acquisition_option,$acquisition_rate, $orginal_value,$date_of_acquiry);
+                    $current_value = get_current_value($row);
                     
                     // echo current value
                     echo json_encode($current_value);
@@ -8568,7 +8592,15 @@
         }
     }
 
-    function get_current_value($value_acquisition_option, $value_acquisition_rate, $original_value, $date_acquired, $final_year = null){
+    function get_current_value($row, $final_year = null){
+        $value_acquisition_option = $row['acquisition_option'];
+        $value_acquisition_rate = $row['acquisition_rate'];
+        $original_value = $row['orginal_value'];
+        $date_acquired = $row['date_of_acquiry'];
+        $disposed_status = $row['disposed_status'];
+        $disposed_on = $row['disposed_on'];
+
+        // final year
         if($final_year == null){
             $final_year = date("Y");
         }
@@ -8599,6 +8631,18 @@
                 $year += 1;
                 $values = array("account" => "credit", "name" => "Depreciation", "amount" => "Kes ".number_format($reduce), "balance" => "Kes ".number_format($balance), "year" => $year);
                 array_push($accounts,$values);
+
+
+                // see if its diposable
+                if($disposed_status == "1"){
+                    if(date("Y", strtotime($disposed_on)) == $year){
+                        $values = array("account" => "credit", "name" => "Disposed", "amount" => "Kes ".number_format($balance), "balance" => "Kes 0", "year" => $year);
+                        array_push($accounts,$values);
+                        $reduction += $balance;
+                        $balance = 0;
+                        break;
+                    }
+                }
 
                 // final year break
                 if($final_year == $year){
@@ -8636,6 +8680,17 @@
                 $values = array("account" => "credit", "name" => "Depreciation", "amount" => "Kes ".number_format($reduce), "balance" => "Kes ".number_format($original_value), "year" => $year);
                 array_push($accounts,$values);
 
+                // see if its diposable
+                if($disposed_status == "1"){
+                    if(date("Y", strtotime($disposed_on)) == $year){
+                        $values = array("account" => "credit", "name" => "Disposed", "amount" => "Kes ".number_format($balance), "balance" => "Kes 0", "year" => $year);
+                        array_push($accounts,$values);
+                        $reduction += $balance;
+                        $balance = 0;
+                        break;
+                    }
+                }
+
                 // final year break
                 if($final_year == $year){
                     break;
@@ -8667,6 +8722,17 @@
                 $year += 1;
                 $values = array("account" => "debit", "name" => "Appreciation", "amount" => "Kes ".number_format($reduce), "balance" => "Kes ".number_format($balance), "year" => $year);
                 array_push($accounts,$values);
+
+                // see if its diposable
+                if($disposed_status == "1"){
+                    if(date("Y", strtotime($disposed_on)) == $year){
+                        $values = array("account" => "credit", "name" => "Disposed", "amount" => "Kes ".number_format($balance), "balance" => "Kes 0", "year" => $year);
+                        array_push($accounts,$values);
+                        $reduction += $balance;
+                        $balance = 0;
+                        break;
+                    }
+                }
 
                 // final year break
                 if($final_year == $year){
@@ -8703,6 +8769,17 @@
                 $year += 1;
                 $values = array("account" => "debit", "name" => "Appreciation", "amount" => "Kes ".number_format($reduce), "balance" => "Kes ".number_format($original_value), "year" => $year);
                 array_push($accounts,$values);
+                
+                // see if its diposable
+                if($disposed_status == "1"){
+                    if(date("Y", strtotime($disposed_on)) == $year){
+                        $values = array("account" => "credit", "name" => "Disposed", "amount" => "Kes ".number_format($balance), "balance" => "Kes 0", "year" => $year);
+                        array_push($accounts,$values);
+                        $reduction += $balance;
+                        $balance = 0;
+                        break;
+                    }
+                }
 
                 // final year break
                 if($final_year == $year){

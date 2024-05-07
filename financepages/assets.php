@@ -147,13 +147,30 @@
                         <h6 class="text-center"><u>Edit Asset</u></h6>
                     </div>
                     <form class="col-md-12" target="_blank" method="POST" action="reports/reports.php">
-                        <div class="border border-secondary rounded mx-auto w-50 py-2 px-2 my-2">
+                        <div class="border border-secondary rounded mx-auto w-75 py-2 px-2 my-2">
                             <h6 class="text-secondary text-center"><u>Print Statement of Asset Accounts</u></h6>
                             <input type="hidden" name="print_statement_of_account" value="true">
                             <input type="hidden" name="asset_id" id="asset-id">
                             <div class="row">
-                                <div class="col-md-6 mx-auto">
+                                <div class="col-md-6">
+                                    <p class="btn btn-outline-danger btn-sm" id="dispose_assets_btn"><i class="fas fa-trash"></i> Dispose Asset</p>
+                                </div>
+                                <div class="col-md-6">
                                     <input type="submit" class="btn btn-sm btn-primary text-white" value="Print Statement of Accounts">
+                                </div>
+                            </div>
+                            <div class="message_contents mt-3 hide" id="dispose_asset_window">
+                                <label class="form-control-label"><u>Confirm : </u></label>
+                                <p>- Disposing the asset means that its value will be written of this financial year?</p>
+                                <p>- The action is reversible.</p>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <button type="button" id="dispose_asset"><i class="fas fa-trash"></i>  Dispose <img class="hide" src="images/ajax_clock_small.gif" id="dispose_asset_loader"></button>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <button type="button" id="cancel_asset_disposal"><i class="fas fa-x"></i> Cancel</button>
+                                    </div>
+                                    <p id="asset-dispose-error"></p>
                                 </div>
                             </div>
                         </div>

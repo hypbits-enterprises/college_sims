@@ -38,7 +38,6 @@ cObj("registersub").onclick = function () {
                     }
                 }, 100);
             }, 200);
-            
         }else{
             cObj("errregsub").innerHTML = "<p style='color:red;'>Select the classes the subject is to be taught!</p>";
         }

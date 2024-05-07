@@ -13894,7 +13894,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
         $pdf->AddPage();
 
         // add the account details
-        $asset_data = get_current_value($asset_table['acquisition_option'],$asset_table['acquisition_rate'],$asset_table['orginal_value'],$asset_table['date_of_acquiry']);
+        $asset_data = get_current_value($asset_table);
 
         // echo json_encode($asset_data);
         // row 1

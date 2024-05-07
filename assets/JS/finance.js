@@ -5600,3 +5600,34 @@ cObj("select_financial_document").onchange = function () {
         cObj("financial_performance").classList.remove("hide");
     }
 }
+
+cObj("dispose_assets_btn").onclick = function () {
+    cObj("dispose_asset_window").classList.toggle("hide");
+}
+
+cObj("cancel_asset_disposal").onclick = function () {
+    cObj("dispose_asset_window").classList.add("hide");
+}
+
+cObj("dispose_asset").onclick = function () {
+    var datapass = "?dispose_asset=true&asset_id="+valObj("asset-id");
+    sendData2("GET","finance/financial.php",datapass, cObj("asset-dispose-error"),cObj("dispose_asset_loader"));
+    setTimeout(() => {
+        var timeout = 0;
+        var ids = setInterval(() => {
+            timeout++;
+            //after two minutes of slow connection the next process wont be executed
+            if (timeout == 1200) {
+                stopInterval(ids);
+            }
+            if (cObj("dispose_asset_loader").classList.contains("hide")) {
+                // display asset account
+                setTimeout(() => {
+                    cObj("asset-dispose-error").innerHTML = "";
+                }, 3000);
+                view_asset_account(valObj("asset-id"));
+                stopInterval(ids);
+            }
+        }, 100);
+    }, 200);
+}
