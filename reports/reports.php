@@ -13954,6 +13954,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
         $pdf->Cell(45, 6, "Kes ".number_format(round(($asset_data['new_value']*1),2))." (".(date("Y",strtotime($asset_table['date_of_acquiry'])) * 1) + ($asset_data['years']*1).")", 0,1);
         // echo json_encode($asset_data);
 
+        // Disposed Status
+        $pdf->SetFont('Times', 'B', 10);
+        $pdf->Cell(40, 6, "Disposed Status: ", 0);
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(45, 6, ($asset_table['disposed_status'] == 1 ? "Disposed" : "Not-Disposed"), 0,1);
+
+        // Disposed value
+        $pdf->SetFont('Times', 'B', 10);
+        $pdf->Cell(40, 6, "Disposed Value: ", 0);
+        $pdf->SetFont('Times', '', 10);
+        $pdf->Cell(45, 6, $asset_table['disposed_status'] == 1 ? "Kes ". number_format($asset_table['disposed_value'])." - ( Date : ".date("D dS M Y",strtotime($asset_table['disposed_on']))." )" : "0", 0,1);
+
         // row 2
         $pdf->SetFont('Times', 'B', 10);
         $pdf->Cell(40, 6, "Acquisition Method:", 0);
@@ -13971,8 +13983,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
         $pdf->SetFillColor(216, 217, 218);
         $pdf->Cell(190,6,$pdf->school_document_title,1,1,"C",TRUE);
         $pdf->Cell(10,6,"QTY",1,0,"L",TRUE);
-        $pdf->Cell(45,6,"ITEM",1,0,"L",TRUE);
-        $pdf->Cell(45,6,"YEAR",1,0,"L",TRUE);
+        $pdf->Cell(55,6,"ITEM",1,0,"L",TRUE);
+        $pdf->Cell(35,6,"YEAR",1,0,"C",TRUE);
         $pdf->Cell(30,6,"DEBIT",1,0,"L",TRUE);
         $pdf->Cell(30,6,"CREDIT",1,0,"L",TRUE);
         $pdf->Cell(30,6,"BALANCE",1,1,"L",TRUE);
@@ -13982,8 +13994,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
         $reductions = $asset_data['account'];
         for($index = 0; $index < count($reductions); $index++){
             $pdf->Cell(10,6,($index+1),1,0,"L",TRUE);
-            $pdf->Cell(45,6,$reductions[$index]['name'],1,0);
-            $pdf->Cell(45,6,$reductions[$index]['year'],1,0);
+            $pdf->Cell(55,6,$reductions[$index]['name'],1,0);
+            $pdf->Cell(35,6,$reductions[$index]['year'],1,0);
             $pdf->Cell(30,6,$reductions[$index]['account'] == "debit" ? $reductions[$index]['amount'] : "-",1,0);
             $pdf->Cell(30,6,$reductions[$index]['account'] == "credit" ? $reductions[$index]['amount'] : "-",1,0);
             $pdf->Cell(30,6,$reductions[$index]['balance'],1,1);
@@ -15477,7 +15489,7 @@ function asset_history($conn2, $asset_category, $periods){
     $asset_category_name = $asset_category == "1" ? "Land" : ($asset_category == "2" ? "Buildings" : ($asset_category == "3" ? "Motor Vehicle" : ($asset_category == "4" ? "Furniture & Fittings" : ($asset_category == "5" ? "Computer & ICT Equipments" : ($asset_category == "6" ? "Plant & Equipments" : ($asset_category == "7" ? "Capital Work in Progress" : "N/A"))))));
     if($result){
         while($row = $result->fetch_assoc()){
-            $value_acquisition = get_current_value($row['acquisition_option'],$row['acquisition_rate'], $row['orginal_value'],$row['date_of_acquiry']);
+            $value_acquisition = get_current_value($row);
             array_push($asset_acquisitions,$value_acquisition);
         }
     }
@@ -15748,7 +15760,7 @@ function get_note($periods, $conn2, $note){
     return array("current_year_total" => $current_year,"last_year_total" => $previous_year,"current_year_value" => $current_revenue_notes,"last_year_value" => $last_revenue_notes);
 }
 
-function get_note_10($periods, $conn2){
+function get_note_10_a($periods, $conn2){
     $select = "SELECT * FROM `settings` WHERE `sett` = 'revenue_categories'";
     $stmt = $conn2->prepare($select);
     $stmt->execute();
@@ -15872,6 +15884,36 @@ function get_note_10($periods, $conn2){
     return array("current_year_total" => $current_year,"last_year_total" => $previous_year,"current_year_value" => $current_revenue_notes,"last_year_value" => $last_revenue_notes);
 }
 
+
+function get_note_10($conn2)
+{
+    // echo json_encode($note);
+    $school_classes = getSchoolCLass($conn2);
+    $fees_to_pay = 0;
+    if (count($school_classes) > 0) {
+        $term = getTermV2($conn2);
+        for ($ind = 0; $ind < count($school_classes); $ind++) {
+            // get per class
+            $student_class_fin = $school_classes[$ind];
+            $student_data = getStudents($student_class_fin, $conn2);
+            for ($index = 0; $index < count($student_data); $index++) {
+                // get fees to pay by the student
+                $feespaidbystud = getFeespaidByStudent($student_data[$index]['adm_no'], $conn2);
+                $fees_paid = ($feespaidbystud);
+                $balanced = getBalanceReports($student_data[$index]['adm_no'], $term, $conn2);
+                $balance = ($balanced * 1);
+
+                // fees_to_pay 
+                $fees_to_pay +=  ($fees_paid + $balance);
+            }
+        }
+    }
+
+    // return fees_to_pay
+    $current_revenue_notes = [];
+    array_push($current_revenue_notes, array("Total" => $fees_to_pay, "item" => "Student Tuition Fees Invoiced"));
+    return array("current_year_total" => $fees_to_pay,"last_year_total" => 0,"current_year_value" => $current_revenue_notes,"last_year_value" => []);
+}
 function create_note_table($pdf, $periods, $row, $note_title){
     // NOTE 6
     $pdf->AddPage();
@@ -15994,7 +16036,142 @@ function get_expense_note($periods, $conn2, $note){
             array_push($last_expense_notes,$row);
         }
     }
+
+    // row
+    // echo json_encode($current_expense_notes)."<br>";
+
+    // SUPPLIER BILLS
+    $select = "SELECT SB.*,EC.expense_name FROM `supplier_bills` AS SB
+                LEFT JOIN `expense_category` AS EC
+                ON SB.expense_category = EC.expense_id 
+                WHERE EC.expense_note = '".$note."' 
+                AND SB.date_assigned BETWEEN '".$periods[1][1]."000000' AND '".$periods[1][0]."235959';";
+    $stmt = $conn2->prepare($select);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if($result){
+        while($row = $result->fetch_assoc()){
+            $last_year_total += ($row['bill_amount'] * 1);
+            array_push($last_expense_notes, array("Total" => ($row['bill_amount'] * 1), "item" => ucwords(strtolower($row['bill_name']))));
+        }
+    }
+
+    // SUPPLIER BILLS
+    $select = "SELECT SB.*,EC.expense_name FROM `supplier_bills` AS SB
+                LEFT JOIN `expense_category` AS EC
+                ON SB.expense_category = EC.expense_id 
+                WHERE EC.expense_note = '".$note."'
+                AND SB.date_assigned BETWEEN '".$periods[0][1]."000000' AND '".$periods[0][0]."235959';";
+    $stmt = $conn2->prepare($select);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if($result){
+        while($row = $result->fetch_assoc()){
+            $current_year_total += ($row['bill_amount'] * 1);
+            array_push($current_expense_notes, array("Total" => ($row['bill_amount'] * 1), "item" => ucwords(strtolower($row['bill_name']))));
+        }
+    }
+    // return array
     return array("current_year_total" => $current_year_total,"last_year_total" => $last_year_total,"current_year_value" => $current_expense_notes,"last_year_value" => $last_expense_notes);
+}
+
+function note_26($conn2, $periods){
+    // INCOME FROM FEES CURRENT
+    $current_year_income = 0;
+    $select = "SELECT SUM(`amount`) AS 'Total' FROM `finance` WHERE `date_of_transaction` BETWEEN '".date("Y-m-d", strtotime($periods[0][1]))."' AND '".date("Y-m-d", strtotime($periods[0][0]))."'";
+    $stmt = $conn2->prepare($select);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if($result){
+        if($row = $result->fetch_assoc()){
+            $current_year_income += $row['Total']*1;
+        }
+    }
+
+    // GET THE OTHER REVENUES
+    $select = "SELECT SUM(`amount`) AS 'Total' FROM `school_revenue` WHERE `date_recorded` BETWEEN '".date("Y-m-d", strtotime($periods[0][1]))."' AND '".date("Y-m-d", strtotime($periods[0][0]))."'";
+    $stmt = $conn2->prepare($select);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if($result){
+        if($row = $result->fetch_assoc()){
+            $current_year_income += $row['Total']*1;
+        }
+    }
+
+    // INCOME FROM FEES LAST YEAR
+    $last_year_income = 0;
+    $select = "SELECT SUM(`amount`) AS 'Total' FROM `finance` WHERE `date_of_transaction` BETWEEN '".date("Y-m-d", strtotime($periods[1][1]))."' AND '".date("Y-m-d", strtotime($periods[1][0]))."'";
+    $stmt = $conn2->prepare($select);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if($result){
+        if($row = $result->fetch_assoc()){
+            $last_year_income += $row['Total']*1;
+        }
+    }
+
+    // GET THE OTHER REVENUES
+    $select = "SELECT SUM(`amount`) AS 'Total' FROM `school_revenue` WHERE `date_recorded` BETWEEN '".date("Y-m-d", strtotime($periods[1][1]))."' AND '".date("Y-m-d", strtotime($periods[1][0]))."'";
+    $stmt = $conn2->prepare($select);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if($result){
+        if($row = $result->fetch_assoc()){
+            $last_year_income += $row['Total']*1;
+        }
+    }
+
+
+    //--------------------EXPENSES------------------------//
+    // Current year expenses
+    $current_year_exp = 0;
+    $select = "SELECT SUM(`exp_amount`) AS 'Total' FROM `expenses` WHERE `expense_date` BETWEEN '".date("Y-m-d", strtotime($periods[0][1]))."' AND '".date("Y-m-d", strtotime($periods[0][0]))."'";
+    $stmt = $conn2->prepare($select);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if($result){
+        if($row = $result->fetch_assoc()){
+            $current_year_exp += $row['Total']*1;
+        }
+    }
+
+    $select = "SELECT SUM(`amount`) AS 'Total' FROM `supplier_bill_payments` WHERE `date_paid` BETWEEN '".date("Y-m-d", strtotime($periods[0][1]))."' AND '".date("Y-m-d", strtotime($periods[0][0]))."'";
+    $stmt = $conn2->prepare($select);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if($result){
+        if($row = $result->fetch_assoc()){
+            $current_year_exp += $row['Total']*1;
+        }
+    }
+
+    // Last year expenses
+    $last_year_expense = 0;
+    $select = "SELECT SUM(`exp_amount`) AS 'Total' FROM `expenses` WHERE `expense_date` BETWEEN '".date("Y-m-d", strtotime($periods[1][1]))."' AND '".date("Y-m-d", strtotime($periods[1][0]))."'";
+    $stmt = $conn2->prepare($select);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if($result){
+        if($row = $result->fetch_assoc()){
+            $last_year_expense += $row['Total']*1;
+        }
+    }
+
+    $select = "SELECT SUM(`amount`) AS 'Total' FROM `supplier_bill_payments` WHERE `date_paid` BETWEEN '".date("Y-m-d", strtotime($periods[1][1]))."' AND '".date("Y-m-d", strtotime($periods[1][0]))."'";
+    $stmt = $conn2->prepare($select);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if($result){
+        if($row = $result->fetch_assoc()){
+            $last_year_expense += $row['Total']*1;
+        }
+    }
+
+    $last_year_cash = $last_year_income - $last_year_expense;
+    $current_year_cash = $current_year_income - $current_year_exp;
+
+    return array("current_year_cash" => $current_year_cash, "last_year_cash" => $last_year_cash, "current_year_income" => $current_year_income, "last_year_income" => $last_year_income, "current_year_expense" => $current_year_exp, "last_year_expense" => $last_year_expense);
 }
 
 /**

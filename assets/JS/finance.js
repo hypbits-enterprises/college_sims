@@ -5398,7 +5398,8 @@ function display_all_assets(data_to_display) {
         for (let index = 0; index < data_to_display.length; index++) {
             const element = data_to_display[index];
             var show = element.value_acquisition == "decrease" ? "<i class='fas fa-arrow-down text-danger'></i>" : "<i class='fas fa-arrow-up text-success'></i>";
-            data_in_display+="<tr><td><input type='hidden' id='assets-values-"+element.asset_id+"' value='"+JSON.stringify(element)+"'>"+(index+1)+"</td><td>"+element.asset_name+"</td><td>"+element.asset_category+"</td><td>"+element.date_of_acquiry+"</td><td>Kes "+element.orginal_value+"</td><td>Kes "+element.new_value+" <small>("+element.years+" years later)</small></td><td>"+element.acquisition_rate+"% "+show+"</td><td><span style='font-size:12px;' class='link view-assets' id='view-assets-"+element.asset_id+"'><i class='fa fa-eye'></i> View </span></td></tr>";        
+            var status = element.disposed_status == "1" ? "<small class='badge bg-danger'>-D</small>" : "";
+            data_in_display+="<tr><td><input type='hidden' id='assets-values-"+element.asset_id+"' value='"+JSON.stringify(element)+"'>"+(index+1)+" "+status+" </td><td>"+element.asset_name+"</td><td>"+element.asset_category+"</td><td>"+element.date_of_acquiry+"</td><td>Kes "+element.orginal_value+"</td><td>Kes "+element.new_value+" <small>("+element.years+" years later)</small></td><td>"+element.acquisition_rate+"% "+show+"</td><td><span style='font-size:12px;' class='link view-assets' id='view-assets-"+element.asset_id+"'><i class='fa fa-eye'></i> View </span></td></tr>";        
         }
         data_in_display+="</table>";
     }else{
@@ -5457,6 +5458,18 @@ function view_assets() {
             }
         }
 
+        // IF ITS A DISPOSED ASSET SHOW WHEN IT WAS DISPOSED AND HIDE THE DISPOSE BUTTON.
+        if(asset_data.disposed_status == 1){
+            cObj("dispose_assets_btn").classList.add("hide");
+            cObj("recycles").classList.remove("hide");
+            cObj("date_asset_disposed").innerHTML = asset_data.disposed_on;
+            cObj("asset_dispose_value").innerHTML = asset_data.disposed_value;
+        }else{
+            cObj("recycles").classList.add("hide");
+            cObj("dispose_assets_btn").classList.remove("hide");
+            cObj("date_asset_disposed").innerHTML = "N/A";
+        }
+
         // display asset account
         view_asset_account(asset_data.asset_id)
     }else{
@@ -5495,7 +5508,7 @@ function display_asset_account(datapass) {
         var data_to_display = "<table class='table'><tr><th>No</th><th>Name</th><th>Year</th><th>Debit (Dr)</th><th>Credit (Cr)</th><th>Balance</th></tr>";
         for (let index = 0; index < datapass.length; index++) {
             const element = datapass[index];
-            data_to_display+="<tr><td>"+(1+index)+". </td><td>"+element.name+"</td><td>"+element.year+"</td><td>"+(element.account == "debit" ? element.amount : "-")+"</td><td>"+(element.account == "credit" ? element.amount : "-")+"</td><td>"+element.balance+"</td></tr>";
+            data_to_display+="<tr><td>"+(1+index)+".</td><td>"+element.name+"</td><td>"+element.year+"</td><td>"+(element.account == "debit" ? element.amount : "-")+"</td><td>"+(element.account == "credit" ? element.amount : "-")+"</td><td>"+element.balance+"</td></tr>";
         }
         data_to_display+="</table>";
 
@@ -5610,7 +5623,7 @@ cObj("cancel_asset_disposal").onclick = function () {
 }
 
 cObj("dispose_asset").onclick = function () {
-    var datapass = "?dispose_asset=true&asset_id="+valObj("asset-id");
+    var datapass = "?dispose_asset=true&asset_id="+valObj("asset-id")+"&set_disposed_date="+valObj("set_disposed_date")+"&dispose_value="+valObj("dispose_value");
     sendData2("GET","finance/financial.php",datapass, cObj("asset-dispose-error"),cObj("dispose_asset_loader"));
     setTimeout(() => {
         var timeout = 0;
@@ -5622,10 +5635,74 @@ cObj("dispose_asset").onclick = function () {
             }
             if (cObj("dispose_asset_loader").classList.contains("hide")) {
                 // display asset account
+                if(cObj("asset-dispose-success") != undefined){
+                    get_asset_data(valObj("asset-id"));
+                    cObj("cancel_asset_disposal").click();
+                    cObj("dispose_value").value = 0;
+                }
+
+                // hide error
                 setTimeout(() => {
                     cObj("asset-dispose-error").innerHTML = "";
                 }, 3000);
                 view_asset_account(valObj("asset-id"));
+                stopInterval(ids);
+            }
+        }, 100);
+    }, 200);
+}
+
+cObj("recover_assets_btn").onclick = function () {
+    cObj("recover_asset_confirm").classList.toggle("hide");
+}
+
+cObj("cancel_asset_recovery").onclick = function () {
+    cObj("recover_asset_confirm").classList.add("hide");
+}
+
+// dispose asset
+cObj("recover_asset_confirm_btn").onclick = function () {
+    var datapass = "?recover_asset=true&asset_id="+valObj("asset-id");
+    sendData2("GET","finance/financial.php",datapass,cObj("asset-recovery-error"),cObj("recover_asset_loader"));
+    setTimeout(() => {
+        var timeout = 0;
+        var ids = setInterval(() => {
+            timeout++;
+            //after two minutes of slow connection the next process wont be executed
+            if (timeout == 1200) {
+                stopInterval(ids);
+            }
+            if (cObj("recover_asset_loader").classList.contains("hide")) {
+                // display asset account
+                if (cObj("asset-recover-success") != undefined) {
+                    get_asset_data(valObj("asset-id"));
+                    cObj("cancel_asset_recovery").click();
+                }
+                setTimeout(() => {
+                    cObj("asset-recovery-error").innerHTML = "";
+                }, 3000);
+                stopInterval(ids);
+            }
+        }, 100);
+    }, 200);
+}
+
+// get the asset data function
+function get_asset_data(asset_id) {
+    var datapass = "?asset_data=true&asset_id="+asset_id;
+    sendData2("GET","finance/financial.php",datapass,cObj("asset_data_holder"),cObj("asset_data_loader"));
+    setTimeout(() => {
+        var timeout = 0;
+        var ids = setInterval(() => {
+            timeout++;
+            //after two minutes of slow connection the next process wont be executed
+            if (timeout == 1200) {
+                stopInterval(ids);
+            }
+            if (cObj("asset_data_loader").classList.contains("hide")) {
+                // display asset account
+                cObj("assets-values-"+asset_id).value = cObj("asset_data_holder").innerText;
+                cObj("view-assets-"+valObj("asset-id")).click();
                 stopInterval(ids);
             }
         }, 100);

@@ -1,18 +1,31 @@
 [
     {
+        "course_level": 1,
+        "course_name": "2",
+        "course_status": 1,
         "id": 1,
-        "name": "House Allowance 1"
-    },
-    {
-        "id": 2,
-        "name": "House Allowance 2"
-    },
-    {
-        "id": 3,
-        "name": "House Allowance 3"
-    },
-    {
-        "id": 4,
-        "name": "House Allowance 4"
+        "module_terms": [
+            {
+                "id": 1,
+                "term_name": "TERM_1",
+                "status": "1",
+                "start_date": "20240101000000",
+                "end_date": "20240430000000"
+            },
+            {
+                "id": 2,
+                "term_name": "TERM_2",
+                "status": "0",
+                "start_date": "",
+                "end_date": ""
+            },
+            {
+                "id": 3,
+                "term_name": "TERM_3",
+                "status": "0",
+                "start_date": "",
+                "end_date": ""
+            }
+        ]
     }
 ]

@@ -70,6 +70,8 @@
             }
         }elseif(isset($_GET['dispose_asset'])){
             $asset_id = $_GET['asset_id'];
+            $set_disposed_date = $_GET['set_disposed_date'];
+            $dispose_value = $_GET['dispose_value'];
             $select = "SELECT * FROM `asset_table` WHERE `asset_id` = ?";
             $stmt = $conn2->prepare($select);
             $stmt->bind_param("s", $_GET['asset_id']);
@@ -78,16 +80,21 @@
             $result = $stmt->get_result();
             if($result){
                 if($row = $result->fetch_assoc()){
-                    // if the asset if found update the dispose date and the dispose status
-                    $update = "UPDATE `asset_table` SET `disposed_on` = ?, `disposed_status` = ? WHERE `asset_id` = ?";
-                    $stmt = $conn2->prepare($update);
-                    $dispose_status = 1;
-                    $disposed_on = date("YmdHis"); // now
-                    $stmt->bind_param("sss",$disposed_on,$dispose_status,$asset_id);
-                    $stmt->execute();
-
-                    echo "<p class='text-success'>The asset (".ucwords(strtolower($row['asset_name'])).") has been successfully disposed!</p>";
-                    return 0;
+                    echo date("Y",strtotime($row['date_of_acquiry'])) ." == ". date("Y",strtotime($set_disposed_date));
+                    if(date("Y",strtotime($row['date_of_acquiry'])) <= date("Y",strtotime($set_disposed_date))){
+                        // if the asset if found update the dispose date and the dispose status
+                        $update = "UPDATE `asset_table` SET `disposed_on` = ?, `disposed_status` = ?, `disposed_value` = ? WHERE `asset_id` = ?";
+                        $stmt = $conn2->prepare($update);
+                        $dispose_status = 1;
+                        $disposed_on = date("Ymd",strtotime($set_disposed_date)).date("His"); // now
+                        $stmt->bind_param("ssss", $disposed_on, $dispose_status, $dispose_value, $asset_id);
+                        $stmt->execute();
+                        echo "<p class='text-success' id='asset-dispose-success'>The asset (".ucwords(strtolower($row['asset_name'])).") has been successfully disposed!</p>";
+                        return 0;
+                    }else{
+                        echo "<p class='text-danger'>The dispose date can`t be earlier than the acquisition date!!</p>";
+                        return 0;
+                    }
                 }
             }
 
@@ -573,6 +580,89 @@
                 $stmt->bind_param("ss",$stuadmin,$mpesa_id);
                 $stmt->execute();
             }
+        }elseif(isset($_GET['recover_asset'])){
+            $asset_id = $_GET['asset_id'];
+            $select = "SELECT * FROM `asset_table` WHERE `asset_id` = ?";
+            $stmt = $conn2->prepare($select);
+            $stmt->bind_param("s",$asset_id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            if($result){
+                if($row = $result->fetch_assoc()){
+                    // update the asset dispose status
+                    $update = "UPDATE `asset_table` SET `disposed_status` = ?, `disposed_on` = ? WHERE `asset_id` = ?";
+                    $stmt = $conn2->prepare($update);
+                    $disposed_status = "0";
+                    $disposed_on = "";
+                    $stmt->bind_param("sss", $disposed_status,$disposed_on,$asset_id);
+                    $stmt->execute();
+
+                    echo "<p class='text-success' id='asset-recover-success'>Assets has been recovered successfully!</p>";
+                    return 0;
+                }
+            }
+
+            echo "<p class='text-danger'>The asset is invalid!</p>";
+        }elseif(isset($_GET['asset_data'])){
+            $select = "SELECT * FROM `asset_table` WHERE `asset_id` = ?";
+            $stmt = $conn2->prepare($select);
+            $stmt->bind_param("s",$_GET['asset_id']);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            if($result){
+                if($row = $result->fetch_assoc()){
+                    $row['real_acquisition_date'] = $row['date_of_acquiry'];
+                    $row['real_asset_category'] = $row['asset_category'];
+                    $row['real_orginal_value'] = $row['orginal_value'];
+                    $row['disposed_on'] = date("D dS M Y", strtotime($row['disposed_on']));
+                    
+                    // get the asset category
+                    $asset_category = "N/A";
+                    if($row['asset_category'] == "1"){
+                        $asset_category = "Land";
+                    }elseif($row['asset_category'] == "2"){
+                        $asset_category = "Buildings";
+                    }elseif($row['asset_category'] == "3"){
+                        $asset_category = "Motor Vehicle";
+                    }elseif($row['asset_category'] == "4"){
+                        $asset_category = "Furniture & Fittings";
+                    }elseif($row['asset_category'] == "5"){
+                        $asset_category = "Computer & ICT Equipments";
+                    }elseif($row['asset_category'] == "6"){
+                        $asset_category = "Plant & Equipments";
+                    }elseif($row['asset_category'] == "7"){
+                        $asset_category = "Capital Work in Progress";
+                    }
+
+                    $row['asset_category'] = $asset_category;
+
+                    // get the current value
+                    $value_acquisition = get_current_value($row);
+                    
+                    // real new value
+                    $row['real_new_value'] = $value_acquisition['new_value'];
+                    
+                    // get the date difference
+                    $financial_year_end = date("Y")."1231235959";
+                    $date_acquired = date("YmdHis",strtotime($row['date_of_acquiry']));
+                    $date1 = date_create($financial_year_end);
+                    $date2 = date_create($date_acquired);
+                    $diff = date_diff($date1,$date2);
+                    $difference_year = $diff->format("%y");
+
+                    $row['years'] = $difference_year;
+                    
+                    // change date
+                    $row['date_of_acquiry'] = date("D dS M Y",strtotime($row['date_of_acquiry']));
+                    $row['new_value'] = number_format($value_acquisition['new_value']);
+                    $row['value_acquisition'] = $value_acquisition['value_acquisition'];
+                    $row['orginal_value'] = number_format($row['orginal_value']);
+                    $row['disposed_value'] = "Kes ".number_format($row['disposed_value']);
+                    echo json_encode($row);
+                    return 0;
+                }
+            }
+            echo "Null";
         }elseif (isset($_GET['findtransactions'])) {
             $period = $_GET['period'];
             $students = $_GET['studentstype'];
@@ -5016,6 +5106,7 @@
                     $row['real_acquisition_date'] = $row['date_of_acquiry'];
                     $row['real_asset_category'] = $row['asset_category'];
                     $row['real_orginal_value'] = $row['orginal_value'];
+                    $row['disposed_on'] = date("D dS M Y", strtotime($row['disposed_on']));
                     
                     // get the asset category
                     $asset_category = "N/A";
@@ -5058,6 +5149,7 @@
                     $row['new_value'] = number_format($value_acquisition['new_value']);
                     $row['value_acquisition'] = $value_acquisition['value_acquisition'];
                     $row['orginal_value'] = number_format($row['orginal_value']);
+                    $row['disposed_value'] = "Kes ".number_format($row['disposed_value']);
                     array_push($assets,$row);
                 }
             }
@@ -8636,7 +8728,7 @@
                 // see if its diposable
                 if($disposed_status == "1"){
                     if(date("Y", strtotime($disposed_on)) == $year){
-                        $values = array("account" => "credit", "name" => "Disposed", "amount" => "Kes ".number_format($balance), "balance" => "Kes 0", "year" => $year);
+                        $values = array("account" => "credit", "name" => "Disposed (". date("D dS M Y",strtotime($row['disposed_on'])).")", "amount" => "Kes ".number_format($balance), "balance" => "Kes 0", "year" => $year);
                         array_push($accounts,$values);
                         $reduction += $balance;
                         $balance = 0;
@@ -8683,7 +8775,7 @@
                 // see if its diposable
                 if($disposed_status == "1"){
                     if(date("Y", strtotime($disposed_on)) == $year){
-                        $values = array("account" => "credit", "name" => "Disposed", "amount" => "Kes ".number_format($balance), "balance" => "Kes 0", "year" => $year);
+                        $values = array("account" => "credit", "name" => "Disposed (". date("D dS M Y @ H:i:s",strtotime($row['disposed_on'])).")", "amount" => "Kes ".number_format($balance), "balance" => "Kes 0", "year" => $year);
                         array_push($accounts,$values);
                         $reduction += $balance;
                         $balance = 0;
@@ -8726,7 +8818,7 @@
                 // see if its diposable
                 if($disposed_status == "1"){
                     if(date("Y", strtotime($disposed_on)) == $year){
-                        $values = array("account" => "credit", "name" => "Disposed", "amount" => "Kes ".number_format($balance), "balance" => "Kes 0", "year" => $year);
+                        $values = array("account" => "credit", "name" => "Disposed (". date("D dS M Y @ H:i:s",strtotime($row['disposed_on'])).")", "amount" => "Kes ".number_format($balance), "balance" => "Kes 0", "year" => $year);
                         array_push($accounts,$values);
                         $reduction += $balance;
                         $balance = 0;
@@ -8773,7 +8865,7 @@
                 // see if its diposable
                 if($disposed_status == "1"){
                     if(date("Y", strtotime($disposed_on)) == $year){
-                        $values = array("account" => "credit", "name" => "Disposed", "amount" => "Kes ".number_format($balance), "balance" => "Kes 0", "year" => $year);
+                        $values = array("account" => "credit", "name" => "Disposed (". date("D dS M Y @ H:i:s",strtotime($row['disposed_on'])).")", "amount" => "Kes ".number_format($balance), "balance" => "Kes 0", "year" => $year);
                         array_push($accounts,$values);
                         $reduction += $balance;
                         $balance = 0;
@@ -8795,8 +8887,8 @@
             // reduce from the original
             $balance_left = $original_value;
             $original_value = $store_original_value;
-            return array("years" => $difference_year, "new_value" => $balance_left, "reduction_amount" => $reduction, "original_value" => $original_value, "value_acquisition_method" => "Reducing Balance Method (+ve)", "value_acquisition" => "increase", "account" => $accounts);
+            return array("years" => $difference_year, 'disposed_value' => $row['disposed_value'] , "new_value" => $balance_left, "reduction_amount" => $reduction, "original_value" => $original_value, "value_acquisition_method" => "Reducing Balance Method (+ve)", "value_acquisition" => "increase", "account" => $accounts);
         }else{
-            return array("years" => $difference_year, "new_value" => $original_value, "reduction_amount" => 0, "original_value" => $original_value, "value_acquisition_method" => "No Method", "value_acquisition" => "increase", "account" => []);
+            return array("years" => $difference_year, 'disposed_value' => $row['disposed_value'] , "new_value" => $original_value, "reduction_amount" => 0, "original_value" => $original_value, "value_acquisition_method" => "No Method", "value_acquisition" => "increase", "account" => []);
         }
     }

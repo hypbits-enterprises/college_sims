@@ -144,7 +144,8 @@
                 <button id="back-to-assets-edit"><i class="fa fa-arrow-left"></i> Back to Assets </button>
                 <div class="row my-2">
                     <div class="col-md-12 my-2">
-                        <h6 class="text-center"><u>Edit Asset</u></h6>
+                        <h6 class="text-center"><u>Edit Asset</u> <img class="hide" src="images/ajax_clock_small.gif" id="asset_data_loader"></h6>
+                        <p class="hide" id="asset_data_holder"></p>
                     </div>
                     <form class="col-md-12" target="_blank" method="POST" action="reports/reports.php">
                         <div class="border border-secondary rounded mx-auto w-75 py-2 px-2 my-2">
@@ -154,6 +155,11 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <p class="btn btn-outline-danger btn-sm" id="dispose_assets_btn"><i class="fas fa-trash"></i> Dispose Asset</p>
+                                    <div class="hide" id="recycles">
+                                        <p class="btn btn-outline-success btn-sm" id="recover_assets_btn"><i class="fas fa-recycle"></i> Recover Asset</p>
+                                        <p class="text-success" ><b>Asset disposed on :</b> <span id="date_asset_disposed">N/A</span></p>
+                                        <p class="text-success" ><b>Asset dispose value :</b> <span id="asset_dispose_value">N/A</span></p>
+                                    </div>
                                 </div>
                                 <div class="col-md-6">
                                     <input type="submit" class="btn btn-sm btn-primary text-white" value="Print Statement of Accounts">
@@ -163,7 +169,16 @@
                                 <label class="form-control-label"><u>Confirm : </u></label>
                                 <p>- Disposing the asset means that its value will be written of this financial year?</p>
                                 <p>- The action is reversible.</p>
+                                <hr class="my-1">
                                 <div class="row">
+                                    <div class="col-md-6">
+                                        <label for="set_disposed_date" class="form-control-label"><b>Date Category</b></label>
+                                        <input type="date" class="form-control" id="set_disposed_date" value="<?=date("Y-m-d")?>">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="dispose_value" class="form-control-label"><b>Asset Value</b></label>
+                                        <input type="number" class="form-control" id="dispose_value" value="0">
+                                    </div>
                                     <div class="col-md-6">
                                         <button type="button" id="dispose_asset"><i class="fas fa-trash"></i>  Dispose <img class="hide" src="images/ajax_clock_small.gif" id="dispose_asset_loader"></button>
                                     </div>
@@ -171,6 +186,20 @@
                                         <button type="button" id="cancel_asset_disposal"><i class="fas fa-x"></i> Cancel</button>
                                     </div>
                                     <p id="asset-dispose-error"></p>
+                                </div>
+                            </div>
+                            <div class="message_contents mt-3 hide" id="recover_asset_confirm">
+                                <label class="form-control-label"><u>Confirm : </u></label>
+                                <p>- Recovering an asset means you have repossesed it!</p>
+                                <p>- Normal depreciation will continue as ussual.</p>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <button type="button" id="recover_asset_confirm_btn"><i class="fas fa-recycle"></i>  Recover Asset<img class="hide" src="images/ajax_clock_small.gif" id="recover_asset_loader"></button>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <button type="button" id="cancel_asset_recovery"><i class="fas fa-x"></i> Cancel</button>
+                                    </div>
+                                    <p id="asset-recovery-error"></p>
                                 </div>
                             </div>
                         </div>

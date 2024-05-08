@@ -1,6 +1,7 @@
 <?php
 include_once("../connections/conn1.php");
 include_once("../connections/conn2.php");
+include_once("../ajax/finance/financial.php");
 $financial_performace = $_POST['financial_performace'];
 $year_of_perfomance = $_POST['year_of_perfomance'];
 
@@ -125,7 +126,7 @@ $total_revenue1 = 0;
 $total_revenue2 = 0;
 
 // PROCESS NOTE 10
-$note_10 = get_note_10($periods, $conn2);
+$note_10 = get_note_10($conn2);
 $pdf->Cell(85, 6, "Rendering of services- fees from students", "BL", 0, "L", FALSE);
 $pdf->Cell(15, 6, "10", 1, 0, "C", FALSE);
 $pdf->Cell(45, 6, "Kes " . number_format($note_10['current_year_total']), 1, 0, "R", FALSE);
@@ -385,17 +386,15 @@ $pdf->Cell(15, 6, "", 1, 0, "C", FALSE);
 $pdf->Cell(45, 6, "", 1, 0, "R", FALSE);
 $pdf->Cell(45, 6, "", 1, 1, "R", FALSE);
 
+$cash_and_cash_equivalents = note_26($conn2, $periods);
 $pdf->SetFont('Times', '', 10);
 $pdf->Cell(85, 6, "Cash and cash equivalents", "BL", 0, "L", FALSE);
 $pdf->Cell(15, 6, "26", 1, 0, "C", FALSE);
 $income_1 = ($total_revenue1 + $total_revenue_1) - $total_expense_1;
 $income_2 = ($total_revenue2 + $total_revenue_2) - $total_expense_2;
-$pdf->Cell(45, 6, "Kes " . number_format($income_1), 1, 0, "R", FALSE);
-$pdf->Cell(45, 6, "Kes " . number_format($income_2), 1, 1, "R", FALSE);
+$pdf->Cell(45, 6, "Kes " . number_format($cash_and_cash_equivalents['current_year_cash']), 1, 0, "R", FALSE);
+$pdf->Cell(45, 6, "Kes " . number_format($cash_and_cash_equivalents['last_year_cash']), 1, 1, "R", FALSE);
 
-
-// Get student balances
-include_once("../ajax/finance/financial.php");
 $student_balances = get_school_balances($conn2);
 $pdf->SetFont('Times', '', 10);
 $pdf->Cell(85, 6, "Current portion of receivables from exchange transactions", "BL", 0, "L", FALSE);
