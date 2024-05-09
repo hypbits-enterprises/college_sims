@@ -78,9 +78,14 @@
                     </div>
                 </div>
                 <div class="conts hide" id="recordexp">
-                        <div class="conts">
-                            <h6>Add Expense</h6>
-                        </div>
+                    <div class="conts">
+                        <h6 class="text-center"><u>Add Expense</u></h6>
+                    </div>
+                    <div class="message_contents mt-3" id="delete_supplier_window">
+                        <p>- All expenses must be approved by the pricipal</p>
+                        <p>- It starts by you making a request and from the pricipal side they`ll approve all expense requests!</p>
+                    </div>
+                    <hr>
                     <div class="row border border-secondary m-1 p-1" >
                         <div class="conts col-md-4">
                             <label class="form-control-label" for="exp_named"><b>Expense Name:</b> <br></label>
@@ -138,7 +143,7 @@
                     <div class="conts col-md-6 row">
                         <div class="col-md-6">
                             <div id="error_message_expenses"><p class="text-danger text-center"><b>Select expense category before you proceed!</b></p></div>
-                            <button id='add_expenseed' class="hide">Save</button>
+                            <button id='add_expenseed' class="hide"><i class="fas fa-paper-plane"></i> Initiate Payment Request</button>
                         </div>
                         <div class="col-md-6">
                             <button id='done_adding_exp'>Close</button>
