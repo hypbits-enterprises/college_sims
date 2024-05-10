@@ -404,7 +404,7 @@ function checkPresnt($array, $string){
                         <button type='button' class="sidebtns <?php echo allowed("findtrans"); ?> htbtn" id='findtrans'><span><img class="icons" src="images/manage3.png"></span>Manage transaction</button>
                         <button type='button' class="sidebtns <?php echo allowed("mpesaTrans"); ?> htbtn" id='mpesaTrans'><span><img class="icons" src="images/manage3.png"></span>MPESA transactions</button>
                         <button type='button' class="sidebtns <?php echo allowed("feestruct"); ?> htbtn" id='feestruct'><span><img class="icons" src="images/feestructure.png"></span>Fees structure</button>
-                        <button type='button' class="sidebtns <?php echo allowed("expenses_btn"); ?> htbtn" id='expenses_btn'><span><img class="icons" src="images/feestructure.png"></span>Expense</button>
+                        <button type='button' class="sidebtns <?php echo allowed("expenses_btn"); ?> htbtn" id='expenses_btn'><span><img class="icons" src="images/feestructure.png"></span>Expenses & Approvals</button>
                         <button type='button' class="sidebtns <?php echo allowed("expenses_btn"); ?> htbtn" id='supplier_btn'><span><img class="icons" src="images/findstud.png"></span> Supplier Accounts</button>
                         <button type='button' class="sidebtns <?php echo allowed("expenses_btn"); ?> htbtn" id='asset_account_btn'><span><img class="icons" src="images/pay.png"></span> Asset Accounts</button>
                         <button type='button' class="sidebtns <?php echo allowed("finance_report_btn"); ?> htbtn" id='finance_report_btn'><span><img class="icons" src="images/report.png"></span>Financial report</button>
@@ -527,6 +527,7 @@ function checkPresnt($array, $string){
             include("financepages/findpayment.php");
             include("financepages/feesstructure.php");
             include("financepages/expenses.php");
+            include("financepages/payment_approval.php");
             include("financepages/suppliers.php");
             include("financepages/assets.php");
             include("financepages/financial_statements.php");
@@ -2301,6 +2302,123 @@ function checkPresnt($array, $string){
                 </div>
             </div>
         </div>
+        <div class="confirmpaymentwindow hide" style="overflow: auto;" id="view_payment_request">
+            <div class="changesubwindow editexams animate">
+                <div class="conts">
+                    <p class="funga" id="close_view_payment_request">&times</p>
+                    <h6 class="text-center">View Payment Request</h6>
+                </div>
+                <div class="conts">
+                    <div class="message_contents">
+                        <label class="form-control-label"><u>Note:</u></label>
+                        <p>- Fill all fields as required!</p>
+                        <p>- Edit the supplier bill.</p>
+                    </div>
+                    <form class="add_expense" >
+                        <h6 class="text-center" ><u>Supplier Bill</u></h6>
+                        <div class="conts">
+                            <label class="form-control-label" for="payment_request_name">Expense Name: <br></label>
+                            <input type="hidden" name="" id="payment_req_id">
+                            <input type="hidden" name="" id="payment_req_type">
+                            <input class="form-control w-90" type="text" name="payment_request_name" id="payment_request_name" placeholder="Bill Name">
+                        </div>
+                        <div class="conts">
+                            <label class="form-control-label" for="PR_payment_for">Expense Category: <br></label>
+                            <input class="form-control w-90" type="text" name="PR_payment_for" id="PR_payment_for" placeholder="Payment For">
+                        </div>
+                        <div class="conts">
+                            <label class="form-control-label" for="PR_expense_categories">Expense Amount: <br></label>
+                            <input class="form-control w-90" type="text" name="PR_expense_categories" id="PR_expense_categories" placeholder="Expense Category">
+                        </div>
+                        <div class="conts">
+                            <label class="form-control-label" for="PR_expense_amount">Date Paid: <br></label>
+                            <input class="form-control w-90" type="text" name="PR_expense_amount" id="PR_expense_amount" placeholder="Expense Amount">
+                        </div>
+                        <div class="conts">
+                            <label class="form-control-label" for="PR_date_paid">Document Number: <br></label>
+                            <input class="form-control w-90" type="text" name="PR_date_paid" id="PR_date_paid" placeholder="Expense Name">
+                        </div>
+                        <div class="conts">
+                            <label class="form-control-label" for="PR_expense_description">Expense Description: <br></label>
+                            <textarea name="PR_expense_description" id="PR_expense_description" class="form-control" cols="30" rows="2"></textarea>
+                        </div>
+                    </form>
+                    <div class="conts">
+                        <!-- <p id="payment_requests_error"></p> -->
+                    </div>
+                    <div class="message_contents mt-3 hide" id="confirm_payment_request_window">
+                        <label class="form-control-label"><u>Confirm:</u></label>
+                        <p>- Confirm accepting the payment request?</p>
+                        <p>- This action is irreversible.</p>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <button id="confirm_accept_payment_request"><i class="fas fa-trash"></i> Yes <img class="hide" src="images/ajax_clock_small.gif" id="delete_supplier_loader"></button>
+                            </div>
+                            <div class="col-md-6">
+                                <button id="cancel_accept_payment_request"><i class="fas fa-x"></i> Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="btns">
+                        <p class="float-right btn btn-sm btn-success" id="accept_payment_approvall"><i class="fas fa-check"></i> Accept</p>
+                        <p class="float-center btn btn-sm btn-warning" id="close_payment_approvale">Close</p>
+                        <p class="float-left btn btn-sm btn-danger" id="reject_payment_approvale">X reject</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="confirmpaymentwindow hide" style="overflow: auto;" id="show_payment_req_confirmation">
+            <div class="changesubwindow editexams animate">
+                <div class="conts">
+                    <p class="funga" id="close_confirm_payment_request">&times</p>
+                    <h6 class="text-center">Accept Payment Request</h6>
+                </div>
+                <div class="conts">
+                    <div class="message_contents mt-3">
+                        <input type="hidden" id="payment_request_id">
+                        <input type="hidden" id="payment_request_type">
+                        <label class="form-control-label"><u>Confirm:</u></label>
+                        <p>- Confirm accepting the payment request?</p>
+                        <p>- This action is irreversible.</p>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <button id="confirm_payment_request_in" >Yes <img id="loader_clocks" class="hide" src="images/ajax_clock_small.gif" ></button>
+                            </div>
+                            <div class="col-md-6">
+                                <button id="cancel_payment_request_in" >Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="confirmpaymentwindow hide" style="overflow: auto;" id="show_payment_decline_window">
+            <div class="changesubwindow editexams animate">
+                <div class="conts">
+                    <p class="funga" id="close_payment_decline_window">&times</p>
+                    <h6 class="text-center">Accept Payment Request</h6>
+                </div>
+                <div class="conts">
+                    <div class="message_contents mt-3">
+                        <input type="hidden" id="payment_request_id_decline">
+                        <input type="hidden" id="payment_request_type_decline">
+                        <label class="form-control-label"><u>Confirm:</u></label>
+                        <p>- Confirm decline the payment request?</p>
+                        <p>- This action is irreversible.</p>
+                        <label for="payment_description" class="form-control-label">Reason of decline</label>
+                        <textarea name="payment_description" id="payment_description" class="form-control" rows="5" placeholder="Write your narrative here!"></textarea>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <button id="confirm_payment_request_decline" >Yes <img id="all_loader_clocks" class="hide" src="images/ajax_clock_small.gif" ></button>
+                            </div>
+                            <div class="col-md-6">
+                                <button id="cancel_payment_request_decline" >Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="confirmpaymentwindow hide" style="overflow: auto;" id="make_payments_window">
             <div class="changesubwindow editexams animate">
                 <div class="conts">
@@ -2352,7 +2470,7 @@ function checkPresnt($array, $string){
                         <p id="supplier_payment_description_error"></p>
                     </div>
                     <div class="btns">
-                        <button type="button" id="make_supplier_payment">Confirm Payment <img class="hide" src="images/ajax_clock_small.gif" id="make_payment_loader"></button>
+                        <button type="button" id="make_supplier_payment">Confirm Payment Request<img class="hide" src="images/ajax_clock_small.gif" id="make_payment_loader"></button>
                         <button type="button" id="close_supplier_payment">Close</button>
                     </div>
                 </div>
@@ -2366,8 +2484,13 @@ function checkPresnt($array, $string){
                 </div>
                 <div class="conts">
                     <div class="cont">
-                        <div class="container ml-3">
-                            <span class="btn btn-sm btn-secondary" id="delete_payments"><i class="fas fa-trash"></i></span>
+                        <div class="container ml-3 row">
+                            <div class="col-md-6">
+                                <span class="btn btn-sm btn-secondary" id="delete_payments"><i class="fas fa-trash"></i></span>
+                            </div>
+                            <div class="col-md-6" id="show_supplier_payment_status">
+
+                            </div>
                         </div>
                         <div class="message_contents hide" id="delete_payment_window">
                             <label class="form-control-label"><u>Confirm:</u></label>
@@ -2671,7 +2794,14 @@ function checkPresnt($array, $string){
                     <p class="funga" id="edit_expense_windows_2">&times</p>
                     <h6 class="text-center"><b>Edit Expense</b> <label for=""><img src="images/ajax_clock_small.gif" id="expense_editor_loader" class="hide"></label></h6>
                 </div>
-                <button type='button' id="delete_promt_expenses">Delete</button>
+                <div class="row">
+                    <div class="col-md-6">
+                        <button type='button' id="delete_promt_expenses">Delete</button>
+                    </div>
+                    <div class="col-md-6" id="expense_status_view">
+                        <!-- show the payment approve status -->
+                    </div>
+                </div>
                 <p class="border border-primary p-2 hide" id="delete_exp_window">
                     Are you sure you want to delete this expense entry! <br>
                     <span id="delete_expense_entry" class="text-danger link"><i class="fas fa-trash"></i>Delete</span>

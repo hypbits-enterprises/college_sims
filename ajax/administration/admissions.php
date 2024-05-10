@@ -4304,7 +4304,7 @@
                         $data_to_display .= "<option value='".$row['expense_id']."'>".ucwords(strtolower($row['expense_name']))." - | Kes ".number_format($row['expense_budget'] - $used_amount)." | (".$percentage."%)</option>";
                     }
                 }
-                $data_to_display.="</select><input type='hidden' value='".json_encode($expenses)."' id='expense_categories_value'>";
+                $data_to_display.="</select><input type='hidden' value=\"".htmlspecialchars(json_encode($expenses))."\" id='expense_categories_value'>";
             }
             echo $data_to_display;
         }elseif(isset($_GET['delete_expense_category'])){

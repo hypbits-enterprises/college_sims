@@ -441,10 +441,10 @@ if (auth == 2) {
 setInterval(() => {
     var datapass = "?activeuser=true&userid="+cObj("useriddds").value;
     sendData("GET","administration/admissions.php",datapass,cObj("nulled"));
-}, 2000);
+}, 60000);
 
 //check for notifications
 setInterval(() => {
     var datapass = "?notices=true";
     sendData("GET","notices/notices.php",datapass,cObj("note_2"));
-}, 30000);
+}, 60000);

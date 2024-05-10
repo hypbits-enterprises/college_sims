@@ -5069,6 +5069,60 @@
 
             // return the json encoded string to the front end
             echo json_encode($data);
+        }elseif(isset($_POST['get_payment_requests'])){
+            $get_payment_requests = $_POST['get_payment_requests'];
+            // get the page limit
+            $page_req = $_POST['get_payment_requests'];
+            $limit_1 = $_POST['get_payment_requests'] * 1 > 1 ? (($_POST['get_payment_requests']*1) - 1) * 50 : 0;
+            $limit_2 = $_POST['get_payment_requests'] * 1 > 1 ? (($_POST['get_payment_requests']*1)) * 50 : 50;
+
+            // save text
+            include("../../connections/conn1.php");
+            include("../../connections/conn2.php");
+
+            // get the page numbers and current page
+            $select = "SELECT COUNT(*) AS 'Total' FROM `suppliers`";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $count = 0;
+            if($result){
+                if($row = $result->fetch_assoc()){
+                    $count = $row['Total'];
+                }
+            }
+
+            // GET THE TOTAL PAGES
+            $select = "(SELECT payment_id, (SELECT `bill_name` FROM `supplier_bills` WHERE `bill_id` = payment_for) AS 'exp_name', (SELECT `expense_name` FROM `expense_category` WHERE `expense_id` = (SELECT `expense_category` FROM `supplier_bills` WHERE `bill_id` = payment_for)) AS 'exp_category', amount,date_paid,document_number,`payment_description`, CONCAT('supplier') AS 'table_name' FROM supplier_bill_payments WHERE approval_status = '0' UNION ALL SELECT expid, exp_name, (SELECT expense_name FROM expense_category WHERE expense_id = exp_category) AS 'exp_category', exp_amount, CONCAT(expense_date,' ',exp_time) AS 'time', document_number, expense_description, CONCAT('running_expense') AS 'table_name' FROM expenses WHERE  approval_status = '0')";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            if ($result) {
+                while($row = $result->fetch_assoc()){
+                    $count++;
+                }
+            }
+
+            $total_pages = round($count/50);
+            $total_pages += $count%50 == 0 ? 0 : 1;
+
+            // select
+            $select = "(SELECT payment_id, (SELECT `bill_name` FROM `supplier_bills` WHERE `bill_id` = payment_for) AS 'exp_name', (SELECT `expense_name` FROM `expense_category` WHERE `expense_id` = (SELECT `expense_category` FROM `supplier_bills` WHERE `bill_id` = payment_for)) AS 'exp_category', amount,date_paid,document_number,`payment_description`, CONCAT('supplier') AS 'table_name' FROM supplier_bill_payments WHERE approval_status = '0' UNION ALL SELECT expid, exp_name, (SELECT expense_name FROM expense_category WHERE expense_id = exp_category) AS 'exp_category', exp_amount, CONCAT(expense_date,' ',exp_time) AS 'time', document_number, expense_description, CONCAT('running_expense') AS 'table_name' FROM expenses WHERE  approval_status = '0') ORDER BY `payment_id` DESC LIMIT $limit_1,$limit_2";
+            $stmt = $conn2->prepare($select);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $pay_requests = [];
+            if($result){
+                while($row = $result->fetch_assoc()){
+                    $row['date_paid'] = date("D dS M Y H:i:sA",strtotime($row['date_paid']));
+                    $row['amount'] = "Kes ".number_format($row['amount']);
+                    array_push($pay_requests,$row);
+                }
+            }
+            $data = array("pay_requests" => $pay_requests, "total_pages" => $total_pages);
+
+            // return the json encoded string to the front end
+            echo json_encode($data);
         }elseif(isset($_POST['get_assets'])){
             $get_assets = $_POST['get_assets'];
             // get the page limit
@@ -5417,6 +5471,57 @@
             $stmt->execute();
             
             echo "<p class='text-success'>Bill has been successfully deleted!</p>";
+        }elseif(isset($_POST['send_payment_request'])){
+            $payment_id = $_POST['payment_id'];
+            $payment_type = $_POST['payment_type'];
+            $comment = $_POST['comment'];
+            $request_status = $_POST['request_status'];
+
+            // include the connectiom
+            include("../../connections/conn2.php");
+
+            // if it running expense go to expense table
+            if($payment_type == "running_expense"){
+                // select statement
+                $select = "SELECT * FROM `expenses` WHERE `expid` = '".$payment_id."'";
+                $stmt = $conn2->prepare($select);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                if($result){
+                    if($row = $result->fetch_assoc()){
+                        // update the expense
+                        $update = "UPDATE `expenses` SET `approval_status` = '".$request_status."', `approval_comment` = '".$comment."' WHERE `expid` = '".$payment_id."'";
+                        $stmt = $conn2->prepare($update);
+                        $stmt->execute();
+                        
+                        echo "<p class='text-success'>Payment request successfully accepted!</p>";
+                        return 0;
+                    }
+                }
+                echo "<p class='text-danger'>Invalid payment request! It must have been deleted!</p>";
+                return 0;
+            }elseif($payment_type == "supplier"){
+                $select = "SELECT * FROM `supplier_bill_payments` WHERE `payment_id` = '".$payment_id."'";
+                $stmt = $conn2->prepare($select);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                if($result){
+                    if($row = $result->fetch_assoc()){
+                        // update
+                        $update = "UPDATE `supplier_bill_payments` SET `approval_status` = '".$request_status."', `approval_comment` = '".$comment."' WHERE `payment_id` = '".$payment_id."'";
+                        $stmt = $conn2->prepare($update);
+                        $stmt->execute();
+                        
+                        echo "<p class='text-success'>Payment request successfully accepted!</p>";
+                        return 0;
+                    }
+                }
+                echo "<p class='text-danger'>Invalid payment request! It must have been deleted!</p>";
+                return 0;
+            }else{
+                echo "<p class='text-danger'>An error has occured!</p>";
+                return 0;
+            }
         }elseif(isset($_POST['delete_supplier'])){
             include("../../connections/conn1.php");
             include("../../connections/conn2.php");

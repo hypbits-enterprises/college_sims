@@ -1487,6 +1487,7 @@ function addExpense() {
                 grayBorder(cObj("exp_total_amt"));
                 cObj("err_hndler_expenses").innerHTML = "<p class='green_notice'></p>";
             }
+
             if (err == 0) {
                 var expense_sub_category = cObj("expense_sub_category") != undefined && cObj("expense_sub_category") != null ? valObj("expense_sub_category") : "";
                 var datapass = "?addExpenses=true&exp_name=" + cObj("exp_named").value + "&expensecat=" + cObj("exp_cat").value + "&quantity=" + cObj("exp_quant").value + "&unitcost=" + cObj("exp_amnt").value + "&total=" + cObj("exp_total_amt").value + "&unit_name=" + cObj("unit_name").value+"&expense_cash_activity="+valObj("expense_cash_activity")+"&expense_record_date="+valObj("expense_record_date")+"&document_number="+valObj("document_number")+"&new_expense_description="+valObj("new_expense_description")+"&expense_sub_category="+expense_sub_category;
@@ -1551,6 +1552,7 @@ function displayTodaysExpense() {
                 if (cObj("table_values2") != undefined) {
                     var datavalue = cObj("table_values2").innerText;
                     var dataval2 = JSON.parse(datavalue);
+
                     //get the value labels
                     var arrLabels = [];
                     for (let val in dataval2) {
@@ -1565,9 +1567,11 @@ function displayTodaysExpense() {
                         arrData.push(dataval2[element]);
                         arrColor.push(getRandomColor());
                     }
+
                     var title = cObj("title-charts2").innerText;
                     createChart2(cObj("expense-charted-in"), title, arrLabels, arrData, arrColor);
                 }
+
                 // get the data of the expense table
                 if (cObj("expenses_data_json") != undefined) {
                     var expenses_data_json = cObj("expenses_data_json").innerText;
@@ -1585,7 +1589,6 @@ function displayTodaysExpense() {
                             cObj("tablefooter_expenses").classList.add("invisible");
                         }
                     }
-
                 }
                 stopInterval(ids);
             }
@@ -4928,11 +4931,13 @@ function display_suppliers_payments(payments) {
     if (payments.length > 0) {
         for (let index = 0; index < payments.length; index++) {
             const element = payments[index];
+            var status = element.approval_status == 1 ? "<span class='badge bg-success' title='Payment Approved'>A</span>" : (element.approval_status == 0 ? "<span class='badge bg-warning' title='Payment Not Approved'>-A</span>" : "<span class='badge bg-danger' title='Payment Declined'>-A</span>");
+            var print_enable = element.approval_status == 1 ? "" : "hide";
             data_to_display+="<tr>";
-            data_to_display+="<td><input type='hidden' id='supplier_payment_dets_"+element.payment_id+"' value='"+JSON.stringify(element)+"'> "+(index+1)+"</td>";
+            data_to_display+="<td><input type='hidden' id='supplier_payment_dets_"+element.payment_id+"' value='"+JSON.stringify(element)+"'> "+(index+1)+" "+status+"</td>";
             data_to_display+="<td>Kes "+element.amount+"</td>";
             data_to_display+="<td>"+element.date+"</td>";
-            data_to_display+="<td><span class='link supplier_payment' id='supplier_payment_"+element.payment_id+"'><i class='fas fa-eye'></i> View</span> <br><a class='link text-sm' target='_blank' href='reports/reports.php?supplier_payment_id="+element.payment_id+"'><i class='fas fa-print'></i> Print</a></td>";
+            data_to_display+="<td><span class='link supplier_payment' id='supplier_payment_"+element.payment_id+"'><i class='fas fa-eye'></i> View</span> <br><a class='"+print_enable+" link text-sm' target='_blank' href='reports/reports.php?supplier_payment_id="+element.payment_id+"'><i class='fas fa-print'></i> Print</a></td>";
             data_to_display+="</tr>";
         }
         data_to_display+="</table>";
@@ -4962,6 +4967,18 @@ function edit_supplier_payments() {
         cObj("supplier_payment_document_no_edit").value = supplier_payment_dets.document_number
         cObj("supplier_payment_description_edit").value = supplier_payment_dets.payment_description
         cObj("supplier_payment_id").value = supplier_payment_dets.payment_id
+        cObj("show_supplier_payment_status").innerHTML = supplier_payment_dets.approval_status == 1 ? "<span class='badge bg-success'>Payment Approved</span>" : (supplier_payment_dets.approval_status == 0 ? "<span class='badge bg-warning'>Payment Not Approved Yet!</span>" : "<span class='badge bg-danger'>Payment Declined!</span>");
+
+        // disable some elements when the payment status is approved
+        if (supplier_payment_dets.approval_status == 1) {
+            cObj("supplier_payment_amount_edit").disabled = true;
+            cObj("payment-method-edit").disabled = true;
+            cObj("delete_payments").classList.add("hide");
+        }else{
+            cObj("supplier_payment_amount_edit").disabled = false;
+            cObj("payment-method-edit").disabled = false;
+            cObj("delete_payments").classList.remove("hide");
+        }
 
         var children = cObj("payment-method-edit").children;
         children[0].selected = true;
@@ -4973,7 +4990,8 @@ function edit_supplier_payments() {
         }
         
         // get the payment option
-        get_payment_option("supplier_payment_for_edit",supplier_payment_dets.payment_for,"payment_for_details_edit","supplier_payment_for_loader_edit");
+        var disabled = supplier_payment_dets.approval_status == 1;
+        get_payment_option("supplier_payment_for_edit",supplier_payment_dets.payment_for,"payment_for_details_edit","supplier_payment_for_loader_edit",disabled);
     }else{
         // display an error has occured!
     }
@@ -5115,9 +5133,23 @@ cObj("add_payments").onclick = function () {
     get_payment_option("supplier_payment_for","");
 }
 
-function get_payment_option(option_id,option_value, display_area = "payment_for_details", loader = "supplier_payment_for_loader") {
+function get_payment_option(option_id,option_value, display_area = "payment_for_details", loader = "supplier_payment_for_loader", disabled = false) {
     var datapass = "get_payment_for=true&option_id="+option_id+"&option_value="+option_value+"&supplier_id="+valObj("supplier_id");
     sendDataPost("POST","ajax/finance/financial.php",datapass,cObj(display_area),cObj(loader));
+    setTimeout(() => {
+        var timeout = 0;
+        var ids = setInterval(() => {
+            timeout++;
+            //after two minutes of slow connection the next process wont be executed
+            if (timeout == 1200) {
+                stopInterval(ids);
+            }
+            if (cObj(loader).classList.contains("hide")) {
+                cObj(option_id).disabled = disabled;
+                stopInterval(ids);
+            }
+        }, 100);
+    }, 200);
 }
 
 cObj("make_supplier_payment_edit").onclick = function () {
@@ -5284,6 +5316,7 @@ cObj("confirm_bill_deletion").onclick = function () {
 }
 
 cObj("delete_supplier").onclick = function () {
+    console.log("Hide me");
     cObj("delete_supplier_window").classList.toggle("hide");
 }
 
@@ -5707,4 +5740,251 @@ function get_asset_data(asset_id) {
             }
         }, 100);
     }, 200);
+}
+
+function display_payment_requests(page = 1){
+    var datapass = "get_payment_requests="+page;
+    sendDataPost("POST","ajax/finance/financial.php",datapass,cObj("payment_request_holder"),cObj("payment_request_table_loader"));
+    setTimeout(() => {
+        var timeout = 0;
+        var ids = setInterval(() => {
+            timeout++;
+            //after two minutes of slow connection the next process wont be executed
+            if (timeout == 1200) {
+                stopInterval(ids);
+            }
+            if (cObj("payment_request_table_loader").classList.contains("hide")) {
+                var data_to_display = hasJsonStructure(cObj("payment_request_holder").innerText) ? JSON.parse(cObj("payment_request_holder").innerText) : {"payment_requests" : [],"total_pages" : 0};
+                display_all_payment_requests(data_to_display.pay_requests);
+                cObj("payment_requests_index").innerText = "Page "+page+" of "+data_to_display.total_pages;
+                cObj("payment_request_page").value = page;
+                cObj("maximum_payment_request").value = data_to_display.total_pages;
+                stopInterval(ids);
+            }
+
+            // navigation buttons
+            // cObj("next_supplier_page").addEventListener("click",navigate_right);
+            // cObj("previous_supplier_page").addEventListener("click",navigate_left);
+        }, 100);
+    }, 200);
+}
+
+function display_all_payment_requests(data_to_display) {
+    var data_in_display = "";
+    if (data_to_display.length > 0) {
+        data_in_display = "<table id='payment_application_table' class='table'><tr><th>No.</th><th>Payment for</th><th>Expense Categories</th><th>Expense Amount.</th><th>Date Paid</th><th>Document Number</th><th>Action</th></tr>";
+        for (let index = 0; index < data_to_display.length; index++) {
+            const element = data_to_display[index];
+            data_in_display+="<tr><td><input type='hidden' id='payment_request_"+element.payment_id+"' value='"+JSON.stringify(element)+"'>"+(index+1)+"</td><td>"+element.exp_name+"</td><td>"+element.exp_category+"</td><td>"+element.amount+"</td><td>"+element.date_paid+"</td><td>"+element.document_number+"</td><td><span style='font-size:12px;' class='link view_payment_requests' id='view_pay_req_"+element.payment_id+"'><i class='fa fa-eye'></i> View </span> <br> <span style='font-size:12px;' class='link accept_pay_request' id='accept_"+element.payment_id+"'><i class='fa fa-check'></i> Accept </span> <br> <span style='font-size:12px; color:red;' class='link decline_pay_request' id='decline_"+element.payment_id+"'><b>X</b> Decline </span></td></tr>";
+        }
+        data_in_display+="</table>";
+    }else{
+        data_in_display="<p class='text-danger'>No Payment requests data found!</p>";
+    }
+
+    // data to display
+    cObj("payment_request_tables").innerHTML = data_in_display;
+
+    // add an event listener
+    var view_payment_requests = document.getElementsByClassName("view_payment_requests");
+    for (let index = 0; index < view_payment_requests.length; index++) {
+        const element = view_payment_requests[index];
+        element.addEventListener("click",view_payment_request);
+    }
+
+    var accept_pay_request = document.getElementsByClassName("accept_pay_request");
+    for (let index = 0; index < accept_pay_request.length; index++) {
+        const element = accept_pay_request[index];
+        element.addEventListener("click", accept_pay_requests);
+    }
+
+    var decline_pay_request = document.getElementsByClassName("decline_pay_request");
+    for (let index = 0; index < decline_pay_request.length; index++) {
+        const element = decline_pay_request[index];
+        element.addEventListener("click", decline_pay_requests);
+    }
+
+    // search keyword
+    cObj("search_payment_approvals").addEventListener("keyup",search_payment_approvals);
+}
+
+function view_payment_request() {
+    var id = this.id.substr("view_pay_req_".length,this.id.length);
+    cObj("view_payment_request").classList.remove("hide");
+
+    // fill data
+    if (hasJsonStructure(valObj("payment_request_"+id))) {
+        var payment_request = JSON.parse(valObj("payment_request_"+id));
+
+        // get the data 
+        cObj("payment_request_name").value = payment_request.exp_name;
+        cObj("PR_payment_for").value = payment_request.exp_category;
+        cObj("PR_expense_categories").value = payment_request.amount;
+        cObj("PR_expense_amount").value = payment_request.date_paid;
+        cObj("PR_date_paid").value = payment_request.document_number;
+        cObj("PR_expense_description").value = payment_request.payment_description;
+        cObj("payment_req_id").value = payment_request.payment_id;
+        cObj("payment_req_type").value = payment_request.table_name;
+    }
+}
+
+cObj("cancel_accept_payment_request").onclick = function () {
+    cObj("confirm_payment_request_window").classList.add("hide");
+}
+
+function search_payment_approvals() {
+    var keyword = this.value.toLowerCase();
+    var row = cObj("payment_application_table").children;
+
+    // new row
+    var new_row = row;
+    for (let index = 0; index < 4; index++) {
+        new_row = new_row.length > 0 ? (new_row[0].tagName == "TR" ? new_row : new_row[0].children) : [];
+        if (new_row.length > 0) {
+            if (new_row[0].tagName == "TR") {
+                break;
+            }else{
+                new_row = new_row[0].children;
+            }
+        }else{
+            new_row = [];
+        }
+    }
+
+    // row length
+    row = new_row;
+    for (let index = 1; index < row.length; index++) {
+        const element = row[index];
+        var columns = element.children;
+
+        // check if in this row the column has what the keyword shows
+        var present = 0;
+        for (let index = 1; index < (columns.length-1); index++) {
+            const elem = columns[index];
+            if (elem.innerText.toLowerCase().includes(keyword)) {
+                present++;
+            }
+        }
+
+        // if the keyword is present show the row
+        if (present > 0) {
+            element.classList.remove("hide");
+        }else{
+            element.classList.add("hide");
+        }
+    }
+}
+
+cObj("back_to_expenses_view").onclick = function () {
+    cObj("expenses_btn").click();
+}
+
+cObj("close_view_payment_request").onclick = function () {
+    cObj("view_payment_request").classList.add("hide");
+    cObj("confirm_payment_request_window").classList.add("hide");
+}
+
+cObj("close_payment_approvale").onclick = function () {
+    cObj("view_payment_request").classList.add("hide");
+    cObj("confirm_payment_request_window").classList.add("hide");
+}
+
+cObj("accept_payment_approvall").onclick = function () {
+    cObj("payment_request_id").value = cObj("payment_req_id").value;
+    cObj("payment_request_type").value = cObj("payment_req_type").value;
+    cObj("show_payment_req_confirmation").classList.remove("hide");
+}
+
+cObj("confirm_accept_payment_request").onclick = function () {
+    send_payment_request(valObj("payment_req_id"), valObj("payment_req_type"), "payment_request_success", "payment_request_table_loader")
+}
+
+function send_payment_request(id, payment_type, message, loader, comment = "", request_status = 1) {
+    var datapass = "send_payment_request=true&payment_id="+id+"&payment_type="+payment_type+"&comment="+comment+"&request_status="+request_status;
+    sendDataPost("POST","ajax/finance/financial.php",datapass, cObj(message),cObj(loader));
+    setTimeout(() => {
+        var timeout = 0;
+        var ids = setInterval(() => {
+            timeout++;
+            //after two minutes of slow connection the next process wont be executed
+            if (timeout == 1200) {
+                stopInterval(ids);
+            }
+            if (cObj(loader).classList.contains("hide")) {
+                // display all payment requests
+                display_payment_requests();
+
+                // close payment approval
+                cObj("close_payment_approvale").click();
+
+                // close the decline window
+                cObj("close_payment_decline_window").click();
+
+                // hide the confirmation window
+                cObj("show_payment_req_confirmation").classList.add("hide");
+                setTimeout(() => {
+                    cObj(message).innerHTML = "";
+                }, 3000);
+                stopInterval(ids);
+            }
+
+            // navigation buttons
+            // cObj("next_supplier_page").addEventListener("click",navigate_right);
+            // cObj("previous_supplier_page").addEventListener("click",navigate_left);
+        }, 100);
+    }, 200);
+}
+
+function accept_pay_requests() {
+    var id = this.id.substr("accept_".length,this.id.length);
+
+    // fill data
+    if (hasJsonStructure(valObj("payment_request_"+id))) {
+        cObj("show_payment_req_confirmation").classList.remove("hide");
+        var payment_request = JSON.parse(valObj("payment_request_"+id));
+
+        // get the data
+        cObj("payment_request_id").value = payment_request.payment_id;
+        cObj("payment_request_type").value = payment_request.table_name;
+    }
+}
+
+function decline_pay_requests() {
+    var id = this.id.substr("decline_".length,this.id.length);
+
+    // fill data
+    if (hasJsonStructure(valObj("payment_request_"+id))) {
+        cObj("show_payment_decline_window").classList.remove("hide");
+        var payment_request = JSON.parse(valObj("payment_request_"+id));
+
+        // get the data 
+        cObj("payment_request_id_decline").value = payment_request.payment_id;
+        cObj("payment_request_type_decline").value = payment_request.table_name;
+    }
+}
+
+cObj("close_confirm_payment_request").onclick = function () {
+    cObj("show_payment_req_confirmation").classList.add("hide");
+}
+
+cObj("cancel_payment_request_in").onclick = function () {
+    cObj("show_payment_req_confirmation").classList.add("hide");
+}
+cObj("confirm_payment_request_in").onclick = function () {
+    send_payment_request(valObj("payment_request_id"), valObj("payment_request_type"), "payment_request_success", "payment_request_table_loader")
+}
+
+cObj("cancel_payment_request_decline").onclick = function () {
+    cObj("show_payment_decline_window").classList.add("hide");
+    cObj("payment_description").value = "";
+}
+
+cObj("close_payment_decline_window").onclick = function () {
+    cObj("show_payment_decline_window").classList.add("hide");
+    cObj("payment_description").value = "";
+}
+
+cObj("confirm_payment_request_decline").onclick = function () {
+    var payment_description = valObj("payment_description");
+    send_payment_request(valObj("payment_request_id_decline"), valObj("payment_request_type_decline"), "payment_request_success", "payment_request_table_loader", payment_description, "2");
 }

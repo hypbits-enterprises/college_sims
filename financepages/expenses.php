@@ -24,7 +24,8 @@
             <div class="expense_record_panel">
                 <h6><i class="fa fa-file" style="font-size:18px;margin-bottom:10px;"></i> Expenses:</h6>
                 <div class="expeses_options" id="exp_options">
-                    <button id="add_exp">Add Expenses</button>
+                    <button id="add_exp"><i class="fas fa-plus"></i> Add Expenses</button>
+                    <button id="approve_payments"><i class="fas fa-check"></i> Approve Payments</button>
                     <button class="hide" id="find_exp_da">Find Expenses</button>
                 </div>
                 <div class="find_exp hide" id="find_exp_date">
@@ -81,7 +82,7 @@
                     <div class="conts">
                         <h6 class="text-center"><u>Add Expense</u></h6>
                     </div>
-                    <div class="message_contents mt-3" id="delete_supplier_window">
+                    <div class="message_contents mt-3">
                         <p>- All expenses must be approved by the pricipal</p>
                         <p>- It starts by you making a request and from the pricipal side they`ll approve all expense requests!</p>
                     </div>
@@ -143,7 +144,7 @@
                     <div class="conts col-md-6 row">
                         <div class="col-md-6">
                             <div id="error_message_expenses"><p class="text-danger text-center"><b>Select expense category before you proceed!</b></p></div>
-                            <button id='add_expenseed' class="hide"><i class="fas fa-paper-plane"></i> Initiate Payment Request</button>
+                            <button id='add_expenseed' class="hide"><i class="fas fa-paper-plane"></i> Make Payment Request</button>
                         </div>
                         <div class="col-md-6">
                             <button id='done_adding_exp'>Close</button>
