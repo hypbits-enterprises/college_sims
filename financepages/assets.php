@@ -233,10 +233,10 @@
                         <label for="value-acquisition-option-edit" class="form-label"><b>Value Acquisition Option</b></label>
                         <select name="value-acquisition-option-edit" id="value-acquisition-option-edit" class="form-control w-100">
                             <option value="" hidden>Select an Option</option>
-                            <option value="1">Straightline Method (decrease)</option>
-                            <option value="2">Reducing Balance Method (decrease)</option>
-                            <option value="3">Straightline Method (increase)</option>
-                            <option value="4">Reducing Balance Method (increase)</option>
+                            <option value="1">Straightline Method</option>
+                            <option value="2">Reducing Balance Method</option>
+                            <!-- <option value="3">Straightline Method (increase)</option>
+                            <option value="4">Reducing Balance Method (increase)</option> -->
                         </select>
                     </div>
                     <div class="col-md-4 form-group">

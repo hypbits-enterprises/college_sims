@@ -4845,6 +4845,47 @@ function edit_supplier_bills() {
         cObj("supplier_document_number_edit").value = edit_supplier_bill.document_number;
         cObj("supplier_bill_id_edit").value = edit_supplier_bill.bill_id;
 
+        // set the capital expenses
+        var children = cObj("expense_type_edit").children;
+        for (let index = 0; index < children.length; index++) {
+            const element = children[index];
+            if (element.value == edit_supplier_bill.expense_type) {
+                element.selected = true;
+            }
+        }
+        
+        // show id
+        var show = edit_supplier_bill.expense_type == "capital" ? "capital_expenses" : "operational_expense";
+        var hide = edit_supplier_bill.expense_type == "capital" ? "operational_expense" : "capital_expenses";
+        
+        var show_element = document.getElementsByClassName(show);
+        var hide_element = document.getElementsByClassName(hide);
+
+        // document
+        var children = cObj("asset_expense_category_edit").children;
+        children[0].selected = true;
+
+        // get the other document
+        for (let index = 0; index < children.length; index++) {
+            const element = children[index];
+            if (element.value == edit_supplier_bill.expense_category) {
+                // selected element
+                element.selected = true;
+            }
+        }
+
+        // show element
+        for (let index = 0; index < show_element.length; index++) {
+            const element = show_element[index];
+            element.classList.remove("hide");
+        }
+
+        // hide element
+        for (let index = 0; index < hide_element.length; index++) {
+            const element = hide_element[index];
+            element.classList.add("hide");
+        }
+
         // show the edit window
         cObj("edit_supplier_biil").classList.remove("hide");
 
@@ -4883,8 +4924,10 @@ cObj("save_new_supplier_bill_edit").onclick = function () {
     err+=checkBlank("supplier_bill_amount_edit");
     err+=checkBlank("date_assigned_edit");
     err+=checkBlank("supplier_bill_due_date_edit");
-    err += cObj("supplier_expense_category_edit") != undefined ? checkBlank("supplier_expense_category_edit") : 0;
-    err += cObj("supplier_expense_sub_category_edit") != undefined ? checkBlank("supplier_expense_sub_category_edit") : 0;
+    err += checkBlank("expense_type_edit");
+    err += valObj("expense_type_edit") == "operation" ? (cObj("supplier_expense_category_edit") != undefined ? checkBlank("supplier_expense_category_edit") : 0) : 0;
+    err += valObj("expense_type_edit") == "operation" ? (cObj("supplier_expense_sub_category_edit") != undefined ? checkBlank("supplier_expense_sub_category_edit") : 0) : 0;
+    err += valObj("expense_type_edit") == "capital" ? checkBlank("asset_expense_category_edit") : 0;
 
     // get error
     if (err == 0) {
@@ -4895,6 +4938,7 @@ cObj("save_new_supplier_bill_edit").onclick = function () {
 
         var datapass = "update_bill=true&bill_name="+supplier_bill_name_edit+"&bill_amount="+supplier_bill_amount_edit+"&date_assigned="+date_assigned_edit+"&due_date="+supplier_bill_due_date_edit+"&supplier_bill_id_edit="+valObj("supplier_bill_id_edit")+"&supplier_document_number="+valObj("supplier_document_number_edit");
         datapass += "&supplier_expense_category_edit="+valObj("supplier_expense_category_edit")+"&supplier_expense_sub_category_edit="+valObj("supplier_expense_sub_category_edit");
+        datapass += "&asset_expense_category="+valObj("asset_expense_category_edit")+"&expense_type="+valObj("expense_type_edit");
         sendDataPost("POST","ajax/finance/financial.php",datapass,cObj("supplier_bill_error_edit"),cObj("save_bill_loader_edit"));
         setTimeout(() => {
             var timeout = 0;
@@ -4933,8 +4977,9 @@ function display_suppliers_payments(payments) {
             const element = payments[index];
             var status = element.approval_status == 1 ? "<span class='badge bg-success' title='Payment Approved'>A</span>" : (element.approval_status == 0 ? "<span class='badge bg-warning' title='Payment Not Approved'>-A</span>" : "<span class='badge bg-danger' title='Payment Declined'>-A</span>");
             var print_enable = element.approval_status == 1 ? "" : "hide";
+            var encodedValue = encodeURIComponent(JSON.stringify(element)).replace(/'/g, '%27');
             data_to_display+="<tr>";
-            data_to_display+="<td><input type='hidden' id='supplier_payment_dets_"+element.payment_id+"' value='"+JSON.stringify(element)+"'> "+(index+1)+" "+status+"</td>";
+            data_to_display+="<td><input type='hidden' id='supplier_payment_dets_"+element.payment_id+"' value='"+encodedValue+"'> "+(index+1)+" "+status+"</td>";
             data_to_display+="<td>Kes "+element.amount+"</td>";
             data_to_display+="<td>"+element.date+"</td>";
             data_to_display+="<td><span class='link supplier_payment' id='supplier_payment_"+element.payment_id+"'><i class='fas fa-eye'></i> View</span> <br><a class='"+print_enable+" link text-sm' target='_blank' href='reports/reports.php?supplier_payment_id="+element.payment_id+"'><i class='fas fa-print'></i> Print</a></td>";
@@ -4958,7 +5003,7 @@ function display_suppliers_payments(payments) {
 function edit_supplier_payments() {
 
     // display the payment for details
-    var supplier_payment_dets = valObj("supplier_payment_dets_"+this.id.substr(17));
+    var supplier_payment_dets = decodeURIComponent(valObj("supplier_payment_dets_"+this.id.substr(17)));
     if (hasJsonStructure(supplier_payment_dets)) {
         cObj("edit_supplier_payments_window").classList.remove("hide");
         supplier_payment_dets = JSON.parse(supplier_payment_dets);
@@ -4968,16 +5013,23 @@ function edit_supplier_payments() {
         cObj("supplier_payment_description_edit").value = supplier_payment_dets.payment_description
         cObj("supplier_payment_id").value = supplier_payment_dets.payment_id
         cObj("show_supplier_payment_status").innerHTML = supplier_payment_dets.approval_status == 1 ? "<span class='badge bg-success'>Payment Approved</span>" : (supplier_payment_dets.approval_status == 0 ? "<span class='badge bg-warning'>Payment Not Approved Yet!</span>" : "<span class='badge bg-danger'>Payment Declined!</span>");
+        cObj("show_reason_supplier_payment_decline").innerHTML = supplier_payment_dets.approval_comment != null ? (supplier_payment_dets.approval_comment.length > 0 ? supplier_payment_dets.approval_comment : "No reason stated!") : "No reason stated!";
 
         // disable some elements when the payment status is approved
         if (supplier_payment_dets.approval_status == 1) {
             cObj("supplier_payment_amount_edit").disabled = true;
             cObj("payment-method-edit").disabled = true;
             cObj("delete_payments").classList.add("hide");
+            cObj("show_reason_payment_declined").classList.add("hide");
         }else{
             cObj("supplier_payment_amount_edit").disabled = false;
             cObj("payment-method-edit").disabled = false;
             cObj("delete_payments").classList.remove("hide");
+            if(supplier_payment_dets.approval_status == 2){
+                cObj("show_reason_payment_declined").classList.remove("hide");
+            }else{
+                cObj("show_reason_payment_declined").classList.add("hide");
+            }
         }
 
         var children = cObj("payment-method-edit").children;
@@ -5063,6 +5115,9 @@ cObj("add_bills").onclick = function () {
             }
         }, 100);
     }, 200);
+
+    // get the asset categories
+    var datapass = "asset_categories=true";
 }
 
 function display_expense_sub_category() {
@@ -5079,14 +5134,23 @@ function display_expense_sub_category_edit(expense_subcategories = "") {
 
 cObj("save_new_supplier_bill").onclick = function () {
     var err = checkBlank("supplier_bill_name");
-    err+=checkBlank("supplier_bill_amount");
-    err+=checkBlank("date_assigned");
-    err += cObj("supplier_expense_category") != undefined ? checkBlank("supplier_expense_category") : 1;
-    err += cObj("supplier_expense_sub_category") != undefined ? checkBlank("supplier_expense_sub_category") : 1;
+    err+= checkBlank("supplier_bill_amount");
+    err+= checkBlank("date_assigned");
+    err += valObj("expense_type") == "capital" ?  checkBlank("asset_expense_category") : 0;
+    err += valObj("expense_type") == "operation" ? (cObj("supplier_expense_category") != undefined ? checkBlank("supplier_expense_category") : 1) : 0;
+    err += valObj("expense_type") == "operation" ? (cObj("supplier_expense_sub_category") != undefined ? checkBlank("supplier_expense_sub_category") : 1) : 0;
+
+    if (valObj("expense_type") == "capital") {
+        err += valObj("asset_acquisition_rates") > 100 ? 1 : 0;
+        cObj("supplier_bill_error").innerHTML = valObj("asset_acquisition_rates") > 100 ? "<p class='text-danger'>The asset depreciation rate can`t be more than 100</p>" : "";
+    }else{
+        cObj("supplier_bill_error").innerHTML = "";
+    }
 
     if (err == 0) {
         var datapass = "save_supplier_bill=true&supplier_id="+valObj("supplier_id")+"&supplier_bill_name="+valObj("supplier_bill_name")+"&supplier_bill_amount="+valObj("supplier_bill_amount")+"&date_assigned="+valObj("date_assigned")+"&supplier_document_number="+valObj("supplier_document_number")+"&supplier_bill_due_date="+valObj("supplier_bill_due_date");
         datapass += "&supplier_expense_category="+valObj("supplier_expense_category")+"&supplier_expense_sub_category="+valObj("supplier_expense_sub_category");
+        datapass += "&asset_expense_category="+valObj("asset_expense_category")+"&asset_acquisition_method="+valObj("asset_acquisition_method")+"&asset_acquisition_rates="+valObj("asset_acquisition_rates")+"&supplier_expense_type="+valObj("expense_type");
         sendDataPost("POST","ajax/finance/financial.php",datapass,cObj("supplier_bill_error"),cObj("save_bill_loader"));
         setTimeout(() => {
             var timeout = 0;
@@ -5101,6 +5165,26 @@ cObj("save_new_supplier_bill").onclick = function () {
                     cObj("supplier_bill_name").value = "";
                     cObj("supplier_bill_amount").value = "";
                     cObj("supplier_document_number").value = "";
+
+                    // 
+                    var capital_expenses = document.getElementsByClassName("capital_expenses");
+                    var operational_expense = document.getElementsByClassName("operational_expense");
+                    
+                    // hide the capital expenses and operational expenses
+                    for (let index = 0; index < capital_expenses.length; index++) {
+                        const element = capital_expenses[index];
+                        element.classList.add("hide");
+                    }
+                    
+                    for (let index = 0; index < operational_expense.length; index++) {
+                        const element = operational_expense[index];
+                        element.classList.add("hide");
+                    }
+                    
+                    // reset the expense type
+                    cObj("expense_type").children[0].selected = true;
+                    cObj("asset_expense_category").children[0].selected = true;
+                    cObj("asset_acquisition_rates").value = 0;
 
                     // hide the window
                     setTimeout(() => {
@@ -5976,15 +6060,93 @@ cObj("confirm_payment_request_in").onclick = function () {
 
 cObj("cancel_payment_request_decline").onclick = function () {
     cObj("show_payment_decline_window").classList.add("hide");
-    cObj("payment_description").value = "";
+    cObj("payment_decline_description").value = "";
 }
 
 cObj("close_payment_decline_window").onclick = function () {
     cObj("show_payment_decline_window").classList.add("hide");
-    cObj("payment_description").value = "";
+    cObj("payment_decline_description").value = "";
 }
 
 cObj("confirm_payment_request_decline").onclick = function () {
-    var payment_description = valObj("payment_description");
+    var payment_description = valObj("payment_decline_description");
     send_payment_request(valObj("payment_request_id_decline"), valObj("payment_request_type_decline"), "payment_request_success", "payment_request_table_loader", payment_description, "2");
+}
+
+cObj("reject_payment_approvale").onclick = function () {
+    cObj("payment_request_id_decline").value = cObj("payment_req_id").value;
+    cObj("payment_request_type_decline").value = cObj("payment_req_type").value;
+    cObj("show_payment_decline_window").classList.remove("hide");
+}
+
+cObj("expense_type").onchange = function () {
+    var capital_expenses = document.getElementsByClassName("capital_expenses");
+    var operational_expense = document.getElementsByClassName("operational_expense");
+    if (this.value == "capital") {
+        for (let index = 0; index < capital_expenses.length; index++) {
+            const element = capital_expenses[index];
+            element.classList.remove("hide");
+        }
+        
+        for (let index = 0; index < operational_expense.length; index++) {
+            const element = operational_expense[index];
+            element.classList.add("hide");
+        }
+    }else if (this.value == "operation") {
+        for (let index = 0; index < capital_expenses.length; index++) {
+            const element = capital_expenses[index];
+            element.classList.add("hide");
+        }
+        
+        for (let index = 0; index < operational_expense.length; index++) {
+            const element = operational_expense[index];
+            element.classList.remove("hide");
+        }
+    }else{
+        for (let index = 0; index < capital_expenses.length; index++) {
+            const element = capital_expenses[index];
+            element.classList.add("hide");
+        }
+        
+        for (let index = 0; index < operational_expense.length; index++) {
+            const element = operational_expense[index];
+            element.classList.add("hide");
+        }
+    }
+}
+
+cObj("expense_type_edit").onchange = function () {
+    var capital_expenses = document.getElementsByClassName("capital_expenses");
+    var operational_expense = document.getElementsByClassName("operational_expense");
+    if (this.value == "capital") {
+        for (let index = 0; index < capital_expenses.length; index++) {
+            const element = capital_expenses[index];
+            element.classList.remove("hide");
+        }
+        
+        for (let index = 0; index < operational_expense.length; index++) {
+            const element = operational_expense[index];
+            element.classList.add("hide");
+        }
+    }else if (this.value == "operation") {
+        for (let index = 0; index < capital_expenses.length; index++) {
+            const element = capital_expenses[index];
+            element.classList.add("hide");
+        }
+        
+        for (let index = 0; index < operational_expense.length; index++) {
+            const element = operational_expense[index];
+            element.classList.remove("hide");
+        }
+    }else{
+        for (let index = 0; index < capital_expenses.length; index++) {
+            const element = capital_expenses[index];
+            element.classList.add("hide");
+        }
+        
+        for (let index = 0; index < operational_expense.length; index++) {
+            const element = operational_expense[index];
+            element.classList.add("hide");
+        }
+    }
 }

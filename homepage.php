@@ -2201,12 +2201,45 @@ function checkPresnt($array, $string){
                             <input class="form-control w-75" type="text" name="supplier_bill_amount" id="supplier_bill_amount" placeholder="Bill Amount">
                         </div>
                         <div class="conts">
+                            <label for="expense_type" class="form-control-label" id="">Expense Type</label>
+                            <select name="expense_type" id="expense_type" class="form-control w-75">
+                                <option hidden value="">Select an option</option>
+                                <option value="capital">Capital Expense</option>
+                                <option value="operation">Operation Expense Expense</option>
+                            </select>
+                        </div>
+                        <div class="conts hide capital_expenses">
+                            <label class="form-control-label" for="asset_expense_category">Asset Category: <img class="hide" src="images/ajax_clock_small.gif" id="display_asset_category_supplier"><br></label>
+                            <select name="asset_expense_category" id="asset_expense_category" class="form-control w-75">
+                                <option value="" hidden>Select an Option</option>
+                                <option value="1">Land</option>
+                                <option value="2">Buildings</option>
+                                <option value="3">Motor Vehicle</option>
+                                <option value="4">Furniture & Fittings</option>
+                                <option value="5">Computer & ICT Equipments</option>
+                                <option value="6">Plant & Equipments</option>
+                                <option value="7">Capital Work in Progress</option>
+                            </select>
+                        </div>
+                        <div class="conts hide operational_expense">
                             <label class="form-control-label" for="supplier_expense_category">Bill Category: <img class="hide" src="images/ajax_clock_small.gif" id="display_supplier_expense_category"><br></label>
                             <div id="supplier_expense_cat"></div>
                         </div>
-                        <div class="conts">
+                        <div class="conts hide operational_expense">
                             <label class="form-control-label" for="supplier_expense_sub_category">Bill Sub-Category: <img class="hide" src="images/ajax_clock_small.gif" id="display_supplier_expense_sub_category"><br></label>
                             <div id="supplier_expense_sub_cat"><p class="text-danger">Please select the bill category to display the subcategories</p></div>
+                        </div>
+                        <div class="conts hide capital_expenses">
+                            <label for="asset_acquisition_method" class="form-label"><b>Value Acquisition Option</b></label>
+                            <select name="asset_acquisition_method" id="asset_acquisition_method" class="form-control w-75">
+                                <option value="" hidden>Select an Option</option>
+                                <option value="1">Straightline Method</option>
+                                <option value="2">Reducing Balance Method</option>
+                            </select>
+                        </div>
+                        <div class="conts hide capital_expenses">
+                            <label for="asset_acquisition_rates" class="form-label"><b>Value Depreciation rate <small class="text-success">(Not more than 100%)</small></b></label>
+                            <input type="number" class="form-control w-75" name="asset_acquisition_rates" id="asset_acquisition_rates" value="0">
                         </div>
                         <div class="conts">
                             <label class="form-control-label" for="date_assigned">Assigned Date: <br></label>
@@ -2272,10 +2305,31 @@ function checkPresnt($array, $string){
                             <input class="form-control w-75" type="text" name="supplier_bill_amount_edit" id="supplier_bill_amount_edit" placeholder="Bill Amount">
                         </div>
                         <div class="conts">
+                            <label for="expense_type_edit" class="form-control-label" id="">Expense Type</label>
+                            <select name="expense_type_edit" id="expense_type_edit" class="form-control w-75">
+                                <option hidden value="">Select an option</option>
+                                <option value="capital">Capital Expense</option>
+                                <option value="operation">Operation Expense Expense</option>
+                            </select>
+                        </div>
+                        <div class="conts hide capital_expenses">
+                            <label class="form-control-label" for="asset_expense_category_edit">Asset Category: <img class="hide" src="images/ajax_clock_small.gif" id="display_asset_category_supplier"><br></label>
+                            <select name="asset_expense_category_edit" id="asset_expense_category_edit" class="form-control w-75">
+                                <option value="" hidden>Select an Option</option>
+                                <option value="1">Land</option>
+                                <option value="2">Buildings</option>
+                                <option value="3">Motor Vehicle</option>
+                                <option value="4">Furniture & Fittings</option>
+                                <option value="5">Computer & ICT Equipments</option>
+                                <option value="6">Plant & Equipments</option>
+                                <option value="7">Capital Work in Progress</option>
+                            </select>
+                        </div>
+                        <div class="conts hide operational_expense">
                             <label class="form-control-label" for="supplier_expense_category_edit">Bill Category: <img class="hide" src="images/ajax_clock_small.gif" id="display_supplier_expense_category_edit"><br></label>
                             <div id="supplier_expense_cat_edit"></div>
                         </div>
-                        <div class="conts">
+                        <div class="conts hide operational_expense">
                             <label class="form-control-label" for="supplier_expense_sub_category_edit">Bill Sub-Category: <img class="hide" src="images/ajax_clock_small.gif" id="display_supplier_expense_sub_category_edit"><br></label>
                             <div id="supplier_expense_sub_cat_edit"><p class="text-danger">Please select the bill category to display the subcategories</p></div>
                         </div>
@@ -2405,8 +2459,8 @@ function checkPresnt($array, $string){
                         <label class="form-control-label"><u>Confirm:</u></label>
                         <p>- Confirm decline the payment request?</p>
                         <p>- This action is irreversible.</p>
-                        <label for="payment_description" class="form-control-label">Reason of decline</label>
-                        <textarea name="payment_description" id="payment_description" class="form-control" rows="5" placeholder="Write your narrative here!"></textarea>
+                        <label for="payment_decline_description" class="form-control-label">Reason of decline</label>
+                        <textarea name="payment_decline_description" id="payment_decline_description" class="form-control" rows="5" placeholder="Write your narrative here!"></textarea>
                         <div class="row">
                             <div class="col-md-6">
                                 <button id="confirm_payment_request_decline" >Yes <img id="all_loader_clocks" class="hide" src="images/ajax_clock_small.gif" ></button>
@@ -2480,7 +2534,7 @@ function checkPresnt($array, $string){
             <div class="changesubwindow editexams animate">
                 <div class="conts">
                     <p class="funga" id="close_edit_supplier_payments">&times</p>
-                    <h6 class="text-center">Edit Supplier Payments</h6>
+                    <h6 class="text-center">View Supplier Payments</h6>
                 </div>
                 <div class="conts">
                     <div class="cont">
@@ -2491,6 +2545,10 @@ function checkPresnt($array, $string){
                             <div class="col-md-6" id="show_supplier_payment_status">
 
                             </div>
+                        </div>
+                        <div class="message_contents hide" id="show_reason_payment_declined">
+                            <label class="form-control-label"><u>Reason for payment decline:</u></label>
+                            <p id="show_reason_supplier_payment_decline">No reason stated!</p>
                         </div>
                         <div class="message_contents hide" id="delete_payment_window">
                             <label class="form-control-label"><u>Confirm:</u></label>
@@ -2802,16 +2860,20 @@ function checkPresnt($array, $string){
                         <!-- show the payment approve status -->
                     </div>
                 </div>
-                <p class="border border-primary p-2 hide" id="delete_exp_window">
+                <p class="message_contents border border-primary rounded p-2 hide" id="delete_exp_window">
                     Are you sure you want to delete this expense entry! <br>
                     <span id="delete_expense_entry" class="text-danger link"><i class="fas fa-trash"></i>Delete</span>
                 </p>
-                <div class="conts w-100" id="">
+                <div class="message_contents hide" id="reason_for_req_decline_window">
+                    <label class="form-control-label"><u>Reason for request decline:</u></label>
+                    <p id="reason_for_payment_decline">No Reason stated!</p>
+                </div>
+                <div class="add_expense" id="">
                     <label for="edit_expense_name" class="form-label">Expense Name</label>
-                    <input type="text" class="form-control" id="edit_expense_name" placeholder="Expense Name">
+                    <input type="text" class="form-control w-75" id="edit_expense_name" placeholder="Expense Name">
                     
                     <label for="edit_expense_record_date" class="form-label">Expense Record Date</label>
-                    <input type="date" class="form-control" id="edit_expense_record_date" value="<?=date("Y-m-d")?>">
+                    <input type="date" class="form-control w-75" id="edit_expense_record_date" value="<?=date("Y-m-d")?>">
 
                     <label for="edit_expense_category" class="form-label">Expense Category <img src="images/ajax_clock_small.gif" id="expense_cat_egories" class="hide"></label>
                     <p id="show_expense_category"></p>
@@ -2820,7 +2882,7 @@ function checkPresnt($array, $string){
                     <p id="show_expense_sub_category"></p>
 
                     <label for="edit_expense_cash_activity" class="form-control-label"><b>Expense Activity</b></label>
-                    <select name="edit_expense_cash_activity" id="edit_expense_cash_activity" class="form-control w-100">
+                    <select name="edit_expense_cash_activity" id="edit_expense_cash_activity" class="form-control w-75">
                         <option value="" hidden>Select Option</option>
                         <option value="1">Operating Activities</option>
                         <option value="2">Investing Activities</option>
@@ -2828,10 +2890,10 @@ function checkPresnt($array, $string){
                     </select>
                     
                     <label for="total_unit_cost" class="form-control-label">Total Unit Cost</label>
-                    <input type="number" id="total_unit_cost" class="form-control">
+                    <input type="number" id="total_unit_cost" class="form-control w-75">
 
                     <label class="form-control-label" for="edit_document_number"><b>Document Number</b> <br></label>
-                    <input class="form-control" type="text" name="edit_document_number" id="edit_document_number"  min = "0" placeholder = "Optional - Receipt, Invoice, Cheque">
+                    <input class="form-control w-75" type="text" name="edit_document_number" id="edit_document_number"  min = "0" placeholder = "Optional - Receipt, Invoice, Cheque">
 
                     <label class="form-control-label" for="edit_expense_description"><b>Expense Description</b> <br></label>
                     <textarea name="edit_expense_description" id="edit_expense_description" cols="30" rows="3" class="form-control" placeholder="Expense description"></textarea>

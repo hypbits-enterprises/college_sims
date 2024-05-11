@@ -53,6 +53,7 @@ function getExpensesNDisplay(student_data) {
             col.push(element['expense_description']);
             col.push(element['exp_sub_category']);
             col.push(element['approval_status']);
+            col.push(element['approval_comment']);
             // var col = element.split(":");
             rowsColStudents_expenses.push(col);
         }
@@ -118,6 +119,7 @@ function editExpense() {
         cObj("edit_expense_record_date").value = data[11];
         cObj("edit_expense_description").value = data[14];
         cObj("edit_document_number").value = data[13];
+        cObj("reason_for_payment_decline").innerText = data[17] != null ? (data[17].length > 0 ? data[17] : "Reason not stated!") : "Reason not stated!";
         console.log(data);
         
         // set the expense activity
@@ -138,9 +140,15 @@ function editExpense() {
         if(data[16] == 1){
             cObj("delete_promt_expenses").classList.add("hide");
             cObj("total_unit_cost").disabled = true;
+            cObj("reason_for_req_decline_window").classList.add("hide");
         }else{
             cObj("delete_promt_expenses").classList.remove("hide");
             cObj("total_unit_cost").disabled = false;
+            if (data[16] == 2) {
+                cObj("reason_for_req_decline_window").classList.remove("hide");
+            }else{
+                cObj("reason_for_req_decline_window").classList.add("hide");
+            }
         }
 
         // send data to database

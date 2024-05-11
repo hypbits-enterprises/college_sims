@@ -6108,7 +6108,7 @@
             }
 
             // expense subcategories
-            $data_to_display = "<select class='form-control w-100' id='expense_sub_category'><option hidden value=''>Select an Option</option>";
+            $data_to_display = "<select class='form-control w-75 border border-dark rounded' id='expense_sub_category'><option hidden value=''>Select an Option</option>";
             for($index = 0; $index < count($sub_categories); $index++){
                 $id = $sub_categories[$index]->id;
                 $name = $sub_categories[$index]->name;
@@ -6410,7 +6410,7 @@
             $result = $stmt->get_result();
             $data_to_display = "<p class='text-danger border border-danger my-2 p-2'>Set expense categories in the settings before proceeding!.</p>";
             if($result){
-                $data_to_display = "<select class='form-control ' name='edit_expense_category' id='edit_expense_category'><option value='' id='main_sele' hidden >Select..</option>";
+                $data_to_display = "<select class='form-control border border-dark rounded w-75' name='edit_expense_category' id='edit_expense_category'><option value='' id='main_sele' hidden >Select..</option>";
                 while($row = $result->fetch_assoc()){
                     $data_to_display .= "<option class='exp_cats_exp' value='".$row['expense_id']."'>".ucwords(strtolower($row['expense_name']))."</option>";
                 }

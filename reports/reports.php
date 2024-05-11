@@ -15338,7 +15338,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
                 $data = array("account" => "debit","amount" => $row['bill_amount'],"date" => $row['date_assigned'], "usage" => $row['bill_name']);
                 array_push($row_data, $data);
 
-                $select = "SELECT * FROM `supplier_bill_payments` WHERE `payment_for` = '".$row['bill_id']."'";
+                $select = "SELECT * FROM `supplier_bill_payments` WHERE `payment_for` = '".$row['bill_id']."' AND approval_status = '1'";
                 $statement = $conn2->prepare($select);
                 $statement -> execute();
                 $res = $statement->get_result();
@@ -15409,7 +15409,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
         $pdf->Cell(45, 6, date("D dS M Y @ H:i:sA"), 0,1);
 
         // supplier balance
-        $select = "SELECT SUM(SB.bill_amount) AS 'Due', SUM((SELECT SUM(SBP.amount) AS 'Paid' FROM `supplier_bill_payments` AS SBP WHERE SBP.payment_for = SB.bill_id )) AS 'Paid' FROM `supplier_bills` AS SB WHERE SB.supplier_id = '".$supplier_account_id."'";
+        // $select = "SELECT SUM(SB.bill_amount) AS 'Due', SUM((SELECT SUM(SBP.amount) AS 'Paid' FROM `supplier_bill_payments` AS SBP WHERE SBP.payment_for = SB.bill_id )) AS 'Paid' FROM `supplier_bills` AS SB WHERE SB.supplier_id = '".$supplier_account_id."'";
+        $select = "SELECT SUM(SB.bill_amount) AS 'Due', CONCAT('0') AS 'Paid' FROM `supplier_bills` AS SB WHERE `supplier_id` = '".$supplier_account_id."' UNION ALL (SELECT CONCAT('0') AS 'Due', SUM(SBP.amount) AS 'Paid' FROM `supplier_bill_payments` AS SBP LEFT JOIN supplier_bills AS SBILL ON SBILL.bill_id = SBP.payment_for WHERE SBP.approval_status = 1 AND SBILL.supplier_id = '".$supplier_account_id."');";
         // echo $select;
         $statement = $conn2->prepare($select);
         $statement->execute();
@@ -15417,9 +15418,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['schname'])) {
         $billing_amount = 0;
         $paid_amount = 0;
         if ($res) {
-            if($rows = $res->fetch_assoc()){
-                $billing_amount = $rows['Due'];
-                $paid_amount = $rows['Paid'];
+            while($rows = $res->fetch_assoc()){
+                $billing_amount += $rows['Due']*1;
+                $paid_amount += $rows['Paid']*1;
             }
         }
 

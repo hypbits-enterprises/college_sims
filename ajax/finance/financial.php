@@ -5041,17 +5041,18 @@
             $suppliers = [];
             if($result){
                 while($row = $result->fetch_assoc()){
-                    $select = "SELECT SUM(SB.bill_amount) AS 'Due', SUM((SELECT SUM(SBP.amount) AS 'Paid' FROM `supplier_bill_payments` AS SBP WHERE SBP.payment_for = SB.bill_id )) AS 'Paid' FROM `supplier_bills` AS SB WHERE SB.supplier_id = '".$row['supplier_id']."'";
+                    // $select = "SELECT SUM(SB.bill_amount) AS 'Due', SUM((SELECT SUM(SBP.amount) AS 'Paid' FROM `supplier_bill_payments` AS SBP WHERE SBP.payment_for = SB.bill_id )) AS 'Paid' FROM `supplier_bills` AS SB WHERE SB.supplier_id = '".$row['supplier_id']."'";
                     // echo $select;
+                    $select = "SELECT SUM(SB.bill_amount) AS 'Due', CONCAT('0') AS 'Paid' FROM `supplier_bills` AS SB WHERE `supplier_id` = '".$row['supplier_id']."' UNION ALL (SELECT CONCAT('0') AS 'Due', SUM(SBP.amount) AS 'Paid' FROM `supplier_bill_payments` AS SBP LEFT JOIN supplier_bills AS SBILL ON SBILL.bill_id = SBP.payment_for WHERE SBP.approval_status = 1 AND SBILL.supplier_id = '".$row['supplier_id']."');";
                     $statement = $conn2->prepare($select);
                     $statement->execute();
                     $res = $statement->get_result();
                     $billing_amount = 0;
                     $paid_amount = 0;
                     if ($res) {
-                        if($rows = $res->fetch_assoc()){
-                            $billing_amount = $rows['Due'];
-                            $paid_amount = $rows['Paid'];
+                        while($rows = $res->fetch_assoc()){
+                            $billing_amount += $rows['Due'];
+                            $paid_amount += $rows['Paid'];
                         }
                     }
 
@@ -5249,14 +5250,34 @@
             $date_assigned = date("YmdHis",strtotime($_POST['date_assigned']));
             $supplier_document_number = $_POST['supplier_document_number'];
             $supplier_bill_due_date = date("YmdHis",strtotime($_POST['supplier_bill_due_date']));
+
+            // asset data
+            $asset_expense_category = $_POST['asset_expense_category'];
+            $asset_acquisition_method = $_POST['asset_acquisition_method'];
+            $asset_acquisition_rates = $_POST['asset_acquisition_rates'];
+            $supplier_expense_type = $_POST['supplier_expense_type'];
+            
+            if($supplier_expense_type == "capital"){
+                // insert the data into asset
+                $supplier_expense_sub_category = 0;
+
+                $insert = "INSERT INTO `asset_table` (`asset_name`,`asset_category`,`date_of_acquiry`,`acquisition_option`,`acquisition_rate`,`orginal_value`) VALUES (?,?,?,?,?,?)";
+                $stmt = $conn2->prepare($insert);
+                $today = date("YmdHis");
+                $stmt->bind_param("ssssss",$supplier_bill_name, $asset_expense_category, $today, $asset_acquisition_method, $asset_acquisition_rates, $supplier_bill_amount);
+                $stmt->execute();
+
+                // supplier expense category
+                $supplier_expense_category = $asset_expense_category;
+            }
             
             // insert the data to the database
-            $insert = "INSERT INTO `supplier_bills` (`supplier_id`,`bill_name`,`bill_amount`,`document_number`,`expense_category`,`expense_sub_category`,`due_date`,`date_assigned`) VALUES (?,?,?,?,?,?,'".$supplier_bill_due_date."','".$date_assigned."')";
+            $insert = "INSERT INTO `supplier_bills` (`supplier_id`,`bill_name`,`bill_amount`,`document_number`,`expense_category`,`expense_sub_category`,`due_date`,`date_assigned`,`expense_type`,`acquisition_method`) VALUES (?,?,?,?,?,?,'".$supplier_bill_due_date."','".$date_assigned."',?,?)";
             $stmt = $conn2->prepare($insert);
-            $stmt->bind_param("ssssss",$supplier_id,$supplier_bill_name,$supplier_bill_amount,$supplier_document_number,$supplier_expense_category,$supplier_expense_sub_category);
+            $stmt->bind_param("ssssssss",$supplier_id,$supplier_bill_name,$supplier_bill_amount,$supplier_document_number,$supplier_expense_category,$supplier_expense_sub_category,$supplier_expense_type,$asset_acquisition_method);
             $stmt->execute();
             
-            echo "<p class='text-success'>Supplier has been successfully registered!</p>";
+            echo "<p class='text-success'>Supplier bill has been successfully added!</p>";
         }elseif(isset($_POST['update_bill'])){
             include("../../connections/conn1.php");
             include("../../connections/conn2.php");
@@ -5271,11 +5292,13 @@
             $supplier_document_number = $_POST['supplier_document_number'];
             $supplier_expense_category_edit = $_POST['supplier_expense_category_edit'];
             $supplier_expense_sub_category_edit = $_POST['supplier_expense_sub_category_edit'];
+            $asset_expense_category = $_POST['asset_expense_category'];
+            $expense_type = $_POST['expense_type'];
 
             // SELECT 
-            $UPDATE = "UPDATE `supplier_bills` SET `bill_name` = ? ,`bill_amount` = ?,date_assigned = ?, due_date = ?, `document_number` = ?, `expense_category` = ?, `expense_sub_category` = ? WHERE `bill_id` = ?";
+            $UPDATE = "UPDATE `supplier_bills` SET `bill_name` = ?, `expense_type` = ?, `expense_category` = ?,`bill_amount` = ?,date_assigned = ?, due_date = ?, `document_number` = ?, `expense_category` = ?, `expense_sub_category` = ? WHERE `bill_id` = ?";
             $stmt = $conn2->prepare($UPDATE);
-            $stmt->bind_param("ssssssss",$bill_name,$bill_amount,$date_assigned,$due_date,$supplier_document_number,$supplier_expense_category_edit,$supplier_expense_sub_category_edit,$supplier_bill_id_edit);
+            $stmt->bind_param("ssssssssss",$bill_name,$expense_type,$asset_expense_category,$bill_amount,$date_assigned,$due_date,$supplier_document_number,$supplier_expense_category_edit,$supplier_expense_sub_category_edit,$supplier_bill_id_edit);
             $stmt->execute();
 
             echo "<p class='text-success'>Supplier bill updated successfully!</p>";
@@ -5490,11 +5513,16 @@
                 if($result){
                     if($row = $result->fetch_assoc()){
                         // update the expense
-                        $update = "UPDATE `expenses` SET `approval_status` = '".$request_status."', `approval_comment` = '".$comment."' WHERE `expid` = '".$payment_id."'";
+                        $update = "UPDATE `expenses` SET `approval_status` = '".$request_status."', `approval_comment` = ? WHERE `expid` = '".$payment_id."'";
                         $stmt = $conn2->prepare($update);
+                        $stmt->bind_param("s",$comment);
                         $stmt->execute();
                         
-                        echo "<p class='text-success'>Payment request successfully accepted!</p>";
+                        if($request_status == 1){
+                            echo "<p class='text-success'>Payment request successfully accepted!</p>";
+                        }else{
+                            echo "<p class='text-success'>Payment request successfully declined!</p>";
+                        }
                         return 0;
                     }
                 }
@@ -5508,11 +5536,16 @@
                 if($result){
                     if($row = $result->fetch_assoc()){
                         // update
-                        $update = "UPDATE `supplier_bill_payments` SET `approval_status` = '".$request_status."', `approval_comment` = '".$comment."' WHERE `payment_id` = '".$payment_id."'";
+                        $update = "UPDATE `supplier_bill_payments` SET `approval_status` = '".$request_status."', `approval_comment` = ? WHERE `payment_id` = '".$payment_id."'";
                         $stmt = $conn2->prepare($update);
+                        $stmt->bind_param("s",$comment);
                         $stmt->execute();
                         
-                        echo "<p class='text-success'>Payment request successfully accepted!</p>";
+                        if($request_status == 1){
+                            echo "<p class='text-success'>Payment request successfully accepted!</p>";
+                        }else{
+                            echo "<p class='text-success'>Payment request successfully declined!</p>";
+                        }
                         return 0;
                     }
                 }
