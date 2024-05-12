@@ -1,3 +1,6 @@
+12th May 2024 14:42:15PM : CHEBBY KIBET successfully logged into the system as Principal - {CHEBBY KIBET}
+12th May 2024 14:41:54PM : Staff "CHEBBY KIBET" information has been updated successfully! - {HILLARY NGIGE}
+12th May 2024 14:27:26PM : HILLARY NGIGE successfully logged into the system as System Administrator - {HILLARY NGIGE}
 11th May 2024 11:36:13AM : Expense "KRA" updated successfully! - {HILLARY NGIGE}
 11th May 2024 11:36:02AM : Expense "KRA" updated successfully! - {HILLARY NGIGE}
 11th May 2024 09:30:22AM : HILLARY NGIGE successfully logged into the system as System Administrator - {HILLARY NGIGE}

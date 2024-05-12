@@ -2450,7 +2450,7 @@ function checkPresnt($array, $string){
             <div class="changesubwindow editexams animate">
                 <div class="conts">
                     <p class="funga" id="close_payment_decline_window">&times</p>
-                    <h6 class="text-center">Accept Payment Request</h6>
+                    <h6 class="text-center">Decline Payment Request</h6>
                 </div>
                 <div class="conts">
                     <div class="message_contents mt-3">
@@ -2460,7 +2460,7 @@ function checkPresnt($array, $string){
                         <p>- Confirm decline the payment request?</p>
                         <p>- This action is irreversible.</p>
                         <label for="payment_decline_description" class="form-control-label">Reason of decline</label>
-                        <textarea name="payment_decline_description" id="payment_decline_description" class="form-control" rows="5" placeholder="Write your narrative here!"></textarea>
+                        <textarea name="payment_decline_description" id="payment_decline_description" class="form-control" rows="5" placeholder="Reason for declining the payment request!"></textarea>
                         <div class="row">
                             <div class="col-md-6">
                                 <button id="confirm_payment_request_decline" >Yes <img id="all_loader_clocks" class="hide" src="images/ajax_clock_small.gif" ></button>
@@ -3373,13 +3373,13 @@ function checkPresnt($array, $string){
             </div>
         </div>
         <div class="confirmpaymentwindow hide" id="add_course_window">
-            <div class="changesubwindow addsubject animate">
+            <div class="changesubwindow2 addsubject animate">
                 <div class="conts">
                     <p class="funga" id="close_add_course_win">&times</p>
                     <h6 class="text-center">Add Course</h6>
                 </div>
                 <div class="conts" id="">
-                    <div class="add_expenses">
+                    <div class="add_expense">
                         <label class="form-control-label" for="course_input_text">Enter Course Name: <br></label>
                         <input class="form-control w-100 mx-0" type="text" name="course_input_text" id="course_input_text" placeholder="eg: Information Technology">
                         <hr >
@@ -3403,13 +3403,13 @@ function checkPresnt($array, $string){
             </div>
         </div>
         <div class="confirmpaymentwindow hide" id="edit_course_window">
-            <div class="changesubwindow addsubject animate p-2">
+            <div class="changesubwindow2 addsubject animate p-2">
                 <div class="conts">
                     <p class="funga" id="close_edit_course_win">&times</p>
                     <h6 class="text-center">Edit Course</h6>
                 </div>
                 <div class="conts" id="">
-                    <div class="edit_expenses">
+                    <div class="add_expense">
                         <label class="form-control-label" for="course_edit_input_text">Enter Course Name: <br></label>
                         <input type="hidden" id="course_id_holder">
                         <input class="form-control w-100 mx-0" type="text" name="course_edit_input_text" id="course_edit_input_text" placeholder="eg: Information Technology">

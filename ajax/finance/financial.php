@@ -5295,10 +5295,12 @@
             $asset_expense_category = $_POST['asset_expense_category'];
             $expense_type = $_POST['expense_type'];
 
+            $asset_expense_category = $expense_type == "capital" ? $asset_expense_category : $supplier_expense_category_edit;
+
             // SELECT 
-            $UPDATE = "UPDATE `supplier_bills` SET `bill_name` = ?, `expense_type` = ?, `expense_category` = ?,`bill_amount` = ?,date_assigned = ?, due_date = ?, `document_number` = ?, `expense_category` = ?, `expense_sub_category` = ? WHERE `bill_id` = ?";
+            $UPDATE = "UPDATE `supplier_bills` SET `bill_name` = ?, `expense_type` = ?, `expense_category` = ?,`bill_amount` = ?,date_assigned = ?, due_date = ?, `document_number` = ?, `expense_sub_category` = ? WHERE `bill_id` = ?";
             $stmt = $conn2->prepare($UPDATE);
-            $stmt->bind_param("ssssssssss",$bill_name,$expense_type,$asset_expense_category,$bill_amount,$date_assigned,$due_date,$supplier_document_number,$supplier_expense_category_edit,$supplier_expense_sub_category_edit,$supplier_bill_id_edit);
+            $stmt->bind_param("sssssssss",$bill_name,$expense_type,$asset_expense_category,$bill_amount,$date_assigned,$due_date,$supplier_document_number,$supplier_expense_sub_category_edit,$supplier_bill_id_edit);
             $stmt->execute();
 
             echo "<p class='text-success'>Supplier bill updated successfully!</p>";

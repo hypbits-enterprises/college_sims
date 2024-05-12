@@ -25,7 +25,7 @@
                 <h6><i class="fa fa-file" style="font-size:18px;margin-bottom:10px;"></i> Expenses:</h6>
                 <div class="expeses_options" id="exp_options">
                     <button id="add_exp"><i class="fas fa-plus"></i> Add Expenses</button>
-                    <button id="approve_payments"><i class="fas fa-check"></i> Approve Payments</button>
+                    <button class="hide" id="approve_payments"><i class="fas fa-check"></i> Approve Payments</button>
                     <button class="hide" id="find_exp_da">Find Expenses</button>
                 </div>
                 <div class="find_exp hide" id="find_exp_date">

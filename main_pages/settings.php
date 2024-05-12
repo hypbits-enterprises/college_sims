@@ -39,6 +39,7 @@
             </div>
             <div class="setting_s">
                 <p>Add or remove courses that the system recognizes!</p>
+                <button type="button" id="add_course"><i class="fas fa-plus"></i> Add Course</button><br>
                 <label for="class_list">Course List: <br></label>
                 <img src="images/ajax_clock_small.gif" class="hide" id="course_list_clock">
                 <div id="courses_holder">
@@ -67,7 +68,6 @@
                     </div> -->
                 </div>
                 <p id="add_course_err_handler"></p>
-                <button type="button" id="add_course"><i class="fas fa-plus"></i> Add Course</button>
             </div>
             <div class="setting_s">
                 <label for="class_list">Admission Number Prefix: <br></label>

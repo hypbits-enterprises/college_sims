@@ -1386,6 +1386,9 @@ window.onload = function () {
         // subject list
         var datapass = "?subs_lists=true";
         sendData("GET", "academic/academic.php", datapass, cObj("my_subjects"));
+
+        // unhide the payment approval button if logged in as the headteacher
+        cObj("approve_payments").classList.remove("hide");
     }
 
     //deputy prncipal
@@ -4374,7 +4377,7 @@ cObj("accept_class_change").onclick = function () {
     err += checkBlank("class_id");
     err += checkBlank("old_class_name_edit");
     if (err == 0) {
-        var datapass = "?change_class_name=true&new_class_name=" + valObj("new_class_name") + "&class_id=" + valObj("class_id")+"&old_class_name="+cObj("old_class_name_edit");
+        var datapass = "?change_class_name=true&new_class_name=" + encodeURIComponent(valObj("new_class_name")) + "&class_id=" + valObj("class_id")+"&old_class_name="+encodeURIComponent(cObj("old_class_name_edit"));
         sendData2("GET", "administration/admissions.php", datapass, cObj("add_class_err_handler"), cObj("class_list_clock"));
         setTimeout(() => {
             var timeout = 0;
@@ -4542,7 +4545,7 @@ cObj("close_add_cl_win").onclick = function () {
     cObj("add_classes_win").classList.add("hide");
 }
 cObj("add_class_btn").onclick = function () {
-    var datapass = "?add_class=" + cObj("input_text").value;
+    var datapass = "?add_class=" + encodeURIComponent(cObj("input_text").value);
     sendData2("GET", "administration/admissions.php", datapass, cObj("add_class_outputtxt"), cObj("add_class_clock"));
     setTimeout(() => {
         var timeout = 0;
@@ -5959,7 +5962,7 @@ cObj("add_role_btns").onclick = function () {
     var err = checkBlank("role_name");
     if (err < 1) {
         cObj("allowance_err3_handler").innerHTML = "";
-        var datapass = "?add_another_user=true&role_name=" + valObj("role_name") + "&role_doing=" + role;
+        var datapass = "?add_another_user=true&role_name=" + encodeURIComponent(valObj("role_name")) + "&role_doing=" + encodeURIComponent(role);
         sendData2("GET", "academic/academic.php", datapass, cObj("allowance_err3_handler"), cObj("add_user_roles_in"));
         setTimeout(() => {
             cObj("cancel_role_btn").click();
@@ -5978,7 +5981,7 @@ cObj("add_role_btns2").onclick = function () {
     if (err < 1) {
         cObj("allowance_err4_handler").innerHTML = "";
         var role = getStaffRole2(role_index, valObj("role_name2"));
-        var datapass = "edit_another_user=true&role_name=" + valObj("role_name2") + "&old_role_name=" + cObj("old_role_name").innerText + "&role_values=" + role;
+        var datapass = "edit_another_user=true&role_name=" + encodeURIComponent(valObj("role_name2")) + "&old_role_name=" + encodeURIComponent(cObj("old_role_name").innerText) + "&role_values=" + encodeURIComponent(role);
         sendDataPost("POST", "ajax/academic/academic.php", datapass, cObj("allowance_err4_handler"), cObj("add_user_roles_in2"));
         setTimeout(() => {
             var timeout = 0;
