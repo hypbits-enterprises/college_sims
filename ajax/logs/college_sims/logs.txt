@@ -1,3 +1,16 @@
+25th Apr 2025 20:51:55PM : Expense "Fuel" uploaded successfully! - {CHEBBY KIBET}
+25th Apr 2025 19:36:12PM : Staff "HILLARY NGIGE" information has been updated successfully! - {CHEBBY KIBET}
+25th Apr 2025 19:35:50PM : CHEBBY KIBET successfully logged into the system as Principal - {CHEBBY KIBET}
+25th Apr 2025 19:35:42PM : Changed the password of Chebby Kibet successfully! - {HILLARY NGIGE}
+25th Apr 2025 19:29:12PM : Transaction for "Viola Anyango" Reg No "LTVC-2025-37" has been completed successfully! - {HILLARY NGIGE}
+25th Apr 2025 19:12:33PM : Transaction for "Viola Anyango" Reg No "LTVC-2025-37" has been completed successfully! - {HILLARY NGIGE}
+25th Apr 2025 19:04:06PM : Transaction for "Viola Anyango" Reg No "LTVC-2025-37" has been completed successfully! - {HILLARY NGIGE}
+25th Apr 2025 19:03:29PM : Transaction for "Viola Anyango" Reg No "LTVC-2025-37" has been completed successfully! - {HILLARY NGIGE}
+25th Apr 2025 19:03:00PM : Fees structure has been modified. Votehead "Tuition" changed successfully! - {HILLARY NGIGE}
+25th Apr 2025 19:01:42PM : VIOLA ANYANGO has been admitted successfully - {HILLARY NGIGE}
+25th Apr 2025 19:00:12PM : Admission prefix has has been updated successfully! - {HILLARY NGIGE}
+25th Apr 2025 18:59:16PM : Academic calender has been updated successfully! - {HILLARY NGIGE}
+25th Apr 2025 18:58:11PM : HILLARY NGIGE successfully logged into the system as System Administrator - {HILLARY NGIGE}
 12th May 2024 14:42:15PM : CHEBBY KIBET successfully logged into the system as Principal - {CHEBBY KIBET}
 12th May 2024 14:41:54PM : Staff "CHEBBY KIBET" information has been updated successfully! - {HILLARY NGIGE}
 12th May 2024 14:27:26PM : HILLARY NGIGE successfully logged into the system as System Administrator - {HILLARY NGIGE}

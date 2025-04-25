@@ -7383,6 +7383,7 @@ cObj("save_change_expense_category").onclick = function name() {
 function edit_expense_category() {
     var this_id = this.id.substr(13);
     var expense_category = valObj("exp_name_"+this_id);
+    console.log(expense_category);
     if (hasJsonStructure(expense_category)) {
         cObj("change_expense_category_window").classList.remove("hide");
         
@@ -7396,7 +7397,7 @@ function edit_expense_category() {
         cObj("expense_category_budget_edit").value = expense_category.expense_budget;
         cObj("budget_start_time_edit").value = expense_category.start_date;
         cObj("budget_end_date_edit").value = expense_category.end_date;
-        cObj("edit_expense_sub_categories_holder").value = expense_category.expense_sub_categories;
+        cObj("edit_expense_sub_categories_holder").value = JSON.stringify(expense_category.expense_sub_categories);
         
         var children = cObj("edit_expense_notes").children;
         for (let index = 0; index < children.length; index++) {
@@ -7414,14 +7415,15 @@ function edit_expense_category() {
 
 
 function display_data_exp_category_edit() {
-    var expense_subcategories = valObj("edit_expense_sub_categories_holder");
-    var store_subcategories = [];
-    if (hasJsonStructure(expense_subcategories)) {
-        store_subcategories = JSON.parse(expense_subcategories);
+    // expense_category
+    var expense_category = cObj("edit_expense_sub_categories_holder").value;
+    var expense_sub_categories = [];
+    if (hasJsonStructure(expense_category)) {
+        expense_sub_categories = JSON.parse(expense_category);
     }
 
     //display the stored subcategories
-    var array = store_subcategories;
+    var array = expense_sub_categories;
     var data_to_display = "";
     if (array.length > 0) {
         data_to_display = "<table class='table col-md-12'><tr><th>No.</th><th>Expense Sub-Categories</th><th>Action</th></tr>";
@@ -7523,6 +7525,7 @@ function edit_revenue_category() {
 function delete_exp_categories() {
     var ids = this.id.substr(15);
     var expense_category = cObj("exp_name_" + ids).value;
+    console.log(expense_category);
     if (hasJsonStructure(expense_category)) {
         expense_category = JSON.parse(expense_category);
         cObj("expense_category_delete_name").innerText = expense_category.expense_name;

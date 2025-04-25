@@ -4172,8 +4172,10 @@
 
                     // get the used budget from the expense record table
                     $percentage = ($used_amount > 0 && ($row['expense_budget']*1) > 0) ? round((($used_amount/$row['expense_budget']) * 100),1)."%" : "0%";
-                    $subcategories = isJson_report($row['expense_sub_categories']) ? count(json_decode($row['expense_sub_categories'])) : 0;
-                    $data_to_display.="<tr><td>".($index).". </td><td><input type='hidden' value='".json_encode($row)."' id='exp_name_".$row['expense_id']."'>".$row['expense_name']."</td><td>Kes ".(number_format($row['expense_budget']))."</td><td>Kes ".number_format($used_amount)." (".$percentage.")</td><td>".$subcategories." subcategories</td><td><p><span class='mx-1 link edit_exp_cat' id='edit_exp_cat_".$row['expense_id']."'><i class='fas fa-pen-fancy'></i></span> <span class='mx-1 link delete_exp_cat' id = 'delete_exp_cat_".$row['expense_id']."'><i class='fas fa-trash'></i></span></p></td></tr>";
+                    $row['expense_sub_categories'] = isJson_report($row['expense_sub_categories']) ? json_decode($row['expense_sub_categories']) : [];
+                    $subcategories = count($row['expense_sub_categories']);
+                    $row_value = str_replace("'", "`", json_encode($row));
+                    $data_to_display.="<tr><td>".($index).". </td><td><input type='hidden' value='".$row_value."' id='exp_name_".$row['expense_id']."'>".$row['expense_name']."</td><td>Kes ".(number_format($row['expense_budget']))."</td><td>Kes ".number_format($used_amount)." (".$percentage.")</td><td>".$subcategories." subcategories</td><td><p><span class='mx-1 link edit_exp_cat' id='edit_exp_cat_".$row['expense_id']."'><i class='fas fa-pen-fancy'></i></span> <span class='mx-1 link delete_exp_cat' id = 'delete_exp_cat_".$row['expense_id']."'><i class='fas fa-trash'></i></span></p></td></tr>";
                     $index++;
                 }
                 $data_to_display .= "</table>";

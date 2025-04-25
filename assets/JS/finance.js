@@ -800,27 +800,35 @@ cObj("confirmyes").onclick = function () {
                                 cObj("supporting_documents_list").value = "[]";
                                 displaySupportingDocuments();
                                 cObj("edit_supporting_documents").classList.add("hide");
-                                if (amount > 0 && valObj("reprint") == "false") {
-                                    //set the values of the payment reciept
-                                    cObj("student_adm_no").innerText = ": " + cObj("students_id_ddds").innerText;
-                                    cObj("students_jina").innerText = ": " + cObj("std_names").innerText;
-                                    cObj("transaction_codeds").innerText = cObj("transaction_code") != null ? cObj("transaction_code").innerText : "no-code";
-                                    cObj("mode_of_payment").innerText = cObj("mode_use_pay") != null ? cObj("mode_use_pay").innerText : "no-code";
-                                    cObj("cash_recieved").innerText = "Kes " + comma3((cObj("amount_recieved") != null ? cObj("amount_recieved").innerText : "0"));
-                                    cObj("closing_balance").innerText = "Kes " + comma3(cObj("closed_balance").innerText);
-                                    cObj("purpose_in_p").innerText = purpose_p;
-                                    cObj("sch_logods").src = cObj("sch_logos").src;
-                                    // values to submit for reciept printing
-                                    cObj("students_names").value = cObj("std_names").innerText;
-                                    cObj("student_admission_no").value = cObj("students_id_ddds").innerText;
-                                    cObj("amount_paid_by_student").value = "Kes " + comma3(cObj("amount_recieved").innerText);
-                                    cObj("new_student_balance").value = "Kes " + comma3(cObj("closed_balance").innerText);
-                                    cObj("mode_of_payments").value = cObj("mode_use_pay") != null ? cObj("mode_use_pay").innerText : "no-code";
-                                    cObj("transaction_codes").value = cObj("transaction_code") != null ? cObj("transaction_code").innerText : "no-code";
-                                    cObj("payments_for").value = purpose_p;
-    
-                                    cObj("submit_receipt_printing").click();
-                                }
+
+                                setTimeout(() => {
+                                    var inner_id = setInterval(() => {
+                                        if (cObj("loadings").classList.contains("hide")) {
+                                            if (amount > 0 && valObj("reprint") == "false") {
+                                                //set the values of the payment reciept
+                                                cObj("student_adm_no").innerText = ": " + cObj("students_id_ddds").innerText;
+                                                cObj("students_jina").innerText = ": " + cObj("std_names").innerText;
+                                                cObj("transaction_codeds").innerText = cObj("transaction_code") != null ? cObj("transaction_code").innerText : "no-code";
+                                                cObj("mode_of_payment").innerText = cObj("mode_use_pay") != null ? cObj("mode_use_pay").innerText : "no-code";
+                                                cObj("cash_recieved").innerText = "Kes " + comma3((cObj("amount_recieved") != null ? cObj("amount_recieved").innerText : "0"));
+                                                cObj("closing_balance").innerText = "Kes " + comma3(cObj("closed_balance").innerText);
+                                                cObj("purpose_in_p").innerText = purpose_p;
+                                                cObj("sch_logods").src = cObj("sch_logos").src;
+                                                // values to submit for reciept printing
+                                                cObj("students_names").value = cObj("std_names").innerText;
+                                                cObj("student_admission_no").value = cObj("students_id_ddds").innerText;
+                                                cObj("amount_paid_by_student").value = "Kes " + comma3(cObj("amount_recieved").innerText);
+                                                cObj("new_student_balance").value = "Kes " + comma3(cObj("closed_balance").innerText);
+                                                cObj("mode_of_payments").value = cObj("mode_use_pay") != null ? cObj("mode_use_pay").innerText : "no-code";
+                                                cObj("transaction_codes").value = cObj("transaction_code") != null ? cObj("transaction_code").innerText : "no-code";
+                                                cObj("payments_for").value = purpose_p;
+                
+                                                cObj("submit_receipt_printing").click();
+                                            }
+                                            stopInterval(inner_id);
+                                        }
+                                    }, 100);
+                                }, 100);
                                 setTimeout(() => {
                                     cObj("geterrorpay").innerText = "";
                                 }, 1000);
@@ -5354,7 +5362,7 @@ cObj("confirm_delete_payments").onclick = function () {
                     cObj("close_supplier_payment_edit").click();
                     cObj("supplier_payment_description_error_edit").innerHTML = "";
                     cObj("cancel_delete_payments").click();
-                }, 2000);
+                }, 100);
 
                 // redisplay the data
                 display_bills_n_payments(valObj("supplier_id"));
@@ -5859,7 +5867,8 @@ function display_all_payment_requests(data_to_display) {
         data_in_display = "<table id='payment_application_table' class='table'><tr><th>No.</th><th>Payment for</th><th>Expense Categories</th><th>Expense Amount.</th><th>Date Paid</th><th>Document Number</th><th>Action</th></tr>";
         for (let index = 0; index < data_to_display.length; index++) {
             const element = data_to_display[index];
-            data_in_display+="<tr><td><input type='hidden' id='payment_request_"+element.payment_id+"' value='"+JSON.stringify(element)+"'>"+(index+1)+"</td><td>"+element.exp_name+"</td><td>"+element.exp_category+"</td><td>"+element.amount+"</td><td>"+element.date_paid+"</td><td>"+element.document_number+"</td><td><span style='font-size:12px;' class='link view_payment_requests' id='view_pay_req_"+element.payment_id+"'><i class='fa fa-eye'></i> View </span> <br> <span style='font-size:12px;' class='link accept_pay_request' id='accept_"+element.payment_id+"'><i class='fa fa-check'></i> Accept </span> <br> <span style='font-size:12px; color:red;' class='link decline_pay_request' id='decline_"+element.payment_id+"'><b>X</b> Decline </span></td></tr>";
+            var flag = element.table_name == "running_expense" ? " <small class='badge bg-success' title='Running Expenses'>E</small>" : " <small class='badge bg-warning' title='Suppliers'>S</small>";
+            data_in_display+="<tr><td><input type='hidden' id='payment_request_"+element.payment_id+"' value='"+JSON.stringify(element)+"'>"+(index+1)+" "+flag+"</td><td>"+element.exp_name+"</td><td>"+element.exp_category+"</td><td>"+element.amount+"</td><td>"+element.date_paid+"</td><td>"+element.document_number+"</td><td><span style='font-size:12px;' class='link view_payment_requests' id='view_pay_req_"+element.payment_id+"'><i class='fa fa-eye'></i> View </span> <br> <span style='font-size:12px;' class='link accept_pay_request' id='accept_"+element.payment_id+"'><i class='fa fa-check'></i> Accept </span> <br> <span style='font-size:12px; color:red;' class='link decline_pay_request' id='decline_"+element.payment_id+"'><b>X</b> Decline </span></td></tr>";
         }
         data_in_display+="</table>";
     }else{

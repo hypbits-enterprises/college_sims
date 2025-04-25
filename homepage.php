@@ -2546,12 +2546,9 @@ function checkPresnt($array, $string){
 
                             </div>
                         </div>
-                        <div class="message_contents hide" id="show_reason_payment_declined">
-                            <label class="form-control-label"><u>Reason for payment decline:</u></label>
-                            <p id="show_reason_supplier_payment_decline">No reason stated!</p>
-                        </div>
-                        <div class="message_contents hide" id="delete_payment_window">
-                            <label class="form-control-label"><u>Confirm:</u></label>
+
+                        <div class="message_contents hide my-2" id="delete_payment_window">
+                            <label class="form-control-label text-danger"><u>Confirm Delete:</u></label>
                             <p>Are you sure you want to delete this payment?</p>
                             <div class="row">
                                 <div class="col-md-6">
@@ -2561,6 +2558,11 @@ function checkPresnt($array, $string){
                                     <button id="cancel_delete_payments"><i class="fas fa-x"></i> Cancel</button>
                                 </div>
                             </div>
+                        </div>
+                        
+                        <div class="message_contents hide my-2" id="show_reason_payment_declined">
+                            <label class="form-control-label"><u>Reason for payment decline:</u></label>
+                            <p id="show_reason_supplier_payment_decline">No reason stated!</p>
                         </div>
                     </div>
                     <form class="add_expense" >
