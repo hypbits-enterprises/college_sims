@@ -144,23 +144,15 @@
                 <button id="back-to-assets-edit"><i class="fa fa-arrow-left"></i> Back to Assets </button>
                 <div class="row my-2">
                     <div class="col-md-12 my-2">
-<<<<<<< HEAD
                         <h6 class="text-center"><u>Edit Asset</u> <img class="hide" src="images/ajax_clock_small.gif" id="asset_data_loader"></h6>
                         <p class="hide" id="asset_data_holder"></p>
                     </div>
                     <form class="col-md-12" target="_blank" method="POST" action="reports/reports.php">
                         <div class="border border-secondary rounded mx-auto w-75 py-2 px-2 my-2">
-=======
-                        <h6 class="text-center"><u>Edit Asset</u></h6>
-                    </div>
-                    <form class="col-md-12" target="_blank" method="POST" action="reports/reports.php">
-                        <div class="border border-secondary rounded mx-auto w-50 py-2 px-2 my-2">
->>>>>>> 81e1b958f51128c22ca1a0a78f0b19cacfa0380c
                             <h6 class="text-secondary text-center"><u>Print Statement of Asset Accounts</u></h6>
                             <input type="hidden" name="print_statement_of_account" value="true">
                             <input type="hidden" name="asset_id" id="asset-id">
                             <div class="row">
-<<<<<<< HEAD
                                 <div class="col-md-6">
                                     <p class="btn btn-outline-danger btn-sm" id="dispose_assets_btn"><i class="fas fa-trash"></i> Dispose Asset</p>
                                     <div class="hide" id="recycles">
@@ -210,12 +202,6 @@
                                     <p id="asset-recovery-error"></p>
                                 </div>
                             </div>
-=======
-                                <div class="col-md-6 mx-auto">
-                                    <input type="submit" class="btn btn-sm btn-primary text-white" value="Print Statement of Accounts">
-                                </div>
-                            </div>
->>>>>>> 81e1b958f51128c22ca1a0a78f0b19cacfa0380c
                         </div>
                     </form>
                     <div class="col-md-4 form-group">
@@ -247,17 +233,10 @@
                         <label for="value-acquisition-option-edit" class="form-label"><b>Value Acquisition Option</b></label>
                         <select name="value-acquisition-option-edit" id="value-acquisition-option-edit" class="form-control w-100">
                             <option value="" hidden>Select an Option</option>
-<<<<<<< HEAD
                             <option value="1">Straightline Method</option>
                             <option value="2">Reducing Balance Method</option>
                             <!-- <option value="3">Straightline Method (increase)</option>
                             <option value="4">Reducing Balance Method (increase)</option> -->
-=======
-                            <option value="1">Straightline Method (decrease)</option>
-                            <option value="2">Reducing Balance Method (decrease)</option>
-                            <option value="3">Straightline Method (increase)</option>
-                            <option value="4">Reducing Balance Method (increase)</option>
->>>>>>> 81e1b958f51128c22ca1a0a78f0b19cacfa0380c
                         </select>
                     </div>
                     <div class="col-md-4 form-group">
