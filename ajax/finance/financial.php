@@ -134,7 +134,6 @@
                     $start_date = $row['start_time'];
                 }
             }
-
             // select
             $select = "SELECT * FROM `finance` WHERE `stud_admin` = '".$student_admission."' AND `date_of_transaction` < '".$start_date."' ORDER BY `transaction_id` DESC LIMIT 1";
             $stmt = $conn2->prepare($select);
@@ -417,7 +416,6 @@
             $supporting_documents_list = isset($_GET['supporting_documents_list']) ? $_GET['supporting_documents_list'] : "[]";
 
             $getProvisionalPayments = getProvisionalPayments($studadmin,$conn2);
-
             // var_dump($getProvisionalPayments);
             if (isPresent($getProvisionalPayments,trim(strtolower($payfor)))) {
                 $newbalance = $balance;
@@ -7444,7 +7442,6 @@
         }
         return 0;
     }
-
     function getFeesAsPerTerm($term,$conn2,$classes){
         $select = '';
         $class = "%|".$classes."|%";

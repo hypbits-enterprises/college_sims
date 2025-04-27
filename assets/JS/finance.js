@@ -1495,7 +1495,6 @@ function addExpense() {
                 grayBorder(cObj("exp_total_amt"));
                 cObj("err_hndler_expenses").innerHTML = "<p class='green_notice'></p>";
             }
-
             if (err == 0) {
                 var expense_sub_category = cObj("expense_sub_category") != undefined && cObj("expense_sub_category") != null ? valObj("expense_sub_category") : "";
                 var datapass = "?addExpenses=true&exp_name=" + cObj("exp_named").value + "&expensecat=" + cObj("exp_cat").value + "&quantity=" + cObj("exp_quant").value + "&unitcost=" + cObj("exp_amnt").value + "&total=" + cObj("exp_total_amt").value + "&unit_name=" + cObj("unit_name").value+"&expense_cash_activity="+valObj("expense_cash_activity")+"&expense_record_date="+valObj("expense_record_date")+"&document_number="+valObj("document_number")+"&new_expense_description="+valObj("new_expense_description")+"&expense_sub_category="+expense_sub_category;
@@ -1560,7 +1559,6 @@ function displayTodaysExpense() {
                 if (cObj("table_values2") != undefined) {
                     var datavalue = cObj("table_values2").innerText;
                     var dataval2 = JSON.parse(datavalue);
-
                     //get the value labels
                     var arrLabels = [];
                     for (let val in dataval2) {

@@ -35,11 +35,18 @@
                     </table>-->
                 </p>
                 <p id="add_class_err_handler"></p>
+<<<<<<< HEAD
                 <button type="button" id="add_class"><i class="fas fa-plus"></i> Add Course Level</button>
             </div>
             <div class="setting_s">
                 <p>Add or remove courses that the system recognizes!</p>
                 <button type="button" id="add_course"><i class="fas fa-plus"></i> Add Course</button><br>
+=======
+                <button type="button" id="add_class"><i class="fas fa-plus"></i> Add Classes</button>
+            </div>
+            <div class="setting_s">
+                <p>Add or remove courses that the system recognizes!</p>
+>>>>>>> 81e1b958f51128c22ca1a0a78f0b19cacfa0380c
                 <label for="class_list">Course List: <br></label>
                 <img src="images/ajax_clock_small.gif" class="hide" id="course_list_clock">
                 <div id="courses_holder">
@@ -68,6 +75,10 @@
                     </div> -->
                 </div>
                 <p id="add_course_err_handler"></p>
+<<<<<<< HEAD
+=======
+                <button type="button" id="add_course"><i class="fas fa-plus"></i> Add Course</button>
+>>>>>>> 81e1b958f51128c22ca1a0a78f0b19cacfa0380c
             </div>
             <div class="setting_s">
                 <label for="class_list">Admission Number Prefix: <br></label>

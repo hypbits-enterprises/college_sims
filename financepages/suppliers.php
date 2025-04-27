@@ -236,7 +236,11 @@
                     </div>
                     <div class="col-md-6">
                         <h6 class="text-center">Payments</h6>
+<<<<<<< HEAD
                         <button id="add_payments"><i class="fa fa-plus"></i> Make Payment Request</button>
+=======
+                        <button id="add_payments"><i class="fa fa-plus"></i> Make Payment</button>
+>>>>>>> 81e1b958f51128c22ca1a0a78f0b19cacfa0380c
                         <hr class="my-2">
                         <div class="" id="supplier_payment_table">
                             <table class="table">

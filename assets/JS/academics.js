@@ -38,6 +38,10 @@ cObj("registersub").onclick = function () {
                     }
                 }, 100);
             }, 200);
+<<<<<<< HEAD
+=======
+            
+>>>>>>> 81e1b958f51128c22ca1a0a78f0b19cacfa0380c
         }else{
             cObj("errregsub").innerHTML = "<p style='color:red;'>Select the classes the subject is to be taught!</p>";
         }

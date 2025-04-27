@@ -24,8 +24,12 @@
             <div class="expense_record_panel">
                 <h6><i class="fa fa-file" style="font-size:18px;margin-bottom:10px;"></i> Expenses:</h6>
                 <div class="expeses_options" id="exp_options">
+<<<<<<< HEAD
                     <button id="add_exp"><i class="fas fa-plus"></i> Add Expenses</button>
                     <button class="hide" id="approve_payments"><i class="fas fa-check"></i> Approve Payments</button>
+=======
+                    <button id="add_exp">Add Expenses</button>
+>>>>>>> 81e1b958f51128c22ca1a0a78f0b19cacfa0380c
                     <button class="hide" id="find_exp_da">Find Expenses</button>
                 </div>
                 <div class="find_exp hide" id="find_exp_date">
@@ -79,6 +83,7 @@
                     </div>
                 </div>
                 <div class="conts hide" id="recordexp">
+<<<<<<< HEAD
                     <div class="conts">
                         <h6 class="text-center"><u>Add Expense</u></h6>
                     </div>
@@ -87,6 +92,11 @@
                         <p>- It starts by you making a request and from the pricipal side they`ll approve all expense requests!</p>
                     </div>
                     <hr>
+=======
+                        <div class="conts">
+                            <h6>Add Expense</h6>
+                        </div>
+>>>>>>> 81e1b958f51128c22ca1a0a78f0b19cacfa0380c
                     <div class="row border border-secondary m-1 p-1" >
                         <div class="conts col-md-4">
                             <label class="form-control-label" for="exp_named"><b>Expense Name:</b> <br></label>
@@ -144,7 +154,11 @@
                     <div class="conts col-md-6 row">
                         <div class="col-md-6">
                             <div id="error_message_expenses"><p class="text-danger text-center"><b>Select expense category before you proceed!</b></p></div>
+<<<<<<< HEAD
                             <button id='add_expenseed' class="hide"><i class="fas fa-paper-plane"></i> Make Payment Request</button>
+=======
+                            <button id='add_expenseed' class="hide">Save</button>
+>>>>>>> 81e1b958f51128c22ca1a0a78f0b19cacfa0380c
                         </div>
                         <div class="col-md-6">
                             <button id='done_adding_exp'>Close</button>

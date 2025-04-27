@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 27th Apr 2025 09:05:13AM : Student Nah - of Reg No. (FGF11) course data has been updated successfully! - {HILLARY NGIGE}
 27th Apr 2025 09:05:00AM : Student Nah - of Reg No. (FGF11) data has been updated successfully! - {HILLARY NGIGE}
 27th Apr 2025 09:03:36AM : Samuel Kibet - of Reg No. (KW/2023/34) data has been updated successfully! - {HILLARY NGIGE}
@@ -111,6 +112,8 @@
 08th May 2024 12:51:12PM : Fees structure has been modified. Votehead "Admissions" changed successfully! - {HILLARY NGIGE}
 08th May 2024 12:50:57PM : Fees structure has been modified. Votehead "Tutoring" has been added successfully! - {HILLARY NGIGE}
 08th May 2024 08:21:52AM : HILLARY NGIGE successfully logged into the system as System Administrator - {HILLARY NGIGE}
+=======
+>>>>>>> 81e1b958f51128c22ca1a0a78f0b19cacfa0380c
 28th Apr 2024 09:47:43AM : HILLARY NGIGE successfully logged into the system as System Administrator - {HILLARY NGIGE}
 27th Apr 2024 10:02:39AM : HILLARY NGIGE successfully logged into the system as System Administrator - {HILLARY NGIGE}
 26th Apr 2024 13:37:27PM : MWANGI KARANGI has been admitted successfully - {HILLARY NGIGE}

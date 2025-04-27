@@ -1,1 +1,13 @@
+<<<<<<< HEAD
 ajax/logs/*
+=======
+#files and folders to ignore in sims project
+FinanceSupportingDocuments/
+images/profile_pics/
+images/sch_profiles/
+invoices/
+report_cards/
+timetabled/
+timetabled/*
+csv/
+>>>>>>> 81e1b958f51128c22ca1a0a78f0b19cacfa0380c
