@@ -35,7 +35,7 @@
                     </table>-->
                 </p>
                 <p id="add_class_err_handler"></p>
-                <button type="button" id="add_class"><i class="fas fa-plus"></i> Add Classes</button>
+                <button type="button" id="add_class"><i class="fas fa-plus"></i> Add Course Level</button>
             </div>
             <div class="setting_s">
                 <p>Add or remove courses that the system recognizes!</p>

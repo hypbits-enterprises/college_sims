@@ -1,82 +1,31 @@
 [
     {
+        "course_level": 1,
+        "course_name": "2",
+        "course_status": 1,
         "id": 1,
-        "name": "Teaching and learning materials"
-    },
-    {
-        "id": 2,
-        "name": "Industrial attachment costs"
-    },
-    {
-        "id": 3,
-        "name": "Electricity  & Water conservation"
-    },
-    {
-        "id": 4,
-        "name": "Audit, Professional and consultancy services"
-    },
-    {
-        "id": 5,
-        "name": "Subscriptions to KATTI & other organs."
-    },
-    {
-        "id": 6,
-        "name": "Marketing /Advertising"
-    },
-    {
-        "id": 7,
-        "name": " KNEC Examination fees"
-    },
-    {
-        "id": 8,
-        "name": "General Admin. expenses"
-    },
-    {
-        "id": 9,
-        "name": "Travelling and accommodation"
-    },
-    {
-        "id": 10,
-        "name": "Licenses and permits"
-    },
-    {
-        "id": 11,
-        "name": "Telephone & Postage"
-    },
-    {
-        "id": 12,
-        "name": "Printing and stationery"
-    },
-    {
-        "id": 13,
-        "name": "Kuccps"
-    },
-    {
-        "id": 14,
-        "name": "Students Ids"
-    },
-    {
-        "id": 15,
-        "name": "Activity/Skills development levies "
-    },
-    {
-        "id": 16,
-        "name": "Management training expenses"
-    },
-    {
-        "id": 17,
-        "name": "Fines and penalties"
-    },
-    {
-        "id": 18,
-        "name": "IEBC hire of equipment"
-    },
-    {
-        "id": 19,
-        "name": "Students refunds"
-    },
-    {
-        "id": 20,
-        "name": "Policy documents expenses"
+        "module_terms": [
+            {
+                "id": 1,
+                "term_name": "TERM_1",
+                "status": "1",
+                "start_date": "20250101000000",
+                "end_date": "20250430000000"
+            },
+            {
+                "id": 2,
+                "term_name": "TERM_2",
+                "status": "0",
+                "start_date": "",
+                "end_date": ""
+            },
+            {
+                "id": 3,
+                "term_name": "TERM_3",
+                "status": "0",
+                "start_date": "",
+                "end_date": ""
+            }
+        ]
     }
 ]

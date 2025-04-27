@@ -761,10 +761,6 @@ cObj("confirmyes").onclick = function () {
     var send_sms = cObj("check-parents-sms").value;
     // send sms to the students parent
     if (valObj("reprint") == "false") {
-        if (cObj("last_receipt_id")!= null) {
-            var last_receipt_id = valObj("last_receipt_id");
-            cObj("last_receipt_id_take").value = last_receipt_id;
-        }
         var date_of_payments_fees = valObj("date_of_payments_fees");
         var time_of_payment_fees = valObj("time_of_payment_fees");
         var fees_payment_opt_holder = valObj("fees_payment_opt_holder");
@@ -805,6 +801,10 @@ cObj("confirmyes").onclick = function () {
                                     var inner_id = setInterval(() => {
                                         if (cObj("loadings").classList.contains("hide")) {
                                             if (amount > 0 && valObj("reprint") == "false") {
+                                                if (cObj("last_receipt_id")!= null) {
+                                                    var last_receipt_id = valObj("last_receipt_id");
+                                                    cObj("last_receipt_id_take").value = last_receipt_id;
+                                                }
                                                 //set the values of the payment reciept
                                                 cObj("student_adm_no").innerText = ": " + cObj("students_id_ddds").innerText;
                                                 cObj("students_jina").innerText = ": " + cObj("std_names").innerText;

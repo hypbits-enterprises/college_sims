@@ -1,3 +1,80 @@
+27th Apr 2025 09:05:13AM : Student Nah - of Reg No. (FGF11) course data has been updated successfully! - {HILLARY NGIGE}
+27th Apr 2025 09:05:00AM : Student Nah - of Reg No. (FGF11) data has been updated successfully! - {HILLARY NGIGE}
+27th Apr 2025 09:03:36AM : Samuel Kibet - of Reg No. (KW/2023/34) data has been updated successfully! - {HILLARY NGIGE}
+27th Apr 2025 09:03:14AM : Samuel Kibet - of Reg No. (KW/2023/34) data has been updated successfully! - {HILLARY NGIGE}
+27th Apr 2025 09:03:04AM : Samuel Kibet - of Reg No. (KW/2023/34) course data has been updated successfully! - {HILLARY NGIGE}
+27th Apr 2025 09:03:02AM : Samuel Kibet - of Reg No. (KW/2023/34) course data has been updated successfully! - {HILLARY NGIGE}
+27th Apr 2025 09:02:57AM : Samuel Kibet - of Reg No. (KW/2023/34) course data has been updated successfully! - {HILLARY NGIGE}
+27th Apr 2025 09:02:00AM : Samuel Kibet - of Reg No. (KW/2023/34) data has been updated successfully! - {HILLARY NGIGE}
+27th Apr 2025 09:01:48AM : Samuel Kibet - of Reg No. (KW/2023/34) course data has been updated successfully! - {HILLARY NGIGE}
+27th Apr 2025 09:01:45AM : Samuel Kibet - of Reg No. (KW/2023/34) course data has been updated successfully! - {HILLARY NGIGE}
+27th Apr 2025 09:01:41AM : Samuel Kibet - of Reg No. (KW/2023/34) course data has been updated successfully! - {HILLARY NGIGE}
+27th Apr 2025 09:01:38AM : Samuel Kibet - of Reg No. (KW/2023/34) course data has been updated successfully! - {HILLARY NGIGE}
+27th Apr 2025 09:01:34AM : Samuel Kibet - of Reg No. (KW/2023/34) course data has been updated successfully! - {HILLARY NGIGE}
+27th Apr 2025 09:01:06AM : Samuel Kibet - of Reg No. (KW/2023/34) data has been updated successfully! - {HILLARY NGIGE}
+27th Apr 2025 08:23:43AM : HILLARY NGIGE successfully logged into the system as Principal - {HILLARY NGIGE}
+26th Apr 2025 19:22:28PM : Samuel Kibet - of Reg No. (KW/2023/34) course data has been updated successfully! - {HILLARY NGIGE}
+26th Apr 2025 19:21:05PM : Samuel Kibet - of Reg No. (KW/2023/34) course data has been updated successfully! - {HILLARY NGIGE}
+26th Apr 2025 19:19:41PM : Samuel Kibet - of Reg No. (KW/2023/34) course data has been updated successfully! - {HILLARY NGIGE}
+26th Apr 2025 19:19:40PM : Samuel Kibet - of Reg No. (KW/2023/34) course data has been updated successfully! - {HILLARY NGIGE}
+26th Apr 2025 19:19:38PM : Samuel Kibet - of Reg No. (KW/2023/34) course data has been updated successfully! - {HILLARY NGIGE}
+26th Apr 2025 19:19:32PM : Samuel Kibet - of Reg No. (KW/2023/34) data has been updated successfully! - {HILLARY NGIGE}
+26th Apr 2025 19:19:24PM : Samuel Kibet - of Reg No. (KW/2023/34) course data has been updated successfully! - {HILLARY NGIGE}
+26th Apr 2025 19:19:20PM : Samuel Kibet - of Reg No. (KW/2023/34) course data has been updated successfully! - {HILLARY NGIGE}
+26th Apr 2025 19:18:21PM : Transaction for "Samuel Kibet" Reg No "KW/2023/34" has been completed successfully! - {HILLARY NGIGE}
+26th Apr 2025 17:27:13PM : Transaction for "Samuel Kibet" Reg No "KW/2023/34" has been completed successfully! - {HILLARY NGIGE}
+26th Apr 2025 17:08:12PM : Transaction has been deleted successfully! - {HILLARY NGIGE}
+26th Apr 2025 17:08:10PM : Transaction has been deleted successfully! - {HILLARY NGIGE}
+26th Apr 2025 17:07:52PM : Transaction for "Samuel Kibet" Reg No "KW/2023/34" has been completed successfully! - {HILLARY NGIGE}
+26th Apr 2025 17:00:11PM : Transaction for "Samuel Kibet" Reg No "KW/2023/34" has been completed successfully! - {HILLARY NGIGE}
+26th Apr 2025 16:59:56PM : Transaction has been deleted successfully! - {HILLARY NGIGE}
+26th Apr 2025 16:59:01PM : Transaction for "Samuel Kibet" Reg No "KW/2023/34" has been completed successfully! - {HILLARY NGIGE}
+26th Apr 2025 16:58:45PM : Transaction has been deleted successfully! - {HILLARY NGIGE}
+26th Apr 2025 16:58:36PM : Transaction for "Samuel Kibet" Reg No "KW/2023/34" has been completed successfully! - {HILLARY NGIGE}
+26th Apr 2025 16:58:20PM : Transaction has been deleted successfully! - {HILLARY NGIGE}
+26th Apr 2025 16:58:10PM : Transaction has been deleted successfully! - {HILLARY NGIGE}
+26th Apr 2025 16:51:08PM : Transaction for "Samuel Kibet" Reg No "KW/2023/34" has been completed successfully! - {HILLARY NGIGE}
+26th Apr 2025 16:49:06PM : Transaction has been deleted successfully! - {HILLARY NGIGE}
+26th Apr 2025 16:48:32PM : Transaction for "Samuel Kibet" Reg No "KW/2023/34" has been completed successfully! - {HILLARY NGIGE}
+26th Apr 2025 16:48:06PM : Samuel Kibet - of Reg No. (KW/2023/34) course data has been updated successfully! - {HILLARY NGIGE}
+26th Apr 2025 16:44:43PM : Transaction for "Charles Khamala" Reg No "4" has been completed successfully! - {HILLARY NGIGE}
+26th Apr 2025 16:38:58PM : Transaction has been deleted successfully! - {HILLARY NGIGE}
+26th Apr 2025 16:30:22PM : Transaction for "Charles Khamala" Reg No "4" has been completed successfully! - {HILLARY NGIGE}
+26th Apr 2025 16:30:02PM : Transaction has been deleted successfully! - {HILLARY NGIGE}
+26th Apr 2025 16:30:00PM : Transaction has been deleted successfully! - {HILLARY NGIGE}
+26th Apr 2025 16:29:58PM : Transaction has been deleted successfully! - {HILLARY NGIGE}
+26th Apr 2025 16:29:56PM : Transaction has been deleted successfully! - {HILLARY NGIGE}
+26th Apr 2025 16:29:54PM : Transaction has been deleted successfully! - {HILLARY NGIGE}
+26th Apr 2025 16:29:34PM : Transaction for "Charles Khamala" Reg No "4" has been completed successfully! - {HILLARY NGIGE}
+26th Apr 2025 16:25:05PM : Charles Charles of adm no 4 last year academic balance has been updated successfully! - {HILLARY NGIGE}
+26th Apr 2025 16:24:48PM : Charles Charles of adm no 4 last year academic balance has been updated successfully! - {HILLARY NGIGE}
+26th Apr 2025 16:23:08PM : Charles Charles of adm no 4 last year academic balance has been updated successfully! - {HILLARY NGIGE}
+26th Apr 2025 16:22:06PM : Charles Charles of adm no 4 last year academic balance has been updated successfully! - {HILLARY NGIGE}
+26th Apr 2025 16:17:12PM : Charles Charles of adm no 4 last year academic balance has been updated successfully! - {HILLARY NGIGE}
+26th Apr 2025 16:15:07PM : Transaction for "Charles Khamala" Reg No "4" has been completed successfully! - {HILLARY NGIGE}
+26th Apr 2025 16:13:58PM : Transaction for "Charles Khamala" Reg No "4" has been completed successfully! - {HILLARY NGIGE}
+26th Apr 2025 16:10:34PM : Transaction for "Charles Khamala" Reg No "4" has been completed successfully! - {HILLARY NGIGE}
+26th Apr 2025 15:58:40PM : Transaction for "Charles Khamala" Reg No "4" has been completed successfully! - {HILLARY NGIGE}
+26th Apr 2025 15:58:13PM : Transaction has been deleted successfully! - {HILLARY NGIGE}
+26th Apr 2025 15:57:44PM : Charles Khamala - of Reg No. (4) course data has been updated successfully! - {HILLARY NGIGE}
+26th Apr 2025 15:57:40PM : Charles Khamala - of Reg No. (4) course data has been updated successfully! - {HILLARY NGIGE}
+26th Apr 2025 15:51:45PM : Transaction for "Charles Khamala" Reg No "4" has been completed successfully! - {HILLARY NGIGE}
+26th Apr 2025 15:51:02PM : Transaction has been deleted successfully! - {HILLARY NGIGE}
+26th Apr 2025 15:51:00PM : Transaction has been deleted successfully! - {HILLARY NGIGE}
+26th Apr 2025 15:50:57PM : Transaction has been deleted successfully! - {HILLARY NGIGE}
+26th Apr 2025 15:50:06PM : Transaction for "Charles Khamala" Reg No "4" has been completed successfully! - {HILLARY NGIGE}
+26th Apr 2025 15:33:10PM : Transaction for "Charles Khamala" Reg No "4" has been completed successfully! - {HILLARY NGIGE}
+26th Apr 2025 15:29:29PM : Charles Khamala - of Reg No. (4) course data has been updated successfully! - {HILLARY NGIGE}
+26th Apr 2025 15:03:31PM : Transaction for "Hillary Ngige" Reg No "KW/2023/35" has been completed successfully! - {HILLARY NGIGE}
+26th Apr 2025 15:03:07PM : Hillary Ngige - of Reg No. (KW/2023/35) course data has been updated successfully! - {HILLARY NGIGE}
+26th Apr 2025 15:01:03PM : Transaction has been deleted successfully! - {HILLARY NGIGE}
+26th Apr 2025 15:01:01PM : Transaction has been deleted successfully! - {HILLARY NGIGE}
+26th Apr 2025 14:59:11PM : Transaction for "Hillary Ngige" Reg No "KW/2023/35" has been completed successfully! - {HILLARY NGIGE}
+26th Apr 2025 14:50:54PM : Hillary Ngige - of Reg No. (KW/2023/35) course data has been updated successfully! - {HILLARY NGIGE}
+26th Apr 2025 14:50:32PM : Transaction for "Hillary Ngige" Reg No "KW/2023/35" has been completed successfully! - {HILLARY NGIGE}
+26th Apr 2025 14:50:03PM : Hillary Ngige - of Reg No. (KW/2023/35) course data has been updated successfully! - {HILLARY NGIGE}
+26th Apr 2025 14:49:12PM : Hillary Ngige - of Reg No. (KW/2023/35) course data has been updated successfully! - {HILLARY NGIGE}
+26th Apr 2025 14:48:38PM : HILLARY NGIGE successfully logged into the system as Principal - {HILLARY NGIGE}
 25th Apr 2025 20:51:55PM : Expense "Fuel" uploaded successfully! - {CHEBBY KIBET}
 25th Apr 2025 19:36:12PM : Staff "HILLARY NGIGE" information has been updated successfully! - {CHEBBY KIBET}
 25th Apr 2025 19:35:50PM : CHEBBY KIBET successfully logged into the system as Principal - {CHEBBY KIBET}

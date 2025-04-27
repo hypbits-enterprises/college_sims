@@ -103,9 +103,28 @@
             // select the last taransaction made by the stsudent
             $student_admission = $_GET['student_admission'];
             $student_balance = $_GET['student_balance'];
+
+            // get the student term they are in
+            $student_data = students_details($student_admission,$conn2);
+            $term_they_are_in = "TERM_1";
+    
+            // decode the json format
+            $my_course_list = isJson($student_data['my_course_list']) ? json_decode($student_data['my_course_list']) : [];
+            for($index = 0; $index < count($my_course_list); $index++){
+                if($my_course_list[$index]->course_status == 1){
+                    // module terms
+                    $module_terms = $my_course_list[$index]->module_terms;
+                    for ($ind=0; $ind < count($module_terms); $ind++) {
+                        if($module_terms[$ind]->status == 1){
+                            $term_they_are_in = $module_terms[$ind]->term_name;
+                            break;
+                        }
+                    }
+                }
+            }
             
             // get when this academic year is starting
-            $SELECT = "SELECT * FROM `academic_calendar` WHERE `term` = 'TERM_1'";
+            $SELECT = "SELECT * FROM `academic_calendar` WHERE `term` = '$term_they_are_in'";
             $stmt = $conn2->prepare($SELECT);
             $stmt->execute();
             $result = $stmt->get_result();
@@ -115,6 +134,7 @@
                     $start_date = $row['start_time'];
                 }
             }
+
             // select
             $select = "SELECT * FROM `finance` WHERE `stud_admin` = '".$student_admission."' AND `date_of_transaction` < '".$start_date."' ORDER BY `transaction_id` DESC LIMIT 1";
             $stmt = $conn2->prepare($select);
@@ -124,11 +144,11 @@
             if ($result) {
                 if ($row = $result->fetch_assoc()) {
                     $transaction_id = $row['transaction_id'];
-
                     echo "Updated successfully!";
                     $updated = 1;
+
                     // update the current tranasctio
-                    $update = "UPDATE `finance` SET `balance` = '".$student_balance."' WHERE `stud_admin` = '".$student_admission."'";
+                    $update = "UPDATE `finance` SET `balance` = '".$student_balance."' WHERE `stud_admin` = '".$student_admission."' AND `transaction_id`  = '$transaction_id'";
                     $stmt = $conn2->prepare($update);
                     $stmt->execute();
 
@@ -363,7 +383,7 @@
                     $last_index = 1;
                     if ($result) {
                         if ($row = $result->fetch_assoc()) {
-                            $last_index = ($row['max']*1) + 1;
+                            $last_index = ($row['max']*1);
                         }
                     }
 
@@ -397,72 +417,73 @@
             $supporting_documents_list = isset($_GET['supporting_documents_list']) ? $_GET['supporting_documents_list'] : "[]";
 
             $getProvisionalPayments = getProvisionalPayments($studadmin,$conn2);
+
             // var_dump($getProvisionalPayments);
             if (isPresent($getProvisionalPayments,trim(strtolower($payfor)))) {
                 $newbalance = $balance;
             }
-
-            // if the amount is recieved 
-
+            
             // check if the last year academic balance is reduced and reduce it
-            $last_academic_balance = lastACADyrBal($studadmin,$conn2);
-            if ($last_academic_balance != 0 && !isPresent($getProvisionalPayments,trim(strtolower($payfor)))) {
-                // echo $amount." ".$last_academic_balance." ".$newbalance;
-                if ($amount > $last_academic_balance) {
-                    // clear it to zero
-                    $new_bal = 0;
-                    // if the last academic balance is a negative
-                    // deduct whats left and update the remeaining
-                    $select = "SELECT * FROM `finance` WHERE `stud_admin` = ? AND `date_of_transaction` < ? ORDER BY `transaction_id` DESC LIMIT 1;";
-                    $stmt = $conn2->prepare($select);
-                    $beginyear = getTermStart($conn2,$term);
-                    $stmt->bind_param("ss",$studadmin,$beginyear);
-                    $stmt->execute();
-                    $result = $stmt->get_result();
-                    if ($result) {
-                        if ($row = $result->fetch_assoc()) {
-                            if (isset($row['balance'])) {
-                                $transaction_id = $row['transaction_id'];
-                                $update = "UPDATE `finance` SET `balance` = '$new_bal' WHERE `transaction_id` = '$transaction_id'";
-                                $stmt = $conn2->prepare($update);
-                                $stmt->execute();
-                            }
-                        }
-                    }
-                }else {
-                    // deduct whats left and update the remaining
-                    $new_bal = $last_academic_balance - $amount;
-                    $select = "SELECT * FROM `finance` WHERE `stud_admin` = ? AND `date_of_transaction` < ? ORDER BY `transaction_id` DESC LIMIT 1;";
-                    $stmt = $conn2->prepare($select);
-                    $beginyear = getTermStart($conn2,$term);
-                    $stmt->bind_param("ss",$studadmin,$beginyear);
-                    $stmt->execute();
-                    $result = $stmt->get_result();
-                    if ($result) {
-                        if ($row = $result->fetch_assoc()) {
-                            if (isset($row['balance'])) {
-                                $transaction_id = $row['transaction_id'];
-                                $update = "UPDATE `finance` SET `balance` = '$new_bal' WHERE `transaction_id` = '$transaction_id'";
-                                $stmt = $conn2->prepare($update);
-                                $stmt->execute();
-                            }
-                        }
-                    }
-                }
-            }
+            // $last_academic_balance = lastACADyrBal($studadmin,$conn2);
+            // if ($last_academic_balance != 0 && !isPresent($getProvisionalPayments,trim(strtolower($payfor)))) {
+            //     // echo $amount." ".$last_academic_balance." ".$newbalance;
+            //     if ($amount > $last_academic_balance) {
+            //         // clear it to zero
+            //         $new_bal = 0;
+            //         // if the last academic balance is a negative
+            //         // deduct whats left and update the remeaining
+            //         $select = "SELECT * FROM `finance` WHERE `stud_admin` = ? AND `date_of_transaction` < ? ORDER BY `transaction_id` DESC LIMIT 1;";
+            //         $stmt = $conn2->prepare($select);
+            //         $beginyear = getTermStart($conn2,$term);
+            //         $stmt->bind_param("ss",$studadmin,$beginyear);
+            //         $stmt->execute();
+            //         $result = $stmt->get_result();
+            //         if ($result) {
+            //             if ($row = $result->fetch_assoc()) {
+            //                 if (isset($row['balance'])) {
+            //                     $transaction_id = $row['transaction_id'];
+            //                     $update = "UPDATE `finance` SET `balance` = '$new_bal' WHERE `transaction_id` = '$transaction_id'";
+            //                     $stmt = $conn2->prepare($update);
+            //                     $stmt->execute();
+            //                 }
+            //             }
+            //         }
+            //     }else {
+            //         // deduct whats left and update the remaining
+            //         $new_bal = $last_academic_balance - $amount;
+            //         $select = "SELECT * FROM `finance` WHERE `stud_admin` = ? AND `date_of_transaction` < ? ORDER BY `transaction_id` DESC LIMIT 1;";
+            //         $stmt = $conn2->prepare($select);
+            //         $beginyear = getTermStart($conn2,$term);
+            //         $stmt->bind_param("ss",$studadmin,$beginyear);
+            //         $stmt->execute();
+            //         $result = $stmt->get_result();
+            //         if ($result) {
+            //             if ($row = $result->fetch_assoc()) {
+            //                 if (isset($row['balance'])) {
+            //                     $transaction_id = $row['transaction_id'];
+            //                     $update = "UPDATE `finance` SET `balance` = '$new_bal' WHERE `transaction_id` = '$transaction_id'";
+            //                     $stmt = $conn2->prepare($update);
+            //                     $stmt->execute();
+            //                 }
+            //             }
+            //         }
+            //     }
+            // }
+
             $payby = isset($_GET['paidby']) ? $_GET['paidby'] : $_SESSION['userids'];
-            // if the student last academic balance is less than zero this means its a balance carry forward
-            if ($last_academic_balance < 0) {
-                $modeofpay = $_GET['modeofpay'];
-                $times = date("H:i:s");
-                $balance_carry_forward = $last_academic_balance * -1;
-                $insert = "INSERT INTO `finance` (`stud_admin`,`time_of_transaction`,`date_of_transaction`,`transaction_code`,`amount`,`balance`,`payment_for`,`payBy`,`mode_of_pay`,`support_document`) VALUES (?,?,?,?,?,?,?,?,?,?)";
-                $stmt = $conn2->prepare($insert);
-                $trans_code = "BCF";
-                $balances = $newbalance + $amount;
-                $stmt->bind_param("ssssssssss",$studadmin,$times,$date,$trans_code,$balance_carry_forward,$balances,$payfor,$payby,$modeofpay,$supporting_documents_list);
-                $stmt->execute();
-            }
+            // // if the student last academic balance is less than zero this means its a balance carry forward
+            // if ($last_academic_balance < 0) {
+            //     $modeofpay = $_GET['modeofpay'];
+            //     $times = date("H:i:s");
+            //     $balance_carry_forward = $last_academic_balance * -1;
+            //     $insert = "INSERT INTO `finance` (`stud_admin`,`time_of_transaction`,`date_of_transaction`,`transaction_code`,`amount`,`balance`,`payment_for`,`payBy`,`mode_of_pay`,`support_document`) VALUES (?,?,?,?,?,?,?,?,?,?)";
+            //     $stmt = $conn2->prepare($insert);
+            //     $trans_code = "BCF";
+            //     $balances = $newbalance + $amount;
+            //     $stmt->bind_param("ssssssssss",$studadmin,$times,$date,$trans_code,$balance_carry_forward,$balances,$payfor,$payby,$modeofpay,$supporting_documents_list);
+            //     $stmt->execute();
+            // }
+
             $modeofpay = $_GET['modeofpay'];
             $insert = "INSERT INTO `finance` (`stud_admin`,`time_of_transaction`,`date_of_transaction`,`transaction_code`,`amount`,`balance`,`payment_for`,`payBy`,`mode_of_pay`,`support_document`) VALUES (?,?,?,?,?,?,?,?,?,?)";
             $stmt = $conn2->prepare($insert);
@@ -7330,16 +7351,15 @@
         $getclass = explode("^",$daro);
         $dach = $getclass[1];
         $feestopay = getFeesAsFromTermAdmited($term,$conn2,$dach,$admno);
-        // echo $feestopay." ".$dach."<br>";
         $feespaidbystud = getFeespaidByStudent($admno,$conn2);
 
         // know if they paid this term
         $lastbal = lastBalance($admno,$conn2);
-        $lastacad = lastACADyrBal($admno,$conn2);
+        // $lastacad = lastACADyrBal($admno,$conn2);
+
         // get balance
-        $feestopay += $lastacad;
+        $feestopay += $lastbal;
         $balance = $feestopay - $feespaidbystud;
-        // echo $balance;
 
         // if class is transfered or alumni last
         if ($dach == "-2" || $dach == "-1") {
@@ -7385,23 +7405,46 @@
         // echo $begin_term;
         return $balance;
     }
+
     function lastBalance($admno,$conn2){
-        $select = "SELECT `balance` ,`date_of_transaction` FROM `finance` WHERE `stud_admin` = ? ORDER BY `transaction_id` DESC LIMIT 1";
+        // get the student term they are in
+        $student_data = students_details($admno,$conn2);
+
+        // decode the json format
+        $my_course_list = isJson($student_data['my_course_list']) ? json_decode($student_data['my_course_list']) : [];
+        $start_time = date("Y-m-d");
+        for($index = 0; $index < count($my_course_list); $index++){
+            if($my_course_list[$index]->course_status == 1){
+                // module terms
+                $module_terms = $my_course_list[$index]->module_terms;
+                for ($ind=0; $ind < count($module_terms); $ind++) {
+                    if($module_terms[$ind]->status == 1){
+                        $start_time = date("Y-m-d", strtotime($module_terms[$ind]->start_date));
+                        break;
+                    }
+                }
+            }
+        }
+
+        $select = "SELECT `balance` ,`date_of_transaction` FROM `finance` WHERE `stud_admin` = ?  AND date_of_transaction < ? ORDER BY `transaction_id` DESC LIMIT 1";
         $stmt = $conn2->prepare($select);
-        $stmt->bind_param("s",$admno);
+        $stmt->bind_param("ss",$admno, $start_time);
         $stmt->execute();
         $result = $stmt->get_result();
         if ($result) {
             if ($row = $result->fetch_assoc()) {
                 $last_paid = date("YmdHis",strtotime($row['date_of_transaction']));
                 $beginyear = date("YmdHis",strtotime(getAcademicStart($conn2)));
-                if ($beginyear < $last_paid) {
-                    return $row['balance'];
-                }
+                // KIBWEZI WEST
+                // if ($beginyear < $last_paid) {
+                //     return $row['balance'];
+                // }
+                return $row['balance'];
             }
         }
         return 0;
     }
+
     function getFeesAsPerTerm($term,$conn2,$classes){
         $select = '';
         $class = "%|".$classes."|%";
@@ -7564,14 +7607,12 @@
             $select = "SELECT sum(`TERM_3`) AS 'TOTALS' FROM `fees_structure`  WHERE `classes` = ? AND `course` = ? AND `activated` = 1  and `roles` = 'regular';";
         }
         $stmt = $conn2->prepare($select);
-        // echo $select." ".$term_admitted." ".$current_term."<br>";
         $stmt->bind_param("ss",$class,$course_enrolled);
         $stmt->execute();
         $res = $stmt->get_result();
         if($res){
             if ($row = $res->fetch_assoc()) {
                 $fees_to_pay = $row['TOTALS'];
-                // echo $fees_to_pay;
                 
                 // get dicounts
                 $discounts = getDiscount($admno,$conn2);
@@ -7583,15 +7624,6 @@
                         $fees_to_pay = $fees_to_pay - $discounts[1];
                     }
                 }
-                // echo isBoarding($admno,$conn2);
-                // if (isTransport($conn2,$admno)) {
-                //     $transport = transportBalanceSinceAdmission($conn2,$admno);
-                //     $fees_to_pay+=$transport;
-                //     // echo $transport." ".$admno."<br>";
-                // }
-
-                // add how much they are to pay if they are borders
-                // $fees_to_pay+=TransportDeduction($conn2,$admno);
 
                 if (strlen($fees_to_pay) < 1) {
                     return 0;
@@ -7685,13 +7717,13 @@
         
         // get the current term so that we start counting from there
         $my_course_list = isJson($student_data['my_course_list']) ? json_decode($student_data['my_course_list']) : [];
-        $current_term = "TERM_1";
+        $start_time = date("Y-m-d");
         for ($index=0; $index < count($my_course_list); $index++) { 
             if($my_course_list[$index]->course_status == 1){
                 $module_terms = $my_course_list[$index]->module_terms;
                 for($ind = 0; $ind < count($module_terms); $ind++){
                     if($module_terms[$ind]->status == 1){
-                        $current_term = $module_terms[$ind]->term_name;
+                        $start_time = date("Y-m-d", strtotime($module_terms[$ind]->start_date));
                         break;
                     }
                 }
@@ -7700,10 +7732,10 @@
         
         $select = "SELECT * FROM `finance` where `stud_admin` = ?  AND `date_of_transaction` BETWEEN ? and ? AND `payment_for` != 'admission fees'";
         $stmt = $conn2->prepare($select);
-        $begin_term = getTermStart($conn2,$current_term);//start date of the academic year
+        
         // echo $begin_term;
         $currentdate = date("Y-m-d");
-        $stmt->bind_param("sss",$admno,$begin_term,$currentdate);
+        $stmt->bind_param("sss",$admno,$start_time,$currentdate);
         $stmt->execute();
         $res = $stmt->get_result();
         $last_acad_balance  = lastACADyrBal($admno,$conn2);
